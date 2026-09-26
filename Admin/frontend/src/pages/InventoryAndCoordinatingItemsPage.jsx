@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import api from "../lib/api";
+import api, { apiError } from "../lib/api";
+import { downloadCsv, openPrint } from "../lib/actions";
 import { CATEGORY_LABEL, GRADE_LABEL, ITEM_STATUS_LABEL, formatDate, specLine } from "../lib/labels";
 import { Breadcrumb } from "../components/system-ui";
 import {
@@ -280,7 +281,38 @@ const inventorySeed = [
   },
 ];
 
+function mapInventoryItem(item) {
+  return {
+    id: item.qrCode,
+    itemId: item.id,
+    warehouseId: item.warehouseId || "",
+    name: item.name,
+    desc: specLine(item.specifications) || item.category,
+    category: CATEGORY_LABEL[item.category] || item.category,
+    condition: GRADE_LABEL[item.grade] || "Chưa chấm",
+    conditionColorClass: item.grade === "REJECTED" ? "bg-rose-100 text-rose-900" : "bg-teal-100 text-teal-900",
+    location: [item.warehouse?.code, item.binLocation].filter(Boolean).join(" · ") || "Chưa xếp kệ",
+    locationIcon: Server,
+    date: formatDate(item.receivedAt || item.createdAt),
+    status: ITEM_STATUS_LABEL[item.status] || item.status,
+    statusColorClass: item.status === "READY_FOR_ALLOCATION" ? "bg-teal-100 text-teal-900" : "bg-slate-200 text-blue-700",
+    statusDotClass: item.status === "READY_FOR_ALLOCATION" ? "bg-teal-600" : "bg-blue-600",
+    isAlert: item.status === "REFURBISHING" || item.status === "PENDING_INTAKE",
+  };
+}
+
 export default function InventoryAndCoordinatingItemsPage() {
+  const [stockQuery, setStockQuery] = useState("");
+  const [warehouseFilter, setWarehouseFilter] = useState("");
+  const [kindFilter, setKindFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [stockInOpen, setStockInOpen] = useState(false);
+  const [intakePledges, setIntakePledges] = useState([]);
+  const [intakePledgeId, setIntakePledgeId] = useState("");
+  const [intakeWarehouseId, setIntakeWarehouseId] = useState("");
+  const [intakeBin, setIntakeBin] = useState("KHU A / Kệ 01");
+  const [intakeQty, setIntakeQty] = useState(1);
   const [toast, setToast] = useState({
     visible: false,
     type: "",
@@ -289,27 +321,19 @@ export default function InventoryAndCoordinatingItemsPage() {
   });
   const [inventoryItems, setInventoryItems] = useState(inventorySeed);
   const [selectedDevice, setSelectedDevice] = useState(inventorySeed[0]?.id || "");
+  const [warehouses, setWarehouses] = useState([]);
+  const [warehouseId, setWarehouseId] = useState("");
+  const [aisle, setAisle] = useState("KHU A");
+  const [shelf, setShelf] = useState("Kệ 02");
 
   useEffect(() => {
+    api.get("/warehouses?limit=20").then((response) => setWarehouses(response.data.data ?? [])).catch(() => undefined);
     api.get("/items?limit=30").then((response) => {
-      const rows = (response.data.data ?? []).map((item) => ({
-        id: item.qrCode,
-        name: item.name,
-        desc: specLine(item.specifications) || item.category,
-        category: CATEGORY_LABEL[item.category] || item.category,
-        condition: GRADE_LABEL[item.grade] || "Chưa chấm",
-        conditionColorClass: item.grade === "REJECTED" ? "bg-rose-100 text-rose-900" : "bg-teal-100 text-teal-900",
-        location: [item.warehouse?.code, item.binLocation].filter(Boolean).join(" · ") || "Chưa xếp kệ",
-        locationIcon: Server,
-        date: formatDate(item.receivedAt || item.createdAt),
-        status: ITEM_STATUS_LABEL[item.status] || item.status,
-        statusColorClass: item.status === "READY_FOR_ALLOCATION" ? "bg-teal-100 text-teal-900" : "bg-slate-200 text-blue-700",
-        statusDotClass: item.status === "READY_FOR_ALLOCATION" ? "bg-teal-600" : "bg-blue-600",
-        isAlert: item.status === "REFURBISHING" || item.status === "PENDING_INTAKE",
-      }));
+      const rows = (response.data.data ?? []).map(mapInventoryItem);
       if (rows.length === 0) return;
       setInventoryItems(rows);
       setSelectedDevice(rows[0].id);
+      setWarehouseId(rows[0].warehouseId || "");
     }).catch(() => undefined);
   }, []);
   const [slideOverOpen, setSlideOverOpen] = useState(false);
@@ -322,28 +346,143 @@ export default function InventoryAndCoordinatingItemsPage() {
 
   const handleSelectDevice = (qrCode) => {
     setSelectedDevice(qrCode);
+    const item = inventoryItems.find((row) => row.id === qrCode);
+    if (item?.warehouseId) setWarehouseId(item.warehouseId);
   };
 
   const handleOpenDetails = () => {
     setSlideOverOpen(true);
   };
 
-  const handleSaveLocation = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      showToast(
-        "success",
-        "Đã lưu thành công",
-        "Vị trí lưu trữ đã được cập nhật.",
-      );
+  const reloadItems = () => api.get("/items?limit=30").then((response) => {
+    const rows = (response.data.data ?? []).map(mapInventoryItem);
+    if (rows.length === 0) return;
+    setInventoryItems(rows);
+  }).catch(() => undefined);
+
+  const assignDispatch = async () => {
+    try {
+      const response = await api.get("/requisitions?status=APPROVED&limit=5");
+      const requisition = response.data.data?.[0];
+      if (!requisition) {
+        showToast("error", "Chưa có đề xuất", "Không có đề xuất đã duyệt để ghép thiết bị.");
+        return;
+      }
+      const matched = await api.post(`/allocations/match/${requisition.id}`);
+      showToast("success", "Đã tạo lệnh điều phối", `Ghép ${matched.data.totalItems ?? 0} thiết bị vào ${requisition.code}.`);
+      reloadItems();
       setSlideOverOpen(false);
-    }, 2000);
+    } catch (error) {
+      showToast("error", "Không điều phối được", apiError(error, "Không ghép được thiết bị vào đề xuất."));
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    const item = inventoryItems.find((row) => row.id === selectedDevice);
+    if (!item?.itemId) {
+      showToast("error", "Chưa có thiết bị", "Danh sách chưa tải từ cơ sở dữ liệu.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const binLocation = `${aisle} / ${shelf}`.trim().slice(0, 80);
+      await api.patch(`/items/${item.itemId}`, {
+        ...(warehouseId ? { warehouseId } : {}),
+        binLocation,
+      });
+      const warehouse = warehouses.find((row) => row.id === warehouseId);
+      setInventoryItems((rows) =>
+        rows.map((row) =>
+          row.itemId === item.itemId
+            ? { ...row, warehouseId, location: [warehouse?.code, binLocation].filter(Boolean).join(" · ") }
+            : row,
+        ),
+      );
+      showToast("success", "Đã lưu vào database", "Vị trí lưu trữ đã được cập nhật.");
+      setSlideOverOpen(false);
+    } catch (error) {
+      showToast("error", "Không lưu được", apiError(error, "Máy chủ từ chối cập nhật vị trí."));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const activeItem =
     inventoryItems.find((item) => item.id === selectedDevice) ||
     inventoryItems[0];
+
+  const filteredItems = inventoryItems.filter((item) => {
+    const text = `${item.id} ${item.name} ${item.desc} ${item.location} ${item.category}`.toLowerCase();
+    if (stockQuery.trim() && !text.includes(stockQuery.trim().toLowerCase())) return false;
+    if (warehouseFilter && !String(item.location).toLowerCase().includes(warehouseFilter.toLowerCase())) return false;
+    if (kindFilter === "laptop" && !/laptop|xách tay|thinkpad|latitude/.test(text)) return false;
+    if (kindFilter === "pc" && !/pc|desktop|để bàn|optiplex|prodesk/.test(text)) return false;
+    if (kindFilter === "tablet" && !/tablet|ipad|tab /.test(text)) return false;
+    if (kindFilter === "sgk" && !/sách|giáo khoa/.test(text)) return false;
+    if (statusFilter === "ready" && !/sẵn sàng|ready/.test(item.status.toLowerCase())) return false;
+    if (statusFilter === "repair" && !/sửa|bảo trì|kiểm/.test(item.status.toLowerCase())) return false;
+    if (statusFilter === "pending" && !/chờ|tiếp nhận|thanh lý/.test(`${item.status} ${item.condition}`.toLowerCase())) return false;
+    return true;
+  });
+  const pageSize = 8;
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = filteredItems.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  async function openStockIn() {
+    setStockInOpen(true);
+    try {
+      const response = await api.get("/pledges?limit=30");
+      const rows = (response.data.data ?? []).filter((pledge) => pledge.status === "VERIFIED" || pledge.status === "PARTIALLY_RECEIVED");
+      setIntakePledges(rows);
+      setIntakePledgeId(rows[0]?.id || "");
+      setIntakeWarehouseId(warehouses[0]?.id || "");
+      if (rows.length === 0) showToast("error", "Chưa có phiếu để nhập", "Chỉ phiếu đã xác minh mới nhập được vào kho.");
+    } catch (error) {
+      showToast("error", "Không tải được phiếu", apiError(error, "Không đọc được danh sách cam kết."));
+    }
+  }
+
+  async function submitStockIn(event) {
+    event.preventDefault();
+    if (!intakePledgeId || !intakeWarehouseId) {
+      showToast("error", "Thiếu thông tin", "Chọn phiếu đã xác minh và kho nhận.");
+      return;
+    }
+    try {
+      const detail = await api.get(`/pledges/${intakePledgeId}`);
+      const line = detail.data.items?.[0];
+      if (!line) {
+        showToast("error", "Phiếu trống", "Phiếu này không có dòng thiết bị.");
+        return;
+      }
+      const received = line._count?.resourceItems || 0;
+      const room = Math.max(0, (line.estimatedQuantity || 1) - received);
+      const quantity = Math.min(Math.max(1, Number(intakeQty) || 1), room || 1);
+      await api.post(`/pledges/${intakePledgeId}/receive`, {
+        lines: [{ pledgeItemId: line.id, receivedQuantity: quantity, warehouseId: intakeWarehouseId, binLocation: intakeBin }],
+      });
+      showToast("success", "Đã nhập kho", `Đã tạo ${quantity} thiết bị trong kho từ phiếu ${detail.data.code}.`);
+      setStockInOpen(false);
+      reloadItems();
+    } catch (error) {
+      showToast("error", "Không nhập được kho", apiError(error, "Máy chủ từ chối tiếp nhận phiếu."));
+    }
+  }
+
+  function scanBarcode() {
+    const code = window.prompt("Quét hoặc nhập mã QR / barcode");
+    if (!code) return;
+    const found = inventoryItems.find((item) => item.id.toLowerCase().includes(code.trim().toLowerCase()));
+    if (!found) {
+      showToast("error", "Không thấy mã", `Không có thiết bị khớp ${code}.`);
+      return;
+    }
+    handleSelectDevice(found.id);
+    setStockQuery(code.trim());
+    setPage(1);
+    showToast("success", "Đã chọn thiết bị", found.name);
+  }
 
   return (
     <>
@@ -371,11 +510,11 @@ export default function InventoryAndCoordinatingItemsPage() {
           </div>
           {/* Top Action Pills */}
           <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-white hover:bg-slate-200 text-slate-900 text-sm font-medium rounded-lg shadow-sm transition-all">
+            <button type="button" onClick={() => downloadCsv("ton-kho.csv", ["QR", "Tên", "Phân loại", "Tình trạng", "Vị trí", "Trạng thái"], filteredItems.map((item) => [item.id, item.name, item.category, item.condition, item.location, item.status]))} className="inline-flex items-center gap-1 px-4 py-2 bg-white hover:bg-slate-200 text-slate-900 text-sm font-medium rounded-lg shadow-sm transition-all">
               <HelpCircle className="text-[18px] text-blue-700 w-5 h-5" />
               <span>Xuất báo cáo Excel / PDF</span>
             </button>
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium rounded-lg transition-colors">
+            <button type="button" onClick={scanBarcode} className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium rounded-lg transition-colors">
               <RefreshCcw className="text-[18px] w-5 h-5" />
               <span>Đồng bộ quét RFID/Barcode</span>
             </button>
@@ -386,7 +525,7 @@ export default function InventoryAndCoordinatingItemsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <KPICard
             title="Tổng thiết bị đang lưu kho"
-            value="15,240"
+            value={String(inventoryItems.length)}
             unit="thiết bị"
             icon={Package}
             bgClass="bg-white"
@@ -433,6 +572,8 @@ export default function InventoryAndCoordinatingItemsPage() {
             <input
               className="w-full pl-10 pr-12 py-2 bg-slate-50 text-slate-900 text-sm rounded-lg outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
               id="inventory-search"
+              value={stockQuery}
+              onChange={(event) => { setStockQuery(event.target.value); setPage(1); }}
               placeholder="Tìm theo Mã QR, Tên thiết bị, số serial, mã lô..."
               type="text"
             />
@@ -442,17 +583,14 @@ export default function InventoryAndCoordinatingItemsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2 flex-1">
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select value={warehouseFilter} onChange={(event) => { setWarehouseFilter(event.target.value); setPage(1); }} className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                 <option value="">Tất cả các kho</option>
-                <option value="hn">Tổng Kho Kỹ thuật HN</option>
-                <option value="dn">Trạm Tiếp vận Đà Nẵng</option>
-                <option value="hcm">Kho Trung chuyển TP.HCM</option>
-                <option value="tb">Kho Vệ tinh Tây Bắc</option>
+                {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.code}>{warehouse.name}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
             </div>
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select value={kindFilter} onChange={(event) => { setKindFilter(event.target.value); setPage(1); }} className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                 <option value="">Tất cả loại thiết bị</option>
                 <option value="laptop">Laptop giáo dục</option>
                 <option value="pc">Máy tính để bàn PC</option>
@@ -462,22 +600,21 @@ export default function InventoryAndCoordinatingItemsPage() {
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
             </div>
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                 <option value="">Tất cả tình trạng</option>
-                <option value="new">Mới 100%</option>
-                <option value="good">Cũ - Tốt (&gt;90%)</option>
-                <option value="upgrade">Cần nâng cấp/sửa chữa</option>
-                <option value="pending">Chờ thanh lý</option>
+                <option value="ready">Sẵn sàng xuất</option>
+                <option value="repair">Đang sửa / kiểm định</option>
+                <option value="pending">Chờ tiếp nhận</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium font-semibold rounded-lg transition-all shadow-sm">
+            <button type="button" onClick={openStockIn} className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium font-semibold rounded-lg transition-all shadow-sm">
               <Download className="text-[18px] w-5 h-5" />
               <span>Nhập kho (Stock In)</span>
             </button>
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium font-semibold rounded-lg shadow-sm transition-all">
+            <button type="button" onClick={assignDispatch} className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium font-semibold rounded-lg shadow-sm transition-all">
               <Upload className="text-[18px] w-5 h-5" />
               <span>Xuất kho (Stock Out)</span>
             </button>
@@ -509,7 +646,7 @@ export default function InventoryAndCoordinatingItemsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {inventoryItems.map((item) => (
+                  {pageItems.map((item) => (
                     <InventoryRow
                       key={item.id}
                       item={item}
@@ -526,30 +663,16 @@ export default function InventoryAndCoordinatingItemsPage() {
             <div className="p-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100">
               <span className="text-xs text-slate-600">
                 Hiển thị{" "}
-                <span className="font-semibold text-slate-900">1 - 6</span> của{" "}
-                <span className="font-semibold text-slate-900">15,240</span>{" "}
+                <span className="font-semibold text-slate-900">{filteredItems.length === 0 ? 0 : (safePage - 1) * pageSize + 1} - {Math.min(safePage * pageSize, filteredItems.length)}</span> của{" "}
+                <span className="font-semibold text-slate-900">{filteredItems.length}</span>{" "}
                 thiết bị
               </span>
               <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50">
+                <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} className="p-1.5 rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50">
                   <ChevronLeft className="text-[18px] w-5 h-5" />
                 </button>
-                <button className="w-8 h-8 rounded bg-blue-600 text-white text-sm font-mono font-semibold flex items-center justify-center">
-                  1
-                </button>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
-                  2
-                </button>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
-                  3
-                </button>
-                <span className="px-1 text-slate-500 text-sm font-mono">
-                  ...
-                </span>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
-                  254
-                </button>
-                <button className="p-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                <span className="px-2 text-sm font-semibold text-slate-700">{safePage} / {pageCount}</span>
+                <button type="button" onClick={() => setPage((current) => Math.min(pageCount, current + 1))} className="p-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
                   <ChevronRight className="text-[18px] w-5 h-5" />
                 </button>
               </div>
@@ -633,10 +756,11 @@ export default function InventoryAndCoordinatingItemsPage() {
                     Chọn Kho - Trạm
                   </label>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm pl-3 pr-8 py-2.5 rounded-lg outline-none cursor-pointer focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all">
-                      <option>Tổng Kho Kỹ thuật HN (Đông Anh)</option>
-                      <option>Kho Vệ tinh Tây Bắc (Lào Cai)</option>
-                      <option>Trạm Tiếp vận Đà Nẵng</option>
+                    <select value={warehouseId} onChange={(event) => setWarehouseId(event.target.value)} className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm pl-3 pr-8 py-2.5 rounded-lg outline-none cursor-pointer focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all">
+                      <option value="">Giữ kho hiện tại</option>
+                      {warehouses.map((warehouse) => (
+                        <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
+                      ))}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
                   </div>
@@ -648,7 +772,8 @@ export default function InventoryAndCoordinatingItemsPage() {
                     </label>
                     <input
                       className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm px-3 py-2.5 rounded-lg outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all uppercase font-mono"
-                      defaultValue="KHU A"
+                      value={aisle}
+                      onChange={(event) => setAisle(event.target.value)}
                       type="text"
                     />
                   </div>
@@ -658,7 +783,8 @@ export default function InventoryAndCoordinatingItemsPage() {
                     </label>
                     <input
                       className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm px-3 py-2.5 rounded-lg outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all font-mono"
-                      defaultValue="Kệ 02"
+                      value={shelf}
+                      onChange={(event) => setShelf(event.target.value)}
                       type="text"
                     />
                   </div>
@@ -699,11 +825,11 @@ export default function InventoryAndCoordinatingItemsPage() {
                   Tình nguyện viên/Đơn vị trường học.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mt-1">
-                  <button className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
+                  <button type="button" onClick={assignDispatch} className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
                     <Network className="text-[16px] w-4 h-4" />
                     Gán Lệnh xuất
                   </button>
-                  <button className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
+                  <button type="button" onClick={openPrint} className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
                     <Printer className="text-[16px] w-4 h-4" />
                     In phiếu PXK
                   </button>
@@ -713,6 +839,37 @@ export default function InventoryAndCoordinatingItemsPage() {
           )}
         </div>
       </div>
+
+      {stockInOpen && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4">
+          <form onSubmit={submitStockIn} className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="font-display text-xl font-semibold text-slate-900">Nhập kho</h2>
+                <p className="mt-1 text-sm text-slate-500">Tiếp nhận phiếu đã xác minh vào đúng kho. Trang này không chuyển sang biên lai.</p>
+              </div>
+              <button type="button" onClick={() => setStockInOpen(false)} className="rounded px-2 text-lg">×</button>
+            </div>
+            <label className="mt-4 block text-sm font-medium text-slate-700">Phiếu trao tặng</label>
+            <select value={intakePledgeId} onChange={(event) => setIntakePledgeId(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm">
+              {intakePledges.length === 0 && <option value="">Không có phiếu đã xác minh</option>}
+              {intakePledges.map((pledge) => <option key={pledge.id} value={pledge.id}>{pledge.code} · {pledge.donor?.fullName || "Nhà hảo tâm"}</option>)}
+            </select>
+            <label className="mt-3 block text-sm font-medium text-slate-700">Kho nhận</label>
+            <select value={intakeWarehouseId} onChange={(event) => setIntakeWarehouseId(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm">
+              {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}
+            </select>
+            <label className="mt-3 block text-sm font-medium text-slate-700">Số lượng nhập</label>
+            <input type="number" min="1" value={intakeQty} onChange={(event) => setIntakeQty(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+            <label className="mt-3 block text-sm font-medium text-slate-700">Vị trí kệ</label>
+            <input value={intakeBin} onChange={(event) => setIntakeBin(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setStockInOpen(false)} className="rounded bg-slate-100 px-4 py-2 text-sm">Hủy</button>
+              <button className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Lưu vào kho</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Action Toast */}
       <div

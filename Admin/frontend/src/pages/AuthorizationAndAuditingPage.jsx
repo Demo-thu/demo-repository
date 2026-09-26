@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import api from "../lib/api";
+import api, { apiError } from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import { ROLE_LABEL, formatDate, formatDateTime } from "../lib/labels";
 import {
   Download,
@@ -175,8 +176,12 @@ export default function AuthorizationAndAuditingPage() {
   const [tab, setTab] = useState("users");
   const [usersData, setUsersData] = useState(userSeed);
   const [auditLogs, setAuditLogs] = useState(auditSeed);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [userNotice, setUserNotice] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const [viewUser, setViewUser] = useState(null);
 
-  useEffect(() => {
+  function loadUsers() {
     api.get("/users?limit=50").then((response) => {
       const rows = (response.data.data ?? []).map((user) => ({
         id: user.id,
@@ -194,6 +199,10 @@ export default function AuthorizationAndAuditingPage() {
       }));
       if (rows.length > 0) setUsersData(rows);
     }).catch(() => undefined);
+  }
+
+  useEffect(() => {
+    loadUsers();
     api.get("/audit-logs?limit=20").then((response) => {
       const rows = (response.data.data ?? []).map((log) => ({
         id: log.id,
@@ -235,10 +244,18 @@ export default function AuthorizationAndAuditingPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className="inline-flex items-center gap-1 rounded bg-white px-3 py-2.5 text-xs font-semibold shadow-sm border border-slate-200">
+            <button type="button" onClick={async () => {
+              try {
+                const response = await api.get("/audit-logs?limit=100");
+                const rows = response.data.data ?? [];
+                downloadCsv("nhat-ky.csv", ["Thời điểm", "Người", "Hành động", "Đối tượng"], rows.map((log) => [formatDateTime(log.createdAt), log.user?.fullName || "", log.action, log.resource]));
+              } catch (error) {
+                setUserNotice(apiError(error, "Không xuất được nhật ký."));
+              }
+            }} className="inline-flex items-center gap-1 rounded bg-white px-3 py-2.5 text-xs font-semibold shadow-sm border border-slate-200">
               <Download size={15} /> Xuất nhật ký (Audit Export)
             </button>
-            <button className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
+            <button onClick={() => setShowUserForm(true)} className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
               <UserPlus size={15} /> Thêm người dùng mới
             </button>
           </div>
@@ -343,7 +360,7 @@ export default function AuthorizationAndAuditingPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {usersData.map((user) => (
+                    {usersData.slice((userPage - 1) * 7, userPage * 7).map((user) => (
                       <tr
                         key={user.id}
                         className={`hover:bg-slate-50 ${user.type === "pending" ? "bg-rose-50/50" : ""}`}
@@ -383,8 +400,23 @@ export default function AuthorizationAndAuditingPage() {
                           {user.date}
                         </td>
                         <td className="px-4 py-3">
-                          <select className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 outline-none">
-                            <option value={user.roleValue}>{user.role}</option>
+                          <select
+                            value={user.roleValue || "DONOR"}
+                            onChange={async (event) => {
+                              const role = event.target.value;
+                              try {
+                                await api.patch(`/users/${user.id}/role`, { role });
+                                setUsersData((rows) => rows.map((row) => row.id === user.id ? { ...row, roleValue: role, role: ROLE_LABEL[role] || role } : row));
+                                setUserNotice("Đã lưu vai trò vào database.");
+                              } catch (error) {
+                                setUserNotice(apiError(error, "Không đổi được vai trò."));
+                              }
+                            }}
+                            className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 outline-none"
+                          >
+                            {Object.entries(ROLE_LABEL).map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
                           </select>
                         </td>
                         <td className="px-4 py-3">
@@ -401,14 +433,35 @@ export default function AuthorizationAndAuditingPage() {
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
                             {user.type === "pending" && (
-                              <button className="rounded bg-blue-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-blue-700">
+                              <button type="button" onClick={async () => {
+                                try {
+                                  await api.patch(`/users/${user.id}/status`, { status: "ACTIVE" });
+                                  setUsersData((rows) => rows.map((row) => row.id === user.id ? { ...row, status: "Đã duyệt", type: "verified" } : row));
+                                  setUserNotice(`Đã duyệt KYC cho ${user.name}.`);
+                                } catch (error) {
+                                  setUserNotice(apiError(error, "Không duyệt được KYC."));
+                                }
+                              }} className="rounded bg-blue-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-blue-700">
                                 Duyệt KYC
                               </button>
                             )}
-                            <button className="p-1 text-slate-400 hover:text-slate-600">
+                            <button type="button" onClick={() => setViewUser(user)} className="p-1 text-slate-400 hover:text-slate-600">
                               <Eye size={16} />
                             </button>
-                            <button className="p-1 text-slate-400 hover:text-rose-600">
+                            <button
+                              className="p-1 text-slate-400 hover:text-rose-600"
+                              title={user.type === "pending" ? "Kích hoạt" : "Tạm khóa"}
+                              onClick={async () => {
+                                const status = user.type === "pending" ? "ACTIVE" : "SUSPENDED";
+                                try {
+                                  await api.patch(`/users/${user.id}/status`, { status });
+                                  setUsersData((rows) => rows.map((row) => row.id === user.id ? { ...row, status: status === "ACTIVE" ? "Đã duyệt" : "Tạm khóa", type: status === "ACTIVE" ? "verified" : "pending" } : row));
+                                  setUserNotice("Đã lưu trạng thái tài khoản vào database.");
+                                } catch (error) {
+                                  setUserNotice(apiError(error, "Không đổi được trạng thái."));
+                                }
+                              }}
+                            >
                               <LockOpen size={16} />
                             </button>
                             <button className="p-1 text-slate-400 hover:text-slate-600">
@@ -423,25 +476,16 @@ export default function AuthorizationAndAuditingPage() {
               </div>
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
                 <span>
-                  Hiển thị <strong className="text-slate-900">1 - 7</strong>{" "}
+                  Hiển thị <strong className="text-slate-900">{usersData.length === 0 ? 0 : (userPage - 1) * 7 + 1} - {Math.min(userPage * 7, usersData.length)}</strong>{" "}
                   trong tổng số{" "}
-                  <strong className="text-slate-900">1,420</strong> người dùng
+                  <strong className="text-slate-900">{usersData.length}</strong> người dùng
                 </span>
                 <div className="flex items-center gap-1">
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
+                  <button type="button" onClick={() => setUserPage((current) => Math.max(1, current - 1))} className="rounded border border-slate-200 bg-white px-2 py-1">
                     Trước
                   </button>
-                  <button className="rounded bg-blue-600 px-2 py-1 text-white">
-                    1
-                  </button>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    2
-                  </button>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    3
-                  </button>
-                  <span>...</span>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
+                  <span className="rounded bg-blue-600 px-2 py-1 text-white">{userPage}</span>
+                  <button type="button" onClick={() => setUserPage((current) => current * 7 < usersData.length ? current + 1 : current)} className="rounded border border-slate-200 bg-white px-2 py-1">
                     Sau
                   </button>
                 </div>
@@ -530,6 +574,53 @@ export default function AuthorizationAndAuditingPage() {
           </div>
         )}
       </main>
+      {userNotice && <div className="fixed bottom-5 right-5 z-50 rounded-lg bg-teal-700 px-4 py-3 text-sm text-white shadow-xl">{userNotice}</div>}
+      {viewUser && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4">
+          <article className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+            <div className="flex justify-between"><h2 className="font-display text-xl font-semibold">{viewUser.name}</h2><button type="button" onClick={() => setViewUser(null)}>×</button></div>
+            <div className="mt-4 space-y-2 text-sm text-slate-700"><p>{viewUser.email}</p><p>{viewUser.phone}</p><p>{viewUser.role}</p><p>{viewUser.status}</p></div>
+          </article>
+        </div>
+      )}
+      {showUserForm && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4">
+          <form
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              try {
+                await api.post("/users", {
+                  fullName: String(form.get("fullName") || "").trim(),
+                  email: String(form.get("email") || "").trim(),
+                  password: String(form.get("password") || ""),
+                  phone: String(form.get("phone") || "").trim() || undefined,
+                  role: String(form.get("role") || "DONOR"),
+                });
+                setShowUserForm(false);
+                setUserNotice("Đã tạo người dùng và lưu vào database.");
+                loadUsers();
+              } catch (error) {
+                setUserNotice(apiError(error, "Không tạo được người dùng."));
+              }
+            }}
+          >
+            <h2 className="font-display text-xl font-semibold">Thêm người dùng</h2>
+            <input name="fullName" required minLength={2} className="mt-4 w-full rounded border border-slate-200 px-3 py-2 text-sm" placeholder="Họ và tên" />
+            <input name="email" required type="email" className="mt-3 w-full rounded border border-slate-200 px-3 py-2 text-sm" placeholder="Email" />
+            <input name="password" required minLength={8} type="password" className="mt-3 w-full rounded border border-slate-200 px-3 py-2 text-sm" placeholder="Mật khẩu (tối thiểu 8 ký tự)" />
+            <input name="phone" className="mt-3 w-full rounded border border-slate-200 px-3 py-2 text-sm" placeholder="Số điện thoại" />
+            <select name="role" className="mt-3 w-full rounded border border-slate-200 px-3 py-2 text-sm" defaultValue="DONOR">
+              {Object.entries(ROLE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowUserForm(false)} className="rounded bg-slate-100 px-4 py-2 text-sm">Hủy</button>
+              <button className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Lưu</button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import api from "../lib/api";
+import api, { apiError } from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import { ROLE_LABEL, formatDate } from "../lib/labels";
 import { Breadcrumb } from "../components/system-ui";
 import {
@@ -297,6 +298,7 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
               <button
                 className="px-2.5 py-1 text-slate-500 hover:text-blue-700 hover:bg-slate-200 rounded-lg text-xs font-medium font-label-sm text-label-sm flex items-center gap-1 transition-colors"
                 title="Kích hoạt lại tài khoản"
+                onClick={() => onApprove(volunteer.id, volunteer.name)}
               >
                 <RefreshCcw className="text-[16px] w-5 h-5" /> Kích hoạt lại
               </button>
@@ -311,9 +313,10 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
             <>
               <button
                 className="px-2.5 py-1 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium font-label-sm text-label-sm flex items-center gap-1 transition-colors"
-                title="Điều phối tuyến giao nhận"
+                title="Tạm khóa tài khoản"
+                onClick={() => onReject(volunteer.id, volunteer.name)}
               >
-                <Route className="text-[16px] w-5 h-5" /> Điều phối
+                <Route className="text-[16px] w-5 h-5" /> Tạm khóa
               </button>
               <button
                 className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-lg transition-colors"
@@ -357,6 +360,9 @@ function ProcessCard({
 
 export default function VolunteerAndHandlerIntakePage() {
   const [volunteers, setVolunteers] = useState(volunteerSeed);
+  const [showVolunteerForm, setShowVolunteerForm] = useState(false);
+  const [volunteerQuery, setVolunteerQuery] = useState("");
+  const [volunteerPage, setVolunteerPage] = useState(1);
   const [toast, setToast] = useState({
     visible: false,
     type: "",
@@ -369,7 +375,7 @@ export default function VolunteerAndHandlerIntakePage() {
       .then(([usersResponse, boardResponse]) => {
         const hours = new Map((boardResponse.data.data ?? []).map((row) => [row.volunteer?.id, row.hoursContributed]));
         const rows = (usersResponse.data.data ?? []).map((user) => ({
-          id: user.id.slice(0, 8),
+          id: user.id,
           name: user.fullName,
           date: formatDate(user.createdAt),
           phone: user.phone || "—",
@@ -390,17 +396,60 @@ export default function VolunteerAndHandlerIntakePage() {
     setTimeout(() => setToast((prev) => ({ ...prev, visible: false })), 3000);
   };
 
-  const approveVolunteer = (id, name) => {
-    showToast(
-      "success",
-      "Đã phê duyệt",
-      `Hồ sơ của TNV ${name} đã được duyệt.`,
-    );
+  const setVolunteerStatus = async (id, name, status) => {
+    try {
+      await api.patch(`/users/${id}/status`, { status });
+      setVolunteers((rows) =>
+        rows.map((row) => (row.id === id ? { ...row, status: status === "ACTIVE" ? "Active" : "Inactive" } : row)),
+      );
+      showToast("success", "Đã lưu vào database", status === "ACTIVE" ? `${name} đã được kích hoạt.` : `${name} đã bị tạm khóa.`);
+    } catch (error) {
+      showToast("error", "Không lưu được", apiError(error, "Không cập nhật được trạng thái tình nguyện viên."));
+    }
   };
 
-  const rejectVolunteer = (id, name) => {
-    showToast("error", "Đã từ chối", `Hồ sơ của TNV ${name} đã bị từ chối.`);
-  };
+  const approveVolunteer = (id, name) => setVolunteerStatus(id, name, "ACTIVE");
+  const rejectVolunteer = (id, name) => setVolunteerStatus(id, name, "SUSPENDED");
+  const visibleVolunteers = volunteers.filter((row) => {
+    const text = `${row.name} ${row.email} ${row.phone} ${row.area}`.toLowerCase();
+    return !volunteerQuery.trim() || text.includes(volunteerQuery.trim().toLowerCase());
+  });
+  const volunteerPageSize = 6;
+  const volunteerPageCount = Math.max(1, Math.ceil(visibleVolunteers.length / volunteerPageSize));
+  const volunteerSafePage = Math.min(volunteerPage, volunteerPageCount);
+  const volunteerRows = visibleVolunteers.slice((volunteerSafePage - 1) * volunteerPageSize, volunteerSafePage * volunteerPageSize);
+
+  async function createVolunteer(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    try {
+      await api.post("/users", {
+        fullName: String(form.get("fullName")),
+        email: String(form.get("email")),
+        phone: String(form.get("phone") || ""),
+        password: "EduShare@2024",
+        role: "VOLUNTEER",
+      });
+      const response = await api.get("/users?role=VOLUNTEER&limit=50");
+      const rows = (response.data.data ?? []).map((user) => ({
+        id: user.id,
+        name: user.fullName,
+        date: formatDate(user.createdAt),
+        phone: user.phone || "—",
+        email: user.email,
+        area: user.profile?.city || "Tình nguyện",
+        skills: [{ name: "Tình nguyện", type: "primary" }],
+        hours: 0,
+        status: user.status === "ACTIVE" ? "Active" : "Inactive",
+        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=256&q=80",
+      }));
+      if (rows.length > 0) setVolunteers(rows);
+      setShowVolunteerForm(false);
+      showToast("success", "Đã tạo tình nguyện viên", "Tài khoản đã lưu vào database. Mật khẩu mặc định EduShare@2024.");
+    } catch (error) {
+      showToast("error", "Không tạo được", apiError(error, "Email có thể đã tồn tại."));
+    }
+  }
 
   return (
     <main className="relative bg-canvas min-h-screen">
@@ -422,11 +471,11 @@ export default function VolunteerAndHandlerIntakePage() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 px-4 py-1 bg-white text-slate-900 hover:bg-slate-200 rounded-lg shadow-sm transition-all text-sm font-medium">
+              <button type="button" onClick={() => downloadCsv("tinh-nguyen-vien.csv", ["Tên", "Email", "Điện thoại", "Khu vực", "Giờ", "Trạng thái"], volunteers.map((row) => [row.name, row.email, row.phone, row.area, row.hours, row.status]))} className="flex items-center gap-1 px-4 py-1 bg-white text-slate-900 hover:bg-slate-200 rounded-lg shadow-sm transition-all text-sm font-medium">
                 <Download className="text-[18px] text-slate-500 w-5 h-5" /> Xuất
                 danh sách CSV
               </button>
-              <button className="flex items-center gap-1 px-4 py-1 bg-blue-600 hover:bg-blue-200 text-white rounded-lg shadow-sm transition-all text-sm font-medium">
+              <button type="button" onClick={() => setShowVolunteerForm(true)} className="flex items-center gap-1 px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-all text-sm font-medium">
                 <UserPlus className="text-[18px] w-5 h-5" /> Thêm tình nguyện
                 viên mới
               </button>
@@ -494,6 +543,8 @@ export default function VolunteerAndHandlerIntakePage() {
               <input
                 className="w-full bg-transparent text-xs placeholder:text-slate-600 focus:outline-none"
                 id="volunteerSearchInput"
+                value={volunteerQuery}
+                onChange={(event) => { setVolunteerQuery(event.target.value); setVolunteerPage(1); }}
                 placeholder="Tìm theo tên, email, số điện thoại, kỹ năng..."
                 type="text"
               />
@@ -554,7 +605,7 @@ export default function VolunteerAndHandlerIntakePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-transparent text-xs">
-                  {volunteers.map((volunteer) => (
+                  {volunteerRows.map((volunteer) => (
                     <VolunteerRow
                       key={volunteer.id}
                       volunteer={volunteer}
@@ -570,33 +621,18 @@ export default function VolunteerAndHandlerIntakePage() {
               <div className="text-xs text-slate-500">
                 Đang xem{" "}
                 <span className="font-semibold text-slate-900">
-                  1 - {volunteers.length}
+                  {visibleVolunteers.length === 0 ? 0 : (volunteerSafePage - 1) * volunteerPageSize + 1} - {Math.min(volunteerSafePage * volunteerPageSize, visibleVolunteers.length)}
                 </span>{" "}
                 trong tổng số{" "}
-                <span className="font-semibold text-slate-900">1.280</span> tình
+                <span className="font-semibold text-slate-900">{visibleVolunteers.length}</span> tình
                 nguyện viên
               </div>
               <div className="flex items-center gap-1">
-                <button
-                  className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-40 transition-colors text-sm font-medium flex items-center gap-1"
-                  disabled
-                >
+                <button type="button" onClick={() => setVolunteerPage((current) => Math.max(1, current - 1))} className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium flex items-center gap-1">
                   <ChevronLeft className="text-[16px] w-5 h-5" /> Trước
                 </button>
-                <button className="w-8 h-8 rounded-lg bg-blue-600 text-white text-sm font-medium font-semibold flex items-center justify-center">
-                  1
-                </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
-                  2
-                </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
-                  3
-                </button>
-                <span className="px-1 text-slate-500">...</span>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
-                  183
-                </button>
-                <button className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium flex items-center gap-1">
+                <span className="px-2 text-sm font-semibold text-slate-700">{volunteerSafePage} / {volunteerPageCount}</span>
+                <button type="button" onClick={() => setVolunteerPage((current) => Math.min(volunteerPageCount, current + 1))} className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium flex items-center gap-1">
                   Sau <ChevronRight className="text-[16px] w-5 h-5" />
                 </button>
               </div>
@@ -645,6 +681,21 @@ export default function VolunteerAndHandlerIntakePage() {
           </div>
         </div>
       </div>
+
+      {showVolunteerForm && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4">
+          <form onSubmit={createVolunteer} className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+            <h2 className="font-display text-xl font-semibold text-slate-900">Thêm tình nguyện viên</h2>
+            <input name="fullName" required className="mt-4 w-full rounded border px-3 py-2 text-sm" placeholder="Họ và tên" />
+            <input name="email" required type="email" className="mt-3 w-full rounded border px-3 py-2 text-sm" placeholder="Email" />
+            <input name="phone" className="mt-3 w-full rounded border px-3 py-2 text-sm" placeholder="Số điện thoại" />
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowVolunteerForm(false)} className="rounded bg-slate-100 px-4 py-2 text-sm">Hủy</button>
+              <button className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Lưu</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Action Toast */}
       <div

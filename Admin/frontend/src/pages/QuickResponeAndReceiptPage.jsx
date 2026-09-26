@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api, { apiError } from "../lib/api";
+import { formatDateTime } from "../lib/labels";
 import { Breadcrumb } from "../components/system-ui";
 import {
   Search,
@@ -21,11 +23,7 @@ import {
   X,
 } from "lucide-react";
 
-export default function QuickResponeAndReceiptPage() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [activeRecord, setActiveRecord] = useState("CERT-2024-VNPT-08");
-
-  const records = [
+const receiptSeed = [
     {
       id: "CERT-2024-VNPT-08",
       name: "Tập đoàn VNPT (Chi nhánh Đà Nẵng)",
@@ -83,9 +81,83 @@ export default function QuickResponeAndReceiptPage() {
     },
   ];
 
+export default function QuickResponeAndReceiptPage() {
+  const [activeTab, setActiveTab] = useState("all");
+  const [activeRecord, setActiveRecord] = useState(receiptSeed[0].id);
+  const [records, setRecords] = useState(receiptSeed);
+  const [notice, setNotice] = useState("");
+  const [recordPage, setRecordPage] = useState(1);
+  const [templateNote, setTemplateNote] = useState("Chứng nhận số EduShare");
+
+  useEffect(() => {
+    api.get("/pledges?limit=20").then((response) => {
+      const rows = (response.data.data ?? []).map((pledge) => ({
+        id: pledge.code,
+        pledgeId: pledge.id,
+        pledgeStatus: pledge.status,
+        name: pledge.donor?.fullName || "Nhà hảo tâm",
+        time: formatDateTime(pledge.createdAt),
+        campaign: pledge.campaign?.title || "",
+        items: (pledge.items ?? []).map((item) => `${item.estimatedQuantity} ${item.name}`).join(", ") || "Thiết bị tin học",
+        value: pledge.code,
+        status: pledge.status === "PENDING" ? "Chờ xác nhận" : pledge.status === "VERIFIED" ? "Đã xác nhận" : pledge.status,
+        rec: pledge.code,
+        type: "enterprise",
+      }));
+      if (rows.length === 0) return;
+      setRecords(rows);
+      setActiveRecord(rows[0].id);
+    }).catch(() => undefined);
+  }, []);
+
+  async function confirmPledge() {
+    const record = records.find((row) => row.id === activeRecord);
+    if (!record?.pledgeId) {
+      setNotice("Hồ sơ này chưa nằm trong database.");
+      return;
+    }
+    if (record.pledgeStatus !== "PENDING") {
+      setNotice(`${record.id} đã được xử lý (${record.status}).`);
+      return;
+    }
+    try {
+      await api.patch(`/pledges/${record.pledgeId}/verify`);
+      setRecords((rows) => rows.map((row) => row.pledgeId === record.pledgeId ? { ...row, pledgeStatus: "VERIFIED", status: "Đã xác nhận" } : row));
+      setNotice(`Đã xác nhận ${record.id} và lưu vào database.`);
+    } catch (error) {
+      setNotice(apiError(error, "Không xác nhận được cam kết."));
+    }
+  }
+
+  async function verifyAllPending() {
+    const pending = records.filter((row) => row.pledgeStatus === "PENDING" && row.pledgeId);
+    if (pending.length === 0) {
+      setNotice("Không còn cam kết đang chờ xác nhận.");
+      return;
+    }
+    let done = 0;
+    for (const record of pending) {
+      try {
+        await api.patch(`/pledges/${record.pledgeId}/verify`);
+        done += 1;
+      } catch {
+        break;
+      }
+    }
+    setRecords((rows) => rows.map((row) => pending.slice(0, done).some((item) => item.pledgeId === row.pledgeId) ? { ...row, pledgeStatus: "VERIFIED", status: "Đã xác nhận" } : row));
+    setNotice(`Đã xác nhận ${done}/${pending.length} cam kết đang chờ.`);
+  }
+
+  const listedRecords = records.filter((row) => activeTab === "all" || row.type === activeTab);
+  const recordPageSize = 5;
+  const recordPageCount = Math.max(1, Math.ceil(listedRecords.length / recordPageSize));
+  const recordSafePage = Math.min(recordPage, recordPageCount);
+  const pageRecords = listedRecords.slice((recordSafePage - 1) * recordPageSize, recordSafePage * recordPageSize);
+
   return (
     <>
       <Breadcrumb current="QR & Biên lai số" />
+      {notice && <div className="mx-auto max-w-[1540px] px-4 pt-4 text-sm text-teal-800 lg:px-6">{notice}</div>}
       <main className="mx-auto max-w-[1540px] px-4 py-5 lg:px-6">
         <div className="flex flex-col w-full space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2">
@@ -195,9 +267,7 @@ export default function QuickResponeAndReceiptPage() {
                 </div>
 
                 <div className="divide-y divide-slate-100 overflow-y-auto max-h-[700px]">
-                  {records
-                    .filter((r) => activeTab === "all" || r.type === activeTab)
-                    .map((record) => (
+                  {pageRecords.map((record) => (
                       <article
                         key={record.id}
                         onClick={() => setActiveRecord(record.id)}
@@ -293,16 +363,17 @@ export default function QuickResponeAndReceiptPage() {
 
                 <div className="p-3 bg-slate-50 flex items-center justify-between text-[11px] font-medium text-slate-500 border-t border-slate-100">
                   <span>
-                    Trang <strong className="text-slate-900">1</strong> / 25
+                    Trang <strong className="text-slate-900">{recordSafePage}</strong> / {recordPageCount}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
+                      type="button"
+                      onClick={() => setRecordPage((current) => Math.max(1, current - 1))}
                       className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-900 disabled:opacity-40 transition-colors"
-                      disabled
                     >
                       Trước
                     </button>
-                    <button className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-900 transition-colors">
+                    <button type="button" onClick={() => setRecordPage((current) => Math.min(recordPageCount, current + 1))} className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-900 transition-colors">
                       Sau
                     </button>
                   </div>
@@ -337,17 +408,17 @@ export default function QuickResponeAndReceiptPage() {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors">
+                  <button type="button" onClick={() => { const next = window.prompt("Tiêu đề chứng nhận", templateNote); if (next) { setTemplateNote(next); setNotice(`Đã đổi tiêu đề chứng nhận thành “${next}”.`); } }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors">
                     <FileEdit size={14} />
                     <span>Chỉnh sửa Template</span>
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors">
+                  <button type="button" onClick={verifyAllPending} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors">
                     <Send size={14} />
                     <span>Gửi Email hàng loạt</span>
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all">
+                  <button type="button" onClick={confirmPledge} className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all">
                     <Download size={16} />
-                    <span>Tải xuống PDF Bản Gốc</span>
+                    <span>Xác nhận cam kết</span>
                   </button>
                   <a
                     className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"

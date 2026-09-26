@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import {
   Bike, ChevronLeft, ChevronRight, Download, ExternalLink, FileText,
   GraduationCap, Laptop, MapPin, Monitor, RotateCcw, Search, ShieldCheck,
@@ -35,10 +37,15 @@ function Metric({ icon: Icon, value, title, subtitle, teal }) {
 }
 
 export default function StudentsPage() {
+  const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [placeFilter, setPlaceFilter] = useState("");
+  const [page, setPage] = useState(1);
   const [students, setStudents] = useState(studentSeed);
 
-  useEffect(() => {
+  function loadSchools() {
     api.get("/analytics/beneficiary-schools").then((response) => {
       const rows = (response.data.data ?? []).map((entry) => [
         entry.school.id.slice(0, 8),
@@ -51,7 +58,23 @@ export default function StudentsPage() {
       ]);
       if (rows.length > 0) setStudents(rows);
     }).catch(() => undefined);
+  }
+
+  useEffect(() => {
+    loadSchools();
   }, []);
+
+  const places = [...new Set(students.map((row) => row[4]).filter((value) => value && value !== "—"))];
+  const filtered = students.filter((row) => {
+    const text = row.join(" ").toLowerCase();
+    if (query.trim() && !text.includes(query.trim().toLowerCase())) return false;
+    if (placeFilter && !String(row[4]).includes(placeFilter)) return false;
+    return true;
+  });
+  const pageSize = 6;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
   return (
     <main>
       <Breadcrumb current="Học sinh tiếp nhận"/>
@@ -62,7 +85,7 @@ export default function StudentsPage() {
             <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Danh sách Học sinh Tiếp nhận Hỗ trợ</h1>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">Hệ thống quản lý và công khai danh sách học sinh vùng khó khăn đã nhận thiết bị & học bổng. Dữ liệu được mã hóa và ẩn danh hóa danh tính nhằm bảo vệ quyền riêng tư của trẻ em theo quy định pháp luật.</p>
           </div>
-          <div className="flex flex-wrap gap-2"><button className="flex items-center gap-2 rounded bg-white px-4 py-2 text-xs font-medium shadow-sm"><Download size={16}/>Xuất báo cáo CSV</button><button className="rounded bg-blue-600 px-4 py-2 text-xs font-medium text-white">↻ Đồng bộ dữ liệu KYC</button></div>
+          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => downloadCsv("hoc-sinh.csv", ["Mã", "Tên", "Vai trò", "Trường", "Địa bàn", "Hạng mục"], filtered.map((row) => [row[0], row[1], row[2], row[3], row[4], row[5].join("; ")]))} className="flex items-center gap-2 rounded bg-white px-4 py-2 text-xs font-medium shadow-sm"><Download size={16}/>Xuất báo cáo CSV</button><button type="button" onClick={loadSchools} className="rounded bg-blue-600 px-4 py-2 text-xs font-medium text-white">↻ Đồng bộ dữ liệu KYC</button></div>
         </section>
 
         <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -74,12 +97,11 @@ export default function StudentsPage() {
 
         <section className="mb-6 rounded-lg bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
-            <label className="flex min-w-72 flex-1 items-center gap-2 rounded bg-blue-50 px-3 py-2 text-slate-500"><Search size={16}/><input className="w-full bg-transparent text-xs outline-none" placeholder="Tìm kiếm theo Mã số HS (vd: HS-8273), tên trường, lớp..."/></label>
-            {["Tất cả Tỉnh/Thành", "Tất cả Trường học", "Tất cả Đợt chiến dịch"].map(item=><button key={item} className="rounded bg-blue-50 px-4 py-2 text-xs">{item}⌄</button>)}
-            <button className="flex items-center gap-2 rounded bg-blue-50 px-4 py-2 text-xs"><RotateCcw size={14}/>Đặt lại</button>
+            <label className="flex min-w-72 flex-1 items-center gap-2 rounded bg-blue-50 px-3 py-2 text-slate-500"><Search size={16}/><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} className="w-full bg-transparent text-xs outline-none" placeholder="Tìm kiếm theo Mã số HS (vd: HS-8273), tên trường, lớp..."/></label>
+            <select value={placeFilter} onChange={(event) => { setPlaceFilter(event.target.value); setPage(1); }} className="rounded bg-blue-50 px-4 py-2 text-xs"><option value="">Tất cả địa bàn</option>{places.map((place) => <option key={place} value={place}>{place}</option>)}</select>
+            <button type="button" onClick={() => { setQuery(""); setPlaceFilter(""); setPage(1); }} className="flex items-center gap-2 rounded bg-blue-50 px-4 py-2 text-xs"><RotateCcw size={14}/>Đặt lại</button>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2"><button className="rounded bg-blue-50 px-4 py-2 text-xs">Tất cả hạng mục⌄</button></div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 bg-blue-50 p-3 text-xs text-slate-600"><ShieldCheck size={18} className="text-blue-600"/><b className="text-blue-700">Quy chuẩn ẩn danh:</b><span>Tên học sinh được mã hóa định dạng <u className="font-semibold text-blue-700">Họ T*** Đ***</u> nhằm đảm bảo tính bảo mật trẻ em. Mã định danh gắn liền với hồ sơ gốc đã đóng dấu phê duyệt.</span><button className="ml-auto flex items-center gap-1 font-medium text-blue-700">Chính sách bảo vệ trẻ em <ExternalLink size={13}/></button></div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 bg-blue-50 p-3 text-xs text-slate-600"><ShieldCheck size={18} className="text-blue-600"/><b className="text-blue-700">Quy chuẩn ẩn danh:</b><span>Tên học sinh được mã hóa định dạng <u className="font-semibold text-blue-700">Họ T*** Đ***</u> nhằm đảm bảo tính bảo mật trẻ em. Mã định danh gắn liền với hồ sơ gốc đã đóng dấu phê duyệt.</span><button type="button" onClick={() => setPolicyOpen(true)} className="ml-auto flex items-center gap-1 font-medium text-blue-700">Chính sách bảo vệ trẻ em <ExternalLink size={13}/></button></div>
         </section>
 
         <div className="mb-3 flex justify-end"><button onClick={() => setSelected(students[0])} className="rounded bg-blue-600 px-3 py-2 text-xs font-semibold text-white">Xem nhanh hồ sơ đầu tiên</button></div>
@@ -87,10 +109,10 @@ export default function StudentsPage() {
           <div className="overflow-auto">
             <table className="w-full min-w-300 text-left text-xs">
               <thead className="bg-blue-50 text-[10px] font-semibold tracking-wide text-slate-500"><tr>{["MÃ SỐ HS", "HỌ VÀ TÊN (ẨN DANH)", "LỚP & KHỐI", "TRƯỜNG HỌC", "VỊ TRÍ ĐỊA LÝ", "HẠNG MỤC NHẬN HỖ TRỢ", "NGÀY NHẬN", "TRẠNG THÁI", "THAO TÁC"].map(head=><th key={head} className="p-4">{head}</th>)}</tr></thead>
-              <tbody>{students.map(student=><StudentRow key={student[0]} student={student}/>)}</tbody>
+              <tbody>{pageRows.map(student=><StudentRow key={student[0]} student={student} onProof={() => navigate("/proofs")}/>)}{pageRows.length === 0 && <tr><td className="p-4 text-slate-500" colSpan={9}>Không có hồ sơ khớp bộ lọc.</td></tr>}</tbody>
             </table>
           </div>
-          <footer className="flex flex-wrap items-center justify-between gap-4 bg-blue-50 p-4 text-xs text-slate-500"><span>Hiển thị <b className="text-slate-800">1 - 7</b> trong tổng số <b className="text-slate-800">3,842</b> học sinh tiếp nhận</span><div className="flex items-center gap-3"><span>Hiển thị: <b className="text-slate-800">10</b> kết quả / trang</span><button><ChevronLeft size={16}/></button><button className="grid size-8 place-items-center rounded bg-blue-600 text-white">1</button><button>2</button><button>3</button><span>...</span><button>549</button><button><ChevronRight size={16}/></button></div></footer>
+          <footer className="flex flex-wrap items-center justify-between gap-4 bg-blue-50 p-4 text-xs text-slate-500"><span>Hiển thị <b className="text-slate-800">{filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1} - {Math.min(safePage * pageSize, filtered.length)}</b> trong tổng số <b className="text-slate-800">{filtered.length}</b> hồ sơ</span><div className="flex items-center gap-3"><button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))}><ChevronLeft size={16}/></button><b className="grid size-8 place-items-center rounded bg-blue-600 text-white">{safePage}</b><span>/ {pageCount}</span><button type="button" onClick={() => setPage((current) => Math.min(pageCount, current + 1))}><ChevronRight size={16}/></button></div></footer>
         </section>
 
         <section className="mt-6 rounded-lg bg-white p-6 shadow-sm">
@@ -102,13 +124,14 @@ export default function StudentsPage() {
           </div>
         </section>
       </div>
+      {policyOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4"><article className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"><div className="flex justify-between"><h2 className="font-display text-xl font-semibold">Chính sách bảo vệ trẻ em</h2><button type="button" onClick={() => setPolicyOpen(false)}>×</button></div><p className="mt-4 text-sm leading-6 text-slate-600">Hồ sơ hiển thị tên trường và số thiết bị đã bàn giao. Danh tính học sinh không được lưu công khai trên cổng quản trị. Biên bản bàn giao nằm ở mục minh chứng.</p></article></div>}
       {selected && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4"><article className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"><div className="flex justify-between"><h2 className="font-display text-xl font-semibold">Hồ sơ học sinh tiếp nhận</h2><button onClick={() => setSelected(null)}>×</button></div><div className="mt-4 space-y-3 text-sm"><p><b>Mã hồ sơ:</b> {selected[0]}</p><p><b>Học sinh:</b> {selected[1]}</p><p><b>Trường học:</b> {selected[3]}</p><p><b>Hạng mục hỗ trợ:</b> {selected[5].join(", ")}</p></div></article></div>}
     </main>
   );
 }
 
-function StudentRow({ student: [id, name, grade, school, location, items, date] }) {
-  return <tr className="border-b border-slate-100 last:border-0"><td className="p-4"><b className="rounded bg-blue-50 px-2 py-1 font-semibold text-blue-700">{id}</b></td><td className="p-4"><div className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-full bg-blue-50 text-slate-500"><Users size={14}/></span><div><b>{name}</b><small className="block text-[10px] text-teal-700">Đã ẩn danh</small></div></div></td><td className="p-4">{grade}</td><td className="p-4 font-medium text-slate-700">{school}</td><td className="p-4 text-slate-500"><MapPin className="mr-1 inline text-slate-400" size={13}/>{location}</td><td className="p-4">{items.map(item=><span key={item} className="mr-1 inline-flex rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{item === "Xe đạp" ? <Bike className="mr-1" size={12}/> : item === "Laptop" ? <Laptop className="mr-1" size={12}/> : null}{item}</span>)}</td><td className="p-4 text-slate-500">{date}</td><td className="p-4"><span className="inline-flex items-center gap-1 rounded-xl bg-teal-100 px-2 py-1 text-[10px] font-semibold text-teal-700"><ShieldCheck size={12}/>Đã xác thực</span></td><td className="p-4"><button className="flex items-center gap-1 font-medium text-blue-700"><FileText size={15}/>Biên bản</button></td></tr>;
+function StudentRow({ student: [id, name, grade, school, location, items, date], onProof }) {
+  return <tr className="border-b border-slate-100 last:border-0"><td className="p-4"><b className="rounded bg-blue-50 px-2 py-1 font-semibold text-blue-700">{id}</b></td><td className="p-4"><div className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-full bg-blue-50 text-slate-500"><Users size={14}/></span><div><b>{name}</b><small className="block text-[10px] text-teal-700">Đã ẩn danh</small></div></div></td><td className="p-4">{grade}</td><td className="p-4 font-medium text-slate-700">{school}</td><td className="p-4 text-slate-500"><MapPin className="mr-1 inline text-slate-400" size={13}/>{location}</td><td className="p-4">{items.map(item=><span key={item} className="mr-1 inline-flex rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{item === "Xe đạp" ? <Bike className="mr-1" size={12}/> : item === "Laptop" ? <Laptop className="mr-1" size={12}/> : null}{item}</span>)}</td><td className="p-4 text-slate-500">{date}</td><td className="p-4"><span className="inline-flex items-center gap-1 rounded-xl bg-teal-100 px-2 py-1 text-[10px] font-semibold text-teal-700"><ShieldCheck size={12}/>Đã xác thực</span></td><td className="p-4"><button type="button" onClick={onProof} className="flex items-center gap-1 font-medium text-blue-700"><FileText size={15}/>Biên bản</button></td></tr>;
 }
 
 function GovernanceStep({ number, title, text, teal }) {

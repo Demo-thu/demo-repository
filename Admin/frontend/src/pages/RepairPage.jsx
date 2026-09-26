@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api, { apiError } from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import { Breadcrumb } from "../components/system-ui";
 import {
   Download,
@@ -79,7 +81,7 @@ const KanbanCard = ({
 }) => (
   <div
     onClick={onClick}
-    className={`flex cursor-pointer flex-col gap-2 rounded-xl p-3 transition-all ${selected ? "bg-blue-50 ring-2 ring-blue-600 shadow-md" : "bg-white shadow-sm hover:shadow-md"}`}
+    className={`relative flex cursor-pointer flex-col gap-2 rounded-xl p-3 transition-all ${selected ? "bg-blue-50 ring-2 ring-blue-600 shadow-md" : "bg-white shadow-sm hover:shadow-md"}`}
   >
     {active && (
       <div className="absolute -right-2 -top-2 flex items-center gap-1 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">
@@ -144,7 +146,129 @@ const KanbanCard = ({
 );
 
 export default function RepairPage() {
-  const [selectedCard, setSelectedCard] = useState("LT-2024-88");
+  const [repairItems, setRepairItems] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [nextStatus, setNextStatus] = useState("Đang sửa chữa (Xưởng Kỹ thuật)");
+  const [repairNotice, setRepairNotice] = useState("");
+  const [repairQuery, setRepairQuery] = useState("");
+  const [note, setNote] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [partsWait, setPartsWait] = useState(() => new Set(JSON.parse(localStorage.getItem("edushare_parts_wait") || "[]")));
+
+  function rememberParts(next) {
+    setPartsWait(next);
+    localStorage.setItem("edushare_parts_wait", JSON.stringify([...next]));
+  }
+
+  function columnOf(item) {
+    if (item.status === "READY_FOR_ALLOCATION") return "done";
+    if (item.status === "REFURBISHING" && partsWait.has(item.id)) return "parts";
+    if (item.status === "REFURBISHING") return "repair";
+    if (item.status === "PENDING_INTAKE" || item.status === "INSPECTED") return "wait";
+    return "";
+  }
+
+  async function reloadRepair(parts = partsWait) {
+    const response = await api.get("/items?limit=40");
+    const rows = (response.data.data ?? []).filter((item) => {
+      if (item.status === "READY_FOR_ALLOCATION" || item.status === "REFURBISHING") return true;
+      return item.status === "PENDING_INTAKE" || item.status === "INSPECTED";
+    });
+    setRepairItems(rows);
+    setSelectedId((current) => (rows.some((item) => item.id === current) ? current : rows.find((item) => item.status === "REFURBISHING" && !parts.has(item.id))?.id || rows[0]?.id || ""));
+    return rows;
+  }
+
+  useEffect(() => {
+    reloadRepair().catch(() => undefined);
+  }, []);
+
+  async function updateRepair(event) {
+    event.preventDefault();
+    const item = repairItems.find((row) => row.id === selectedId);
+    if (!item) {
+      setRepairNotice("Hãy chọn một thẻ thiết bị trên bảng.");
+      return;
+    }
+    try {
+      const nextParts = new Set(partsWait);
+      if (nextStatus.includes("hoàn thành")) {
+        if (item.status !== "REFURBISHING") await api.patch(`/items/${item.id}/refurbish`);
+        await api.patch(`/items/${item.id}/complete-refurbish`);
+        nextParts.delete(item.id);
+        setRepairNotice(`Đã hoàn tất ${item.qrCode} và chuyển sang sẵn sàng xuất.`);
+      } else if (nextStatus.includes("rã")) {
+        await api.post("/inspections", {
+          resourceItemId: item.id,
+          isFunctional: false,
+          grade: "GRADE_C",
+          recommendedAction: "RECYCLE",
+          notes: note || "Chuyển kho rã xác phụ tùng từ trang sửa chữa.",
+        });
+        nextParts.delete(item.id);
+        setRepairNotice(`Đã ghi nhận tái chế ${item.qrCode}.`);
+      } else if (nextStatus.includes("linh kiện")) {
+        if (item.status !== "REFURBISHING") await api.patch(`/items/${item.id}/refurbish`);
+        nextParts.add(item.id);
+        setRepairNotice(`${item.qrCode} đang chờ linh kiện. Ghi chú: ${note || "chưa có"}.`);
+      } else if (item.status === "REFURBISHING") {
+        nextParts.delete(item.id);
+        setRepairNotice(`${item.qrCode} tiếp tục ở xưởng sửa chữa.`);
+      } else {
+        await api.patch(`/items/${item.id}/refurbish`);
+        nextParts.delete(item.id);
+        setRepairNotice(`Đã chuyển ${item.qrCode} vào xưởng sửa chữa.`);
+      }
+      rememberParts(nextParts);
+      await reloadRepair(nextParts);
+    } catch (error) {
+      setRepairNotice(apiError(error, "Không lưu được trạng thái sửa chữa."));
+    }
+  }
+
+  async function receiveBroken() {
+    try {
+      const response = await api.get("/items?limit=40");
+      const candidate = (response.data.data ?? []).find((item) => item.status === "INSPECTED" || item.status === "PENDING_INTAKE" || item.status === "READY_FOR_ALLOCATION");
+      if (!candidate) {
+        setRepairNotice("Không còn thiết bị sẵn sàng để chuyển vào xưởng.");
+        return;
+      }
+      await api.patch(`/items/${candidate.id}/refurbish`);
+      setSelectedId(candidate.id);
+      await reloadRepair();
+      setRepairNotice(`Đã tiếp nhận ${candidate.qrCode} vào cột Đang sửa chữa.`);
+    } catch (error) {
+      setRepairNotice(apiError(error, "Không tiếp nhận được thiết bị lỗi."));
+    }
+  }
+
+  async function printWarranty() {
+    const item = repairItems.find((row) => row.id === selectedId);
+    if (!item) {
+      setRepairNotice("Hãy chọn thiết bị trước khi in tem.");
+      return;
+    }
+    try {
+      const response = await api.get(`/items/${item.id}/qr-image`, { responseType: "blob" });
+      const url = URL.createObjectURL(response.data);
+      window.open(url, "_blank", "noopener");
+    } catch (error) {
+      setRepairNotice(apiError(error, "Không tải được tem QR."));
+    }
+  }
+
+  const visibleRepair = repairItems.filter((item) => {
+    const text = `${item.qrCode} ${item.name} ${item.status}`.toLowerCase();
+    return !repairQuery.trim() || text.includes(repairQuery.trim().toLowerCase());
+  });
+  const selected = repairItems.find((item) => item.id === selectedId) || null;
+  const columns = [
+    ["wait", "Chờ kiểm tra", "bg-slate-200 text-slate-700"],
+    ["repair", "Đang sửa chữa", "bg-blue-100 text-blue-700"],
+    ["parts", "Chờ linh kiện", "bg-purple-100 text-purple-700"],
+    ["done", "Đã hoàn thành", "bg-teal-100 text-teal-700"],
+  ];
 
   return (
     <>
@@ -188,11 +312,11 @@ export default function RepairPage() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
+            <button type="button" onClick={() => downloadCsv("sua-chua.csv", ["QR", "Tên", "Trạng thái"], visibleRepair.map((item) => [item.qrCode, item.name, item.status]))} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
               <Download size={18} />
               <span>Xuất báo cáo kỹ thuật</span>
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700">
+            <button type="button" onClick={receiveBroken} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700">
               <PlusCircle size={20} />
               <span>Tiếp nhận thiết bị lỗi</span>
             </button>
@@ -213,7 +337,7 @@ export default function RepairPage() {
           <Metric
             icon={Wrench}
             label="Đang sửa chữa tại xưởng"
-            value="14"
+            value={String(repairItems.filter((item) => item.status === "REFURBISHING" && !partsWait.has(item.id)).length)}
             colorClass="text-blue-600"
             iconColorClass="bg-blue-100 text-blue-600"
           >
@@ -248,6 +372,8 @@ export default function RepairPage() {
             />
             <input
               className="w-full rounded-lg bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-100 border border-slate-200"
+              value={repairQuery}
+              onChange={(event) => setRepairQuery(event.target.value)}
               placeholder="Tìm theo mã QR, tên thiết bị, KTV..."
               type="text"
             />
@@ -259,11 +385,13 @@ export default function RepairPage() {
             <select className="cursor-pointer appearance-none rounded-lg bg-slate-50 py-2 pl-3 pr-8 text-sm text-slate-700 outline-none hover:bg-slate-100 border border-slate-200">
               <option>Mức độ ưu tiên: Tất cả</option>
             </select>
-            <button className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 border border-slate-200">
+            <button type="button" onClick={() => setRepairQuery("")} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 border border-slate-200">
               <SlidersHorizontal size={16} className="text-slate-500" />
               <span>Bộ lọc</span>
             </button>
             <button
+              type="button"
+              onClick={() => reloadRepair().then(() => setRepairNotice(`Đang có ${visibleRepair.length} thiết bị trong xưởng.`)).catch((error) => setRepairNotice(apiError(error, "Không tải lại được.")))}
               className="rounded-lg bg-slate-50 p-2 text-slate-600 transition-colors hover:bg-slate-100 border border-slate-200"
               title="Làm mới bảng"
             >
@@ -277,149 +405,41 @@ export default function RepairPage() {
           {/* KANBAN WORKSPACE */}
           <div className="flex flex-col gap-4 lg:col-span-8">
             <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {/* Column 1 */}
-              <div className="flex min-h-[620px] flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5">
-                <div className="flex items-center justify-between px-1.5 py-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-sm font-semibold text-slate-900">
-                      Chờ kiểm tra
-                    </span>
-                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                      12
-                    </span>
+              {columns.map(([key, title, badge]) => {
+                const cards = visibleRepair.filter((item) => columnOf(item) === key);
+                return (
+                  <div key={key} className="flex min-h-[320px] flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5">
+                    <div className="flex items-center justify-between px-1.5 py-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-sm font-semibold text-slate-900">{title}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge}`}>{cards.length}</span>
+                      </div>
+                      <button type="button" onClick={() => { const first = cards[0]; if (!first) { setRepairNotice(title + " đang trống."); return; } setSelectedId(first.id); setNote(""); setRepairNotice("Đang mở " + first.qrCode + " trong cột " + title + "."); }} className="rounded p-1 text-slate-400 hover:text-slate-900">
+                        <MoreHorizontal size={18} />
+                      </button>
+                    </div>
+                    {cards.map((item) => (
+                      <KanbanCard
+                        key={item.id}
+                        id={item.qrCode}
+                        priority={item.status === "REFURBISHING" ? "Ưu tiên cao" : "Trung bình"}
+                        title={item.name}
+                        specs={item.category}
+                        errors={[item.binLocation || item.warehouse?.name || "Chưa xếp kệ"]}
+                        sourceIcon={Wrench}
+                        source={item.warehouse?.code || "Kho EduShare"}
+                        assigneeInitials="KT"
+                        assignee="Xưởng kỹ thuật"
+                        time={item.status}
+                        selected={selectedId === item.id}
+                        active={selectedId === item.id}
+                        onClick={() => { setSelectedId(item.id); setNote(""); setDetailOpen(false); }}
+                      />
+                    ))}
+                    {cards.length === 0 && <p className="px-2 text-xs text-slate-400">Chưa có thiết bị.</p>}
                   </div>
-                  <button className="rounded p-1 text-slate-400 hover:text-slate-900">
-                    <MoreHorizontal size={18} />
-                  </button>
-                </div>
-                <KanbanCard
-                  id="LT-2024-95"
-                  priority="Khẩn cấp"
-                  title="ThinkPad T480s"
-                  specs="Intel Core i5-8350U • 8GB RAM"
-                  errors={["Lỗi ổ cứng SSD"]}
-                  sourceIcon={Building2}
-                  source="Viettel Solutions"
-                  assigneeInitials="LM"
-                  assignee="Lê Minh"
-                  time="1 ngày trước"
-                />
-                <KanbanCard
-                  id="PC-2024-42"
-                  priority="Trung bình"
-                  title="PC HP ProDesk 400 G6"
-                  specs="Core i3 9100 • 4GB • HDD 500GB"
-                  errors={["Chết nguồn PSU"]}
-                  sourceIcon={Heart}
-                  source="FPT Telecom"
-                  assigneeInitials="QA"
-                  assignee="Quốc Anh"
-                  time="3 ngày trước"
-                />
-              </div>
-
-              {/* Column 2 */}
-              <div className="flex min-h-[620px] flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5">
-                <div className="flex items-center justify-between px-1.5 py-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-sm font-semibold text-slate-900">
-                      Đang sửa chữa
-                    </span>
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                      14
-                    </span>
-                  </div>
-                  <button className="rounded p-1 text-slate-400 hover:text-slate-900">
-                    <MoreHorizontal size={18} />
-                  </button>
-                </div>
-                <div className="relative">
-                  <KanbanCard
-                    id="LT-2024-88"
-                    priority="Ưu tiên cao"
-                    title="Laptop Dell Latitude 5520"
-                    specs="Intel Core i5 11th Gen • 8GB RAM"
-                    errors={["Hỏng màn hình", "Chai pin (64%)"]}
-                    sourceIcon={ShieldCheck}
-                    source="Quyên góp từ: Tập đoàn VNPT"
-                    assigneeInitials="TH"
-                    assignee="KTV Trần Hùng (Lead)"
-                    time="Đang xử lý"
-                    selected
-                    active
-                  />
-                </div>
-                <KanbanCard
-                  id="TB-2024-19"
-                  priority="Trung bình"
-                  title="iPad Gen 9 (64GB Wifi)"
-                  specs='A13 Bionic • Màn Retina 10.2"'
-                  errors={["Liệt cảm ứng mép phải"]}
-                  sourceIcon={Building2}
-                  source="Cá nhân: Trần Kim Ngân"
-                  assigneeInitials="LM"
-                  assignee="Lê Minh"
-                  time="2 ngày trước"
-                />
-              </div>
-
-              {/* Column 3 */}
-              <div className="flex min-h-[620px] flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5">
-                <div className="flex items-center justify-between px-1.5 py-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-sm font-semibold text-slate-900">
-                      Chờ linh kiện
-                    </span>
-                    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
-                      8
-                    </span>
-                  </div>
-                  <button className="rounded p-1 text-slate-400 hover:text-slate-900">
-                    <MoreHorizontal size={18} />
-                  </button>
-                </div>
-                <KanbanCard
-                  id="LT-2024-51"
-                  priority="Ưu tiên cao"
-                  title="ThinkPad X1 Carbon Gen 6"
-                  specs="Core i7 8650U • 16GB RAM"
-                  errors={["Chờ cụm bàn phím US"]}
-                  sourceIcon={Building2}
-                  source="MB Bank Hà Nội"
-                  assigneeInitials="TH"
-                  assignee="Trần Hùng"
-                  time="4 ngày trước"
-                />
-              </div>
-
-              {/* Column 4 */}
-              <div className="flex min-h-[620px] flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5">
-                <div className="flex items-center justify-between px-1.5 py-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-sm font-semibold text-slate-900">
-                      Đã hoàn thành
-                    </span>
-                    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700">
-                      22
-                    </span>
-                  </div>
-                  <button className="rounded p-1 text-slate-400 hover:text-slate-900">
-                    <MoreHorizontal size={18} />
-                  </button>
-                </div>
-                <KanbanCard
-                  id="LT-2024-34"
-                  priority="Đạt QA 100%"
-                  title="HP EliteBook 840 G5"
-                  specs="Core i5 8250U • Đã gắn SSD 256GB"
-                  errors={["Đã thay Cell Pin & Sạc"]}
-                  sourceIcon={GraduationCap}
-                  source="Giao: THCS Tủa Chùa"
-                  assigneeInitials="QA"
-                  assignee="Quốc Anh"
-                  time="Sẵn sàng xuất"
-                />
-              </div>
+                );
+              })}
             </div>
           </div>
 
@@ -433,19 +453,19 @@ export default function RepairPage() {
                 </h2>
                 <div className="mt-1 flex items-center gap-2">
                   <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-blue-600">
-                    Mã: #LT-2024-88
+                    Mã: {selected?.qrCode || "chưa chọn"}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
                     <span className="size-1.5 animate-pulse rounded-full bg-blue-600"></span>
-                    Đang sửa chữa
+                    {selected?.status || "Chưa chọn"}
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-900">
+                <button type="button" onClick={() => selected ? setDetailOpen(true) : setRepairNotice("Hãy chọn một thiết bị trên bảng.")} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-900">
                   <Maximize2 size={18} />
                 </button>
-                <button className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-900">
+                <button type="button" onClick={() => { setSelectedId(""); setNote(""); setDetailOpen(false); }} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-900">
                   <X size={18} />
                 </button>
               </div>
@@ -468,20 +488,20 @@ export default function RepairPage() {
                   <span className="text-xs font-semibold text-slate-500">
                     Hãng sản xuất
                   </span>
-                  <span className="text-sm font-semibold">Dell Inc.</span>
+                  <span className="text-sm font-semibold">{selected?.name?.split(" ")[0] || "—"}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-slate-500">
                     Model thiết bị
                   </span>
-                  <span className="text-sm font-semibold">Latitude 5520</span>
+                  <span className="text-sm font-semibold">{selected?.name || "—"}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-slate-500">
                     Đơn vị tài trợ
                   </span>
                   <span className="text-sm font-medium text-blue-600">
-                    VNPT trao tặng
+                    {selected?.warehouse?.name || "Chưa có kho"}
                   </span>
                 </div>
                 <div className="flex flex-col">
@@ -489,7 +509,7 @@ export default function RepairPage() {
                     Trường đích dự kiến
                   </span>
                   <span className="text-sm font-medium text-teal-700">
-                    THCS Trà Dơn
+                    {selected?.binLocation || "Chưa xếp kệ"}
                   </span>
                 </div>
               </div>
@@ -498,7 +518,7 @@ export default function RepairPage() {
             {/* Form */}
             <form
               className="flex flex-col gap-3"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={updateRepair}
             >
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
@@ -512,7 +532,9 @@ export default function RepairPage() {
                 <textarea
                   className="w-full resize-none rounded-lg bg-white p-3 text-sm leading-relaxed text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-100 border border-slate-200"
                   rows="4"
-                  defaultValue="Đã tháo máy vệ sinh tra keo tản nhiệt Noctua. Kiểm tra mainboard điện áp bình thường. Màn hình IPS bị đốm sọc panel cần thay màn mới. Pin còn 64% dung lượng khuyến nghị thay cell mới trước khi bàn giao điểm trường Mèo Vạc."
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder={selected ? `Ghi chú cho ${selected.qrCode}` : "Chọn một thẻ thiết bị trước"}
                 ></textarea>
               </div>
 
@@ -608,14 +630,15 @@ export default function RepairPage() {
                 <label className="text-sm font-semibold text-slate-900">
                   Trạng thái chuyển tiếp
                 </label>
-                <select className="cursor-pointer appearance-none rounded-lg bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-100 border border-slate-200">
-                  <option defaultValue>Đang sửa chữa (Xưởng Kỹ thuật)</option>
+                <select value={nextStatus} onChange={(event) => setNextStatus(event.target.value)} className="cursor-pointer appearance-none rounded-lg bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-100 border border-slate-200">
+                  <option>Đang sửa chữa (Xưởng Kỹ thuật)</option>
                   <option>Chờ linh kiện đối ứng</option>
                   <option>Đã hoàn thành (Chuyển sang kiểm định QA)</option>
                   <option>Chuyển kho rã xác phụ tùng</option>
                 </select>
               </div>
 
+              {repairNotice && <p className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">{repairNotice}</p>}
               <div className="mt-2 flex flex-col gap-2">
                 <button
                   type="submit"
@@ -627,6 +650,7 @@ export default function RepairPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
+                    onClick={() => { if (!selected) { setRepairNotice("Hãy chọn thiết bị trước khi lưu nháp."); return; } localStorage.setItem("edushare_repair_draft", JSON.stringify({ status: nextStatus, note, qr: selected.qrCode })); setRepairNotice(`Đã lưu nháp ${selected.qrCode}. Bấm Cập nhật trạng thái để ghi database.`); }}
                     className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 border border-slate-200"
                   >
                     <Save size={16} className="text-slate-500" />
@@ -634,6 +658,7 @@ export default function RepairPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={printWarranty}
                     className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 border border-slate-200"
                   >
                     <Printer size={16} className="text-blue-600" />
@@ -644,6 +669,18 @@ export default function RepairPage() {
             </form>
           </div>
         </div>
+        {detailOpen && selected && (
+          <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4">
+            <article className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+              <div className="flex justify-between"><h2 className="font-display text-xl font-semibold">{selected.name}</h2><button type="button" onClick={() => setDetailOpen(false)}>×</button></div>
+              <p className="mt-2 font-mono text-sm text-blue-700">{selected.qrCode}</p>
+              <p className="mt-3 text-sm text-slate-600">Trạng thái: {selected.status}</p>
+              <p className="text-sm text-slate-600">Kho: {selected.warehouse?.name || "Chưa có kho"}</p>
+              <p className="text-sm text-slate-600">Kệ: {selected.binLocation || "Chưa xếp"}</p>
+              <p className="mt-3 text-sm text-slate-700">{note || "Chưa có ghi chú kỹ thuật."}</p>
+            </article>
+          </div>
+        )}
       </main>
     </>
   );

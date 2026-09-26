@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import api from '../lib/api';
+import React, { useEffect, useState } from 'react';
+import api, { apiError } from '../lib/api';
+import { copyText, openPrint } from '../lib/actions';
 import { WAYBILL_STATUS_LABEL, formatDateTime } from '../lib/labels';
 
 const journeyDatabase = {
@@ -18,7 +19,8 @@ const journeyDatabase = {
 
 export default function DispatchPage() {
   const [showPodModal, setShowPodModal] = useState(false);
-  const [showUrgentModal, setShowUrgentModal] = useState(false);
+  const [showIncidents, setShowIncidents] = useState(false);
+  const [incidents, setIncidents] = useState([]);
   const [searchValue, setSearchValue] = useState('WB-20240926-0001');
   const [statusMsg, setStatusMsg] = useState('');
   const [data, setData] = useState(journeyDatabase['#TN-NW-042']);
@@ -47,6 +49,8 @@ export default function DispatchPage() {
       driverPhone: waybill.assignedVolunteer?.phone || '—',
       vehicleType: 'Vận chuyển hiện vật',
       licensePlate: waybill.code,
+      waybillId: waybill.id,
+      status: waybill.status,
     };
   }
 
@@ -71,11 +75,15 @@ export default function DispatchPage() {
     }
   };
 
-  const handleEmergencySubmit = (e) => {
-    e.preventDefault();
-    alert('Tín hiệu khẩn cấp đã được phát thành công kèm tọa độ GPS vệ tinh! Cán bộ điều phối sẽ liên hệ lái xe trong 60 giây.');
-    setShowUrgentModal(false);
-  };
+  async function openIncidents() {
+    try {
+      const response = await api.get('/waybills?status=FAILED&limit=20');
+      setIncidents(response.data.data ?? []);
+      setShowIncidents(true);
+    } catch (error) {
+      setStatusMsg(apiError(error, 'Không tải được báo cáo sự cố.'));
+    }
+  }
 
   return (
     <main className="w-full pt-0 bg-surface px-gutter-desktop py-space-lg flex-1 min-h-screen">
@@ -132,9 +140,9 @@ export default function DispatchPage() {
                 <span className="material-symbols-outlined text-primary text-[18px]">support_agent</span>
                 Tổng đài Hỗ trợ Tuyến
               </a>
-              <button className="px-space-md py-2.5 rounded-lg bg-error text-on-error hover:bg-error/90 transition-all font-label-md text-label-md flex items-center gap-2 shadow-sm" onClick={() => setShowUrgentModal(true)}>
+              <button type="button" className="px-space-md py-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md flex items-center gap-2 shadow-sm" onClick={openIncidents}>
                 <span className="material-symbols-outlined text-[18px]">warning</span>
-                Báo cáo sự cố khẩn cấp
+                Xem báo cáo sự cố
               </button>
             </div>
           </div>
@@ -423,7 +431,7 @@ export default function DispatchPage() {
                 <a className="px-space-sm py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md flex items-center justify-center gap-1.5" href="tel:0988000123">
                   <span className="material-symbols-outlined text-[16px]">call</span> Gọi trực tiếp
                 </a>
-                <button className="px-space-sm py-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-md text-label-md flex items-center justify-center gap-1.5">
+                <button type="button" onClick={() => copyText(data.driverPhone || '').then(() => setStatusMsg(`Đã sao chép số ${data.driverPhone}. Mở Zalo và dán để nhắn điều phối.`))} className="px-space-sm py-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-md text-label-md flex items-center justify-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">chat</span> Nhắn Zalo Điều phối
                 </button>
               </div>
@@ -601,7 +609,7 @@ export default function DispatchPage() {
                       <span className="material-symbols-outlined text-primary text-[20px]">description</span>
                       <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">Biên bản bàn giao số #BB-BG-2024-XINTHAU</span>
                     </div>
-                    <button className="px-2.5 py-1 rounded bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-sm text-label-sm flex items-center gap-1 shadow-xs" onClick={() => alert('Đang tải bản PDF có chứng thực số...')}>
+                    <button className="px-2.5 py-1 rounded bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-sm text-label-sm flex items-center gap-1 shadow-xs" onClick={openPrint}>
                       <span className="material-symbols-outlined text-[16px]">file_download</span> Tải bản PDF gốc
                     </button>
                   </div>
@@ -686,7 +694,7 @@ export default function DispatchPage() {
               </div>
               {/* Modal Footer */}
               <div className="flex items-center justify-between px-space-lg py-space-sm bg-surface-container-low border-t border-surface-container-high">
-                <button className="px-space-md py-2 rounded-lg bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md flex items-center gap-1.5 shadow-xs" onClick={() => alert('Đang tải bản PDF kèm con dấu đỏ...')}>
+                <button className="px-space-md py-2 rounded-lg bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md flex items-center gap-1.5 shadow-xs" onClick={openPrint}>
                   <span className="material-symbols-outlined text-[18px]">download</span> Tải bản PDF gốc
                 </button>
                 <button className="px-space-lg py-2 rounded-lg bg-secondary text-on-secondary hover:bg-on-surface transition-colors font-label-md text-label-md cursor-pointer" onClick={() => setShowPodModal(false)}>
@@ -697,46 +705,25 @@ export default function DispatchPage() {
           </div>
         )}
 
-        {/* Urgent Modal */}
-        {showUrgentModal && (
-          <div className="fixed inset-0 bg-inverse-surface/50 backdrop-blur-sm z-50 flex items-center justify-center p-gutter" onClick={(e) => { if (e.target === e.currentTarget) setShowUrgentModal(false); }}>
+        {showIncidents && (
+          <div className="fixed inset-0 bg-inverse-surface/50 backdrop-blur-sm z-50 flex items-center justify-center p-gutter" onClick={(e) => { if (e.target === e.currentTarget) setShowIncidents(false); }}>
             <div className="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-xl relative">
               <div className="flex items-center justify-between pb-space-sm mb-space-sm">
-                <div className="flex items-center gap-2 text-error">
-                  <span className="material-symbols-outlined text-[24px]">crisis_alert</span>
-                  <h3 className="font-headline-sm text-headline-sm font-bold">Kích hoạt Báo cáo Sự cố Tuyến</h3>
-                </div>
-                <button className="p-1 rounded-lg text-secondary hover:bg-surface-container transition-colors" onClick={() => setShowUrgentModal(false)}>
+                <h3 className="font-headline-sm text-headline-sm font-bold">Báo cáo sự cố đã ghi nhận</h3>
+                <button className="p-1 rounded-lg text-secondary hover:bg-surface-container transition-colors" onClick={() => setShowIncidents(false)}>
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
-                Hệ thống sẽ gửi tọa độ GPS vệ tinh hiện thời và cảnh báo khẩn cấp SMS tới Trung tâm Điều hành Quốc gia cùng Đội cứu hộ khu vực gần nhất.
-              </p>
-              <form className="space-y-space-md" onSubmit={handleEmergencySubmit}>
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface font-semibold mb-1">Loại sự cố khẩn cấp</label>
-                  <select className="w-full px-space-sm py-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest">
-                    <option>Sạt lở đèo / Tắc đường hoàn toàn (Đèo Pha Đin)</option>
-                    <option>Hỏng hóc động cơ / Lốp phương tiện không thể di chuyển</option>
-                    <option>Kiện hàng gặp rủi ro thời tiết (Mưa lũ, nước tràn thùng)</option>
-                    <option>Sự cố sức khỏe tình nguyện viên</option>
-                    <option>Khác</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface font-semibold mb-1">Mô tả tình trạng hiện trường</label>
-                  <textarea className="w-full px-space-sm py-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest" placeholder="Ghi chú cụ thể cột km, tình trạng an toàn của xe và thiết bị..." rows="3"></textarea>
-                </div>
-                <div className="flex items-center justify-end gap-space-sm pt-space-xs">
-                  <button className="px-space-md py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button" onClick={() => setShowUrgentModal(false)}>
-                    Hủy bỏ
-                  </button>
-                  <button className="px-space-md py-2 rounded-lg bg-error text-on-error font-label-md text-label-md hover:bg-error/90 transition-colors flex items-center gap-1.5 shadow-sm" type="submit">
-                    <span className="material-symbols-outlined text-[16px]">send</span> Phát tín hiệu khẩn cấp
-                  </button>
-                </div>
-              </form>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Admin chỉ xem các chuyến đã bị dừng. Không tạo báo cáo mới từ trang này.</p>
+              <ul className="max-h-72 space-y-2 overflow-auto text-sm">
+                {incidents.length === 0 && <li className="rounded bg-slate-50 px-3 py-3 text-slate-500">Chưa có vận đơn nào ở trạng thái sự cố.</li>}
+                {incidents.map((waybill) => (
+                  <li key={waybill.id} className="rounded bg-slate-50 px-3 py-2">
+                    <b>{waybill.code}</b>
+                    <span className="ml-2 text-slate-500">{WAYBILL_STATUS_LABEL[waybill.status] || waybill.status}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}

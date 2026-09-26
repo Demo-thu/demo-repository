@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import api, { clearSession, currentUser } from "../lib/api";
+import api, { apiError, clearSession, currentUser } from "../lib/api";
 import {
   Activity, Archive, Bell, Box, CheckCircle2, ClipboardCheck, FileText, GraduationCap,
   HeartHandshake, LayoutDashboard, Menu, Search, Settings, ShieldCheck,
@@ -25,6 +25,7 @@ export default function SystemLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [query, setQuery] = useState("");
   const [requests, setRequests] = useState([]);
+  const [viewing, setViewing] = useState(null);
   const dropdownRef = useRef(null);
   const { pathname } = useLocation();
 
@@ -58,11 +59,13 @@ export default function SystemLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showNotifications]);
 
-  function handleButtonFeedback(event) {
-    const button = event.target.closest("button");
-    if (!button || button.disabled || button.dataset.noFeedback) return;
-    const label = button.innerText.replace(/\s+/g, " ").trim();
-    if (label) setFeedback(`${label.slice(0, 58)}: đã ghi nhận thao tác.`);
+  async function viewRequest(id) {
+    try {
+      const response = await api.get(`/requisitions/${id}`);
+      setViewing(response.data);
+    } catch (error) {
+      setFeedback(apiError(error, "Không mở được đề xuất."));
+    }
   }
 
   const handleApprove = async (id, schoolName) => {
@@ -89,7 +92,7 @@ export default function SystemLayout() {
   }
 
   return (
-    <div onClickCapture={handleButtonFeedback} className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
+    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
       {/* SIDEBAR NAVIGATION */}
       <aside className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-[#eff4ff] transition-transform md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 shrink-0 items-center border-b border-slate-100 bg-white px-4">
@@ -186,9 +189,9 @@ export default function SystemLayout() {
                           </div>
                           <p className="mt-1 text-[10px] text-slate-600">Yêu cầu: {req.need}</p>
                           <div className="mt-2 flex items-center justify-between border-t border-slate-200/50 pt-1.5">
-                            <span className="text-[10px] font-medium text-slate-500 cursor-pointer hover:underline">
-                              ◉ Xem hồ sơ
-                            </span>
+                            <button type="button" onClick={() => viewRequest(req.id)} className="text-[10px] font-medium text-blue-700 hover:underline">
+                              ◉ Xem đề xuất
+                            </button>
                             <button
                               onClick={() => handleApprove(req.id, req.school)}
                               className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
@@ -211,6 +214,28 @@ export default function SystemLayout() {
         <Outlet />
       </div>
 
+      {viewing && (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-slate-950/40 p-4">
+          <article className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase text-slate-500">{viewing.code}</p>
+                <h2 className="font-display text-xl font-semibold">{viewing.title}</h2>
+              </div>
+              <button type="button" onClick={() => setViewing(null)} className="rounded px-2 text-lg">×</button>
+            </div>
+            <dl className="mt-4 space-y-2 text-sm text-slate-700">
+              <div className="flex justify-between gap-3"><dt>Trường</dt><dd className="text-right font-medium">{viewing.school?.profile?.organizationName || viewing.school?.fullName || "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Mức khẩn</dt><dd>{priorityLabel[viewing.urgencyLevel] || viewing.urgencyLevel}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd>{viewing.status}</dd></div>
+            </dl>
+            <ul className="mt-4 space-y-1 text-sm text-slate-600">
+              {(viewing.items ?? []).map((item) => <li key={item.id}>{item.quantityNeeded} · {item.category}</li>)}
+            </ul>
+            <button type="button" onClick={() => { setViewing(null); navigate("/school-requests"); }} className="mt-5 w-full rounded bg-blue-600 py-2 text-sm font-semibold text-white">Mở trang yêu cầu tài trợ</button>
+          </article>
+        </div>
+      )}
       {feedback && (
         <div className="fixed bottom-5 right-5 z-[100] flex max-w-sm items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white shadow-xl">
           <CheckCircle2 size={17} className="shrink-0 text-teal-300" />

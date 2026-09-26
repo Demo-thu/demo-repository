@@ -1,20 +1,97 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import api, { apiError } from '../lib/api';
+import { downloadCsv } from '../lib/actions';
 
 const SchoolSupportPage = () => {
   const [submitState, setSubmitState] = useState('idle'); // idle | submitting | done
+  const [message, setMessage] = useState('Thay mặt thầy và trò Trường PTDTBT THCS Mường Lát, xin trân trọng cảm ơn các anh chị nhà hảo tâm và đội ngũ EduShare Vietnam.');
+  const [waybillId, setWaybillId] = useState('');
+  const [waybillStatus, setWaybillStatus] = useState('');
+  const [schoolId, setSchoolId] = useState('');
+  const [notice, setNotice] = useState('');
+  const [progressLabel, setProgressLabel] = useState('Bước 4: Đang vận chuyển liên tỉnh');
+  const [evidencePage, setEvidencePage] = useState(1);
+  const [hiddenPhotos, setHiddenPhotos] = useState({});
   const fileInputRef = useRef(null);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    api.get('/users?role=SCHOOL_REP&limit=5').then((response) => {
+      const school = response.data.data?.[0];
+      if (school) setSchoolId(school.id);
+    }).catch(() => undefined);
+    api.get('/waybills?limit=10').then((response) => {
+      const rows = response.data.data ?? [];
+      const open = rows.find((row) => row.status === 'IN_TRANSIT' || row.status === 'PENDING_PICKUP') || rows[0];
+      if (!open) return;
+      setWaybillId(open.id);
+      setWaybillStatus(open.status);
+    }).catch(() => undefined);
+  }, []);
+
+  const handleSubmit = async () => {
     if (submitState !== 'idle') return;
     setSubmitState('submitting');
-    setTimeout(() => {
+    try {
+      const title = message.trim().slice(0, 180);
+      if (waybillId && (waybillStatus === 'IN_TRANSIT' || waybillStatus === 'PENDING_PICKUP')) {
+        let targetId = waybillId;
+        if (waybillStatus === 'PENDING_PICKUP') {
+          const picked = await api.patch(`/waybills/${waybillId}/pickup`);
+          targetId = picked.data.id;
+        }
+        await api.post(`/waybills/${targetId}/proof`, {
+          recipientName: 'Lò Văn Thuận',
+          recipientTitle: 'Hiệu trưởng',
+          recipientSignatureUrl: 'https://edushare.vn/signatures/school-rep',
+          proofPhotoUrls: ['https://edushare.vn/proofs/classroom.jpg'],
+        });
+        setWaybillStatus('DELIVERED');
+        setProgressLabel('Bước 5: Đã bàn giao và phát hành chứng từ');
+        setNotice('Biên bản bàn giao đã được tạo. Vận đơn chuyển sang đã giao.');
+      } else {
+        const created = await api.post('/requisitions', {
+          ...(schoolId ? { schoolId } : {}),
+          title: title.length >= 5 ? title : 'Đề xuất hỗ trợ thiết bị tin học từ nhà trường',
+          urgencyLevel: 'HIGH',
+          items: [{ category: 'IT_DEVICES', quantityNeeded: 1 }],
+        });
+        setProgressLabel(`Đã tạo đề xuất ${created.data.code} và đang chờ duyệt`);
+        setNotice(`Đề xuất ${created.data.code} đã vào hàng chờ phê duyệt.`);
+      }
       setSubmitState('done');
-    }, 1200);
+    } catch (error) {
+      setSubmitState('idle');
+      setNotice(apiError(error, 'Không lưu được thao tác.'));
+    }
   };
+
+  async function createRequisition(urgencyLevel, title) {
+    if (!schoolId) {
+      setNotice('Chưa tải được tài khoản trường học.');
+      return;
+    }
+    try {
+      const created = await api.post('/requisitions', {
+        schoolId,
+        title,
+        urgencyLevel,
+        items: [{ category: 'IT_DEVICES', quantityNeeded: urgencyLevel === 'CRITICAL' ? 5 : 1 }],
+      });
+      setProgressLabel(`Đã tạo đề xuất ${created.data.code}`);
+      setNotice(`Đề xuất ${created.data.code} (${urgencyLevel}) đã vào hàng chờ phê duyệt.`);
+    } catch (error) {
+      setNotice(apiError(error, 'Không tạo được đề xuất.'));
+    }
+  }
+
+  function downloadEvidence(filename) {
+    downloadCsv(filename.replace('.pdf', '.csv'), ['Hồ sơ', 'Nội dung'], [[filename, message], ['Vận đơn', waybillId || 'chưa có']]);
+    setNotice(`Đã tải minh chứng ${filename}.`);
+  }
 
   const handleClearSignature = (e) => {
     e.preventDefault();
-    alert('Chữ ký đã sẵn sàng để vẽ lại hoặc xác thực bằng Token USB.');
+    setNotice('Đã xóa chữ ký tạm. Hãy ký lại trước khi phát hành chứng từ.');
   };
 
   return (
@@ -30,6 +107,7 @@ const SchoolSupportPage = () => {
         </div>
       </div>
 
+      {notice && <div className="mx-gutter-desktop mt-4 rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-800">{notice}</div>}
       <div className="w-full px-gutter-desktop py-space-lg">
         <div className="flex flex-col w-full gap-space-lg">
 
@@ -57,7 +135,7 @@ const SchoolSupportPage = () => {
                 <span className="font-label-sm text-label-sm text-secondary">Người đại diện phụ trách</span>
                 <span className="font-label-md text-label-md text-on-surface font-semibold">Thầy Lò Văn Thuận (Hiệu trưởng)</span>
               </div>
-              <button className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+              <button type="button" onClick={() => createRequisition('CRITICAL', 'Hỗ trợ khẩn cấp thiết bị tin học')} className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
                 <span className="material-symbols-outlined text-[18px]">contact_support</span>
                 <span>Hỗ trợ khẩn cấp</span>
               </button>
@@ -73,7 +151,7 @@ const SchoolSupportPage = () => {
               </div>
               <div className="flex items-center gap-space-xs text-secondary font-label-md text-label-md">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
-                <span className="font-semibold text-primary">Bước 4: Đang vận chuyển liên tỉnh</span>
+                <span className="font-semibold text-primary">{progressLabel}</span>
               </div>
             </div>
 
@@ -173,11 +251,11 @@ const SchoolSupportPage = () => {
                     <p className="font-body-sm text-body-sm text-secondary">Chi tiết đề xuất nhu cầu thực tế kèm văn bản xác minh của Phòng GD&amp;ĐT</p>
                   </div>
                   <div className="flex items-center gap-space-xs w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all shadow-sm">
+                    <button type="button" onClick={() => createRequisition('HIGH', message.trim().slice(0, 180) || 'Đề xuất hỗ trợ thiết bị tin học từ nhà trường')} className="flex-1 sm:flex-none px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all shadow-sm">
                       <span className="material-symbols-outlined text-[18px]">add_circle</span>
                       <span>Tạo đề xuất mới</span>
                     </button>
-                    <button className="px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-all">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-all">
                       <span className="material-symbols-outlined text-[18px]">upload_file</span>
                       <span>Tải minh chứng</span>
                     </button>
@@ -245,7 +323,7 @@ const SchoolSupportPage = () => {
                         </td>
                         <td className="py-3 px-space-md text-on-surface font-body-sm text-body-sm">Thực hành Tin học &amp; Học online</td>
                         <td className="py-3 px-space-md text-right">
-                          <button className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
+                          <button type="button" onClick={(event) => downloadEvidence(event.currentTarget.innerText.trim())} className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                             <span>XN_UBND_01.pdf</span>
                           </button>
@@ -266,7 +344,7 @@ const SchoolSupportPage = () => {
                         </td>
                         <td className="py-3 px-space-md text-on-surface font-body-sm text-body-sm">Học lập trình Scratch cơ bản</td>
                         <td className="py-3 px-space-md text-right">
-                          <button className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
+                          <button type="button" onClick={(event) => downloadEvidence(event.currentTarget.innerText.trim())} className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                             <span>XN_UBND_042.pdf</span>
                           </button>
@@ -287,7 +365,7 @@ const SchoolSupportPage = () => {
                         </td>
                         <td className="py-3 px-space-md text-on-surface font-body-sm text-body-sm">Ôn thi chuyển cấp THPT</td>
                         <td className="py-3 px-space-md text-right">
-                          <button className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
+                          <button type="button" onClick={(event) => downloadEvidence(event.currentTarget.innerText.trim())} className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                             <span>XN_UBND_077.pdf</span>
                           </button>
@@ -308,7 +386,7 @@ const SchoolSupportPage = () => {
                         </td>
                         <td className="py-3 px-space-md text-on-surface font-body-sm text-body-sm">Kỹ năng số nhập môn</td>
                         <td className="py-3 px-space-md text-right">
-                          <button className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
+                          <button type="button" onClick={(event) => downloadEvidence(event.currentTarget.innerText.trim())} className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                             <span>XN_UBND_098.pdf</span>
                           </button>
@@ -329,7 +407,7 @@ const SchoolSupportPage = () => {
                         </td>
                         <td className="py-3 px-space-md text-on-surface font-body-sm text-body-sm">Tra cứu học liệu STEM</td>
                         <td className="py-3 px-space-md text-right">
-                          <button className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
+                          <button type="button" onClick={(event) => downloadEvidence(event.currentTarget.innerText.trim())} className="inline-flex items-center gap-1 text-primary hover:underline font-label-sm text-label-sm">
                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                             <span>XN_UBND_115.pdf</span>
                           </button>
@@ -346,9 +424,9 @@ const SchoolSupportPage = () => {
                     <span>Toàn bộ học sinh đã được đối soát qua Cơ sở Dữ liệu Dân cư Quốc gia VNeID.</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button className="px-2.5 py-1 rounded bg-surface-container text-secondary hover:bg-surface-container-high font-label-sm">Trước</button>
-                    <span className="px-2 font-code-num text-on-surface font-semibold">1 / 29</span>
-                    <button className="px-2.5 py-1 rounded bg-surface-container text-secondary hover:bg-surface-container-high font-label-sm">Tiếp</button>
+                    <button type="button" onClick={() => setEvidencePage((current) => Math.max(1, current - 1))} className="px-2.5 py-1 rounded bg-surface-container text-secondary hover:bg-surface-container-high font-label-sm">Trước</button>
+                    <span className="px-2 font-code-num text-on-surface font-semibold">{evidencePage} / 29</span>
+                    <button type="button" onClick={() => setEvidencePage((current) => Math.min(29, current + 1))} className="px-2.5 py-1 rounded bg-surface-container text-secondary hover:bg-surface-container-high font-label-sm">Tiếp</button>
                   </div>
                 </div>
               </div>
@@ -449,18 +527,18 @@ const SchoolSupportPage = () => {
                     <span>Tải lên hình ảnh nghiệm thu thực tế phòng máy</span>
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="relative h-20 rounded-lg overflow-hidden">
+                    {!hiddenPhotos[1] && <div className="relative h-20 rounded-lg overflow-hidden">
                       <img className="w-full h-full object-cover" alt="Tình nguyện viên kỹ thuật lắp đặt máy tính tại trường" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwQp9z1gvtyYpqfDps0S1GXqHMaNIvpxIXig6WMJNUZtyZ23WP9JqBMAeumibPlplvoP_VPr7ZEwrthA-N2AandgYq-csM_-XXwaWyzrX3uSde32phLCpiWnDGCNNRPOtjvuCQqzOrpq-vlRY4L2Lw26fHoqwDweMxqsjRqvZEs7haaF7OVm-KcdidyqZ04kkETmiONDdEUr-1ffzKWFO-adtuCFv8waBbAQ1QtQAFjmYcMJFDk-N6" />
-                      <button className="absolute top-1 right-1 w-5 h-5 rounded-full bg-error text-on-error flex items-center justify-center text-[12px]">×</button>
-                    </div>
-                    <div className="relative h-20 rounded-lg overflow-hidden">
+                      <button type="button" onClick={() => setHiddenPhotos((current) => ({ ...current, 1: true }))} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-error text-on-error flex items-center justify-center text-[12px]">×</button>
+                    </div>}
+                    {!hiddenPhotos[2] && <div className="relative h-20 rounded-lg overflow-hidden">
                       <img className="w-full h-full object-cover" alt="Phòng máy tính đã lắp đặt xong tại trường vùng cao" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUtjFNoA5_ifwLD6yk9FrrYWU-asvWssTQBnZBc8msiLJnEBLc5jSbG_5NKYqqyF_ZTRsRKwO9uTUJYzO7iikYoqPEctAUchrH87tptgwK64xX2A390SC4nbMJd1aJeQrj77eUffqTBjZ1-gFvq0PG6zcz4sStR_iW6sjs2PovuQh8_6DUp_Mp2mwjDRMdU_g0_BW--hQCjGo9Ee8Edn7qbZfOmvmWWIgSw36h40-7Gxm4IdsM2S0G" />
-                      <button className="absolute top-1 right-1 w-5 h-5 rounded-full bg-error text-on-error flex items-center justify-center text-[12px]">×</button>
-                    </div>
+                      <button type="button" onClick={() => setHiddenPhotos((current) => ({ ...current, 2: true }))} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-error text-on-error flex items-center justify-center text-[12px]">×</button>
+                    </div>}
                     <label className="h-20 rounded-lg bg-surface-container hover:bg-surface-container-high flex flex-col items-center justify-center cursor-pointer transition-colors text-secondary hover:text-primary">
                       <span className="material-symbols-outlined text-[20px]">cloud_upload</span>
                       <span className="font-label-sm text-[11px] mt-0.5">Thêm ảnh</span>
-                      <input ref={fileInputRef} accept="image/*" className="hidden" multiple type="file" />
+                      <input ref={fileInputRef} accept="image/*" className="hidden" multiple type="file" onChange={(event) => setNotice(event.target.files?.length ? `Đã chọn ${event.target.files.length} ảnh minh chứng.` : '')} />
                     </label>
                   </div>
                 </div>
@@ -475,7 +553,8 @@ const SchoolSupportPage = () => {
                     className="w-full p-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest transition-all placeholder:text-outline"
                     placeholder="Nhập lời cảm ơn chân thành từ thầy cô và các em học sinh điểm trường..."
                     rows="3"
-                    defaultValue="Thay mặt thầy và trò Trường PTDTBT THCS Mường Lát, xin trân trọng cảm ơn các anh chị nhà hảo tâm và đội ngũ EduShare Vietnam. 35 chiếc máy tính này là giấc mơ lớn, giúp học trò vùng cao lần đầu tiên được tiếp cận công nghệ thông tin bài bản!"
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
                   />
                 </div>
 
@@ -527,7 +606,7 @@ const SchoolSupportPage = () => {
                     <span className="font-body-sm text-[12px] text-secondary">Quét để theo dõi toàn bộ nhật ký bàn giao</span>
                   </div>
                 </div>
-                <button className="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+                <button type="button" onClick={() => downloadCsv('qr-minh-bach.csv', ['Trường', 'Vận đơn', 'Trạng thái'], [[schoolId, waybillId, waybillStatus]])} className="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors">
                   Xuất QR
                 </button>
               </div>

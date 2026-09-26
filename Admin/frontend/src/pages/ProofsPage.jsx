@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../lib/api';
+import api, { apiError } from '../lib/api';
+import { downloadCsv, openPrint } from '../lib/actions';
 import { formatDateTime, initials } from '../lib/labels';
 
 const podCardSeed = [
@@ -149,6 +150,9 @@ function PodCard({ card, onOpen }) {
 
 export default function ProofsPage() {
   const [showModal, setShowModal] = useState(false);
+  const [view, setView] = useState('cards');
+  const [proofQuery, setProofQuery] = useState('');
+  const [proofNotice, setProofNotice] = useState('');
   const [podCards, setPodCards] = useState(podCardSeed);
 
   useEffect(() => {
@@ -176,6 +180,21 @@ export default function ProofsPage() {
       if (rows.length > 0) setPodCards(rows);
     }).catch(() => undefined);
   }, []);
+
+  const visibleCards = podCards.filter((card) => {
+    const text = `${card.id} ${card.school} ${card.province} ${card.signer}`.toLowerCase();
+    return !proofQuery.trim() || text.includes(proofQuery.trim().toLowerCase());
+  });
+
+  async function confirmReconcile() {
+    try {
+      await api.post('/audit-logs', { action: 'POD_RECONCILED', resource: 'waybill', note: 'Đối soát biên bản bàn giao từ trang minh chứng.' });
+      setProofNotice('Đã ghi nhận đối soát vào nhật ký kiểm toán.');
+      setShowModal(false);
+    } catch (error) {
+      setProofNotice(apiError(error, 'Không ghi được đối soát.'));
+    }
+  }
 
   return (
     <main className="relative pt-0 bg-surface w-full p-gutter-desktop min-h-screen">
@@ -206,7 +225,7 @@ export default function ProofsPage() {
               </p>
             </div>
             <div className="flex items-center gap-space-sm shrink-0">
-              <button className="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors shadow-sm" type="button">
+              <button onClick={() => downloadCsv('bien-ban.csv', ['Mã', 'Trường', 'Tỉnh', 'Người ký', 'Thiết bị'], visibleCards.map((card) => [card.id, card.school, card.province, card.signer, card.equipCount]))} className="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors shadow-sm" type="button">
                 <span className="material-symbols-outlined text-[18px] text-secondary">download</span>
                 Xuất báo cáo PoD (Excel/PDF)
               </button>
@@ -248,7 +267,7 @@ export default function ProofsPage() {
         <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm mb-space-lg flex flex-col lg:flex-row items-center justify-between gap-space-md">
           <div className="w-full lg:w-96 flex items-center bg-surface-container-low rounded-lg px-space-md py-2 text-on-surface">
             <span className="material-symbols-outlined text-on-surface-variant text-[20px] mr-space-xs">search</span>
-            <input className="w-full bg-transparent font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Tìm kiếm mã PoD, tên trường, thiết bị, TNV..." type="text" />
+            <input value={proofQuery} onChange={(event) => setProofQuery(event.target.value)} className="w-full bg-transparent font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Tìm kiếm mã PoD, tên trường, thiết bị, TNV..." type="text" />
           </div>
           <div className="w-full lg:w-auto flex flex-wrap items-center gap-space-sm">
             {[
@@ -265,11 +284,11 @@ export default function ProofsPage() {
             ))}
           </div>
           <div className="flex items-center bg-surface-container-low p-1 rounded-lg shrink-0">
-            <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary font-label-sm text-label-sm shadow-xs font-semibold">
+            <button type="button" onClick={() => setView('cards')} className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-sm text-label-sm ${view === 'cards' ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold' : 'text-on-surface-variant'}`}>
               <span className="material-symbols-outlined text-[16px]">grid_view</span>
               Thẻ ảnh PoD
             </button>
-            <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
+            <button type="button" onClick={() => setView('table')} className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-sm text-label-sm ${view === 'table' ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold' : 'text-on-surface-variant hover:text-on-surface'}`}>
               <span className="material-symbols-outlined text-[16px]">table_rows</span>
               Bảng đối soát
             </button>
@@ -277,11 +296,21 @@ export default function ProofsPage() {
         </div>
 
         {/* Gallery Grid */}
+        {proofNotice && <p className="mb-4 rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-800">{proofNotice}</p>}
+        {view === 'table' ? (
+          <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="p-3">Mã</th><th className="p-3">Trường</th><th className="p-3">Người ký</th><th className="p-3">Thiết bị</th></tr></thead>
+              <tbody>{visibleCards.map((card) => <tr key={card.id} className="border-t"><td className="p-3 font-semibold text-blue-700">{card.id}</td><td className="p-3">{card.school}</td><td className="p-3">{card.signer}</td><td className="p-3">{card.equipCount}</td></tr>)}</tbody>
+            </table>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter-desktop">
-          {podCards.map((card) => (
+          {visibleCards.map((card) => (
             <PodCard key={card.id} card={card} onOpen={() => setShowModal(true)} />
           ))}
         </div>
+        )}
 
         {/* PoD Detail Modal */}
         {showModal && (
@@ -302,7 +331,7 @@ export default function ProofsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-space-sm">
-                  <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors" type="button">
+                  <button onClick={openPrint} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors" type="button">
                     <span className="material-symbols-outlined text-[16px] text-primary">print</span>
                     In PDF có chữ ký số
                   </button>
@@ -455,7 +484,7 @@ export default function ProofsPage() {
                   <button className="w-full sm:w-auto px-space-md py-2 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-variant font-label-md text-label-md transition-colors" onClick={() => setShowModal(false)} type="button">
                     Đóng cửa sổ
                   </button>
-                  <button className="w-full sm:w-auto px-space-md py-2 rounded-lg bg-tertiary text-on-tertiary hover:bg-tertiary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
+                  <button onClick={confirmReconcile} className="w-full sm:w-auto px-space-md py-2 rounded-lg bg-tertiary text-on-tertiary hover:bg-tertiary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
                     <span className="material-symbols-outlined text-[18px]">task_alt</span>
                     Xác nhận đối soát hoàn tất
                   </button>
