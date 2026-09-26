@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "EduShare API",
+      "type": "npm",
+      "script": "start:dev",
+      "path": "backend",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "nest",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "successfully started|Nest application successfully|EADDRINUSE"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "edushare" }
+    },
+    {
+      "label": "EduShare Admin",
+      "type": "npm",
+      "script": "dev",
+      "path": "Admin/frontend",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:|error"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "edushare" }
+    },
+    {
+      "label": "Chạy EduShare",
+      "dependsOn": ["EduShare API", "EduShare Admin"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}
