@@ -1,7 +1,7 @@
 # Chay API va trang admin trong dung terminal hien tai (terminal Visual Studio / Cursor).
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$backend = Join-Path $root "backend"
+$backend = Join-Path $root "Admin\backend"
 $admin = Join-Path $root "Admin\frontend"
 
 Write-Host ""

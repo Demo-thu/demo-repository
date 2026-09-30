@@ -34,12 +34,16 @@ export const CATEGORY_LABEL = {
 
 export const ROLE_LABEL = {
   ADMIN: "Quản trị",
-  INTAKE_STAFF: "Tiếp nhận",
   WAREHOUSE_STAFF: "Nhân viên kho",
-  COORDINATOR: "Điều phối",
   VOLUNTEER: "Tình nguyện viên",
   DONOR: "Nhà hảo tâm",
   SCHOOL_REP: "Đại diện trường",
+};
+
+export const ROLE_LABEL_ALL = {
+  ...ROLE_LABEL,
+  INTAKE_STAFF: "Nhân viên kho",
+  COORDINATOR: "Nhân viên kho",
 };
 
 export function formatNumber(value) {

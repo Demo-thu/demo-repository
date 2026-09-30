@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api, { apiError } from "../lib/api";
 import { downloadCsv } from "../lib/actions";
-import { ROLE_LABEL, formatDate, formatDateTime } from "../lib/labels";
+import { ROLE_LABEL, ROLE_LABEL_ALL, formatDate, formatDateTime } from "../lib/labels";
 import {
   Download,
   UserPlus,
@@ -186,11 +186,11 @@ export default function AuthorizationAndAuditingPage() {
       const rows = (response.data.data ?? []).map((user) => ({
         id: user.id,
         name: user.fullName,
-        sub: user.profile?.organizationName || ROLE_LABEL[user.role],
+        sub: user.profile?.organizationName || ROLE_LABEL_ALL[user.role],
         email: user.email,
         phone: user.phone || "—",
         date: formatDate(user.createdAt),
-        role: ROLE_LABEL[user.role] || user.role,
+        role: ROLE_LABEL_ALL[user.role] || user.role,
         roleValue: user.role,
         status: user.status === "ACTIVE" ? "Đã duyệt" : "Tạm khóa",
         type: user.status === "ACTIVE" ? "verified" : "pending",
@@ -207,7 +207,7 @@ export default function AuthorizationAndAuditingPage() {
       const rows = (response.data.data ?? []).map((log) => ({
         id: log.id,
         name: log.user?.fullName || "Hệ thống",
-        role: ROLE_LABEL[log.user?.role] || "Hệ thống",
+        role: ROLE_LABEL_ALL[log.user?.role] || "Hệ thống",
         time: formatDateTime(log.createdAt),
         action: log.action,
         target: log.resource,
@@ -402,17 +402,18 @@ export default function AuthorizationAndAuditingPage() {
                         <td className="px-4 py-3">
                           <select
                             value={user.roleValue || "DONOR"}
+                            title="Đổi vai trò tài khoản"
                             onChange={async (event) => {
                               const role = event.target.value;
                               try {
                                 await api.patch(`/users/${user.id}/role`, { role });
                                 setUsersData((rows) => rows.map((row) => row.id === user.id ? { ...row, roleValue: role, role: ROLE_LABEL[role] || role } : row));
-                                setUserNotice("Đã lưu vai trò vào database.");
+                                setUserNotice(`Đã đổi vai trò của ${user.name} thành ${ROLE_LABEL[role] || role}.`);
                               } catch (error) {
                                 setUserNotice(apiError(error, "Không đổi được vai trò."));
                               }
                             }}
-                            className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 outline-none"
+                            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 outline-none"
                           >
                             {Object.entries(ROLE_LABEL).map(([value, label]) => (
                               <option key={value} value={value}>{label}</option>
@@ -432,7 +433,7 @@ export default function AuthorizationAndAuditingPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
-                            {user.type === "pending" && (
+                            {user.type === "pending" && user.roleValue !== "DONOR" && (
                               <button type="button" onClick={async () => {
                                 try {
                                   await api.patch(`/users/${user.id}/status`, { status: "ACTIVE" });
@@ -450,8 +451,13 @@ export default function AuthorizationAndAuditingPage() {
                             </button>
                             <button
                               className="p-1 text-slate-400 hover:text-rose-600"
-                              title={user.type === "pending" ? "Kích hoạt" : "Tạm khóa"}
+                              title={user.roleValue === "DONOR" ? "Admin không sửa tài khoản nhà hảo tâm" : user.type === "pending" ? "Kích hoạt" : "Tạm khóa"}
+                              disabled={user.roleValue === "DONOR"}
                               onClick={async () => {
+                                if (user.roleValue === "DONOR") {
+                                  setUserNotice("Admin không có quyền sửa tài khoản nhà hảo tâm.");
+                                  return;
+                                }
                                 const status = user.type === "pending" ? "ACTIVE" : "SUSPENDED";
                                 try {
                                   await api.patch(`/users/${user.id}/status`, { status });

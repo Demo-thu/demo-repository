@@ -12,6 +12,8 @@ const SchoolSupportPage = () => {
   const [progressLabel, setProgressLabel] = useState('Bước 4: Đang vận chuyển liên tỉnh');
   const [evidencePage, setEvidencePage] = useState(1);
   const [hiddenPhotos, setHiddenPhotos] = useState({});
+  const [schoolDoc, setSchoolDoc] = useState('https://edushare.vn/docs/xac-nhan-truong');
+  const [committeeDoc, setCommitteeDoc] = useState('https://edushare.vn/docs/xac-nhan-uy-ban');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -53,6 +55,8 @@ const SchoolSupportPage = () => {
           ...(schoolId ? { schoolId } : {}),
           title: title.length >= 5 ? title : 'Đề xuất hỗ trợ thiết bị tin học từ nhà trường',
           urgencyLevel: 'HIGH',
+          schoolConfirmationUrl: schoolDoc.trim(),
+          committeeConfirmationUrl: committeeDoc.trim(),
           items: [{ category: 'IT_DEVICES', quantityNeeded: 1 }],
         });
         setProgressLabel(`Đã tạo đề xuất ${created.data.code} và đang chờ duyệt`);
@@ -71,14 +75,20 @@ const SchoolSupportPage = () => {
       return;
     }
     try {
+      if (schoolDoc.trim().length < 8 || committeeDoc.trim().length < 8) {
+        setNotice('Cần cả giấy xác nhận nhà trường và giấy xác nhận ủy ban.');
+        return;
+      }
       const created = await api.post('/requisitions', {
         schoolId,
         title,
         urgencyLevel,
+        schoolConfirmationUrl: schoolDoc.trim(),
+        committeeConfirmationUrl: committeeDoc.trim(),
         items: [{ category: 'IT_DEVICES', quantityNeeded: urgencyLevel === 'CRITICAL' ? 5 : 1 }],
       });
       setProgressLabel(`Đã tạo đề xuất ${created.data.code}`);
-      setNotice(`Đề xuất ${created.data.code} (${urgencyLevel}) đã vào hàng chờ phê duyệt.`);
+      setNotice(`Đề xuất ${created.data.code} vào hàng chờ, số thứ tự ${created.data.queueOrder ?? '—'}.`);
     } catch (error) {
       setNotice(apiError(error, 'Không tạo được đề xuất.'));
     }
@@ -108,6 +118,14 @@ const SchoolSupportPage = () => {
       </div>
 
       {notice && <div className="mx-gutter-desktop mt-4 rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-800">{notice}</div>}
+      <div className="mx-gutter-desktop mt-4 grid gap-2 md:grid-cols-2">
+        <label className="text-xs text-slate-600">Giấy xác nhận nhà trường
+          <input value={schoolDoc} onChange={(event) => setSchoolDoc(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+        <label className="text-xs text-slate-600">Giấy xác nhận ủy ban
+          <input value={committeeDoc} onChange={(event) => setCommitteeDoc(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+      </div>
       <div className="w-full px-gutter-desktop py-space-lg">
         <div className="flex flex-col w-full gap-space-lg">
 

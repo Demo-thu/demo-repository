@@ -106,10 +106,21 @@ export default function InspectionPage() {
         setNotice("Không có kho đích để điều chuyển.");
         return;
       }
+      const people = await api.get("/users?role=VOLUNTEER&limit=5");
+      const volunteer = (people.data.data ?? [])[0];
+      if (!volunteer) {
+        setNotice("Cần ít nhất một tình nguyện viên để lập lệnh điều chuyển.");
+        return;
+      }
+      const phone = String(volunteer.phone || "0901234567");
       const created = await api.post("/transfers", {
         sourceWarehouseId,
         targetWarehouseId: target.id,
         resourceItemIds: [resourceItemId],
+        recipientName: target.name,
+        recipientPhone: phone.length >= 8 ? phone.slice(0, 20) : "0901234567",
+        recipientNote: "Điều chuyển từ trang kiểm định",
+        volunteerIds: [volunteer.id],
       });
       await api.patch(`/transfers/${created.data.id}/dispatch`);
       setNotice(`Đã xuất điều chuyển ${selected[0]} sang ${target.name}. Mã ${created.data.code}.`);

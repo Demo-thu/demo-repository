@@ -203,7 +203,7 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
                     : "text-blue-700 font-semibold"
                 }
               >
-                #{volunteer.id}
+                #{volunteer.code || volunteer.id}
               </span>
               <span className="">•</span>
               <span className="text-[11px]">Đăng ký {volunteer.date}</span>
@@ -374,8 +374,9 @@ export default function VolunteerAndHandlerIntakePage() {
     Promise.all([api.get("/users?role=VOLUNTEER&limit=50"), api.get("/volunteers/leaderboard")])
       .then(([usersResponse, boardResponse]) => {
         const hours = new Map((boardResponse.data.data ?? []).map((row) => [row.volunteer?.id, row.hoursContributed]));
-        const rows = (usersResponse.data.data ?? []).map((user) => ({
+        const rows = [...(usersResponse.data.data ?? [])].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((user, index) => ({
           id: user.id,
+          code: `TV${String(index + 1).padStart(3, "0")}`,
           name: user.fullName,
           date: formatDate(user.createdAt),
           phone: user.phone || "—",
@@ -431,8 +432,9 @@ export default function VolunteerAndHandlerIntakePage() {
         role: "VOLUNTEER",
       });
       const response = await api.get("/users?role=VOLUNTEER&limit=50");
-      const rows = (response.data.data ?? []).map((user) => ({
+      const rows = [...(response.data.data ?? [])].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((user, index) => ({
         id: user.id,
+        code: `TV${String(index + 1).padStart(3, "0")}`,
         name: user.fullName,
         date: formatDate(user.createdAt),
         phone: user.phone || "—",

@@ -36,7 +36,6 @@ import {
   Box,
   Warehouse,
   Printer,
-  Loader2,
   CheckCircle2,
   HelpCircle,
 } from "lucide-react";
@@ -291,7 +290,7 @@ function mapInventoryItem(item) {
     category: CATEGORY_LABEL[item.category] || item.category,
     condition: GRADE_LABEL[item.grade] || "Chưa chấm",
     conditionColorClass: item.grade === "REJECTED" ? "bg-rose-100 text-rose-900" : "bg-teal-100 text-teal-900",
-    location: [item.warehouse?.code, item.binLocation].filter(Boolean).join(" · ") || "Chưa xếp kệ",
+    location: item.binLocation || "Chưa xếp kệ",
     locationIcon: Server,
     date: formatDate(item.receivedAt || item.createdAt),
     status: ITEM_STATUS_LABEL[item.status] || item.status,
@@ -303,7 +302,6 @@ function mapInventoryItem(item) {
 
 export default function InventoryAndCoordinatingItemsPage() {
   const [stockQuery, setStockQuery] = useState("");
-  const [warehouseFilter, setWarehouseFilter] = useState("");
   const [kindFilter, setKindFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -327,8 +325,13 @@ export default function InventoryAndCoordinatingItemsPage() {
   const [shelf, setShelf] = useState("Kệ 02");
 
   useEffect(() => {
-    api.get("/warehouses?limit=20").then((response) => setWarehouses(response.data.data ?? [])).catch(() => undefined);
-    api.get("/items?limit=30").then((response) => {
+    api.get("/warehouses?limit=50").then((response) => {
+      const rows = response.data.data ?? [];
+      setWarehouses(rows);
+      const home = rows.find((row) => row.code === "WH-HAN") || rows[0];
+      if (home) setIntakeWarehouseId(home.id);
+    }).catch(() => undefined);
+    api.get("/items?limit=100").then((response) => {
       const rows = (response.data.data ?? []).map(mapInventoryItem);
       if (rows.length === 0) return;
       setInventoryItems(rows);
@@ -337,7 +340,6 @@ export default function InventoryAndCoordinatingItemsPage() {
     }).catch(() => undefined);
   }, []);
   const [slideOverOpen, setSlideOverOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   const showToast = (type, title, message) => {
     setToast({ visible: true, type, title, message });
@@ -354,7 +356,7 @@ export default function InventoryAndCoordinatingItemsPage() {
     setSlideOverOpen(true);
   };
 
-  const reloadItems = () => api.get("/items?limit=30").then((response) => {
+  const reloadItems = () => api.get("/items?limit=100").then((response) => {
     const rows = (response.data.data ?? []).map(mapInventoryItem);
     if (rows.length === 0) return;
     setInventoryItems(rows);
@@ -369,41 +371,14 @@ export default function InventoryAndCoordinatingItemsPage() {
         return;
       }
       const matched = await api.post(`/allocations/match/${requisition.id}`);
-      showToast("success", "Đã tạo lệnh điều phối", `Ghép ${matched.data.totalItems ?? 0} thiết bị vào ${requisition.code}.`);
+      if (!matched.data.adminConfirmedAt) {
+        await api.patch(`/allocations/${matched.data.id}/confirm`);
+      }
+      showToast("success", "Đã xác nhận phương án", `Ghép ${matched.data.totalItems ?? 0} thiết bị vào ${requisition.code}. Vận đơn do cổng kho lập sau khi admin đã chốt.`);
       reloadItems();
       setSlideOverOpen(false);
     } catch (error) {
       showToast("error", "Không điều phối được", apiError(error, "Không ghép được thiết bị vào đề xuất."));
-    }
-  };
-
-  const handleSaveLocation = async () => {
-    const item = inventoryItems.find((row) => row.id === selectedDevice);
-    if (!item?.itemId) {
-      showToast("error", "Chưa có thiết bị", "Danh sách chưa tải từ cơ sở dữ liệu.");
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const binLocation = `${aisle} / ${shelf}`.trim().slice(0, 80);
-      await api.patch(`/items/${item.itemId}`, {
-        ...(warehouseId ? { warehouseId } : {}),
-        binLocation,
-      });
-      const warehouse = warehouses.find((row) => row.id === warehouseId);
-      setInventoryItems((rows) =>
-        rows.map((row) =>
-          row.itemId === item.itemId
-            ? { ...row, warehouseId, location: [warehouse?.code, binLocation].filter(Boolean).join(" · ") }
-            : row,
-        ),
-      );
-      showToast("success", "Đã lưu vào database", "Vị trí lưu trữ đã được cập nhật.");
-      setSlideOverOpen(false);
-    } catch (error) {
-      showToast("error", "Không lưu được", apiError(error, "Máy chủ từ chối cập nhật vị trí."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -414,11 +389,18 @@ export default function InventoryAndCoordinatingItemsPage() {
   const filteredItems = inventoryItems.filter((item) => {
     const text = `${item.id} ${item.name} ${item.desc} ${item.location} ${item.category}`.toLowerCase();
     if (stockQuery.trim() && !text.includes(stockQuery.trim().toLowerCase())) return false;
-    if (warehouseFilter && !String(item.location).toLowerCase().includes(warehouseFilter.toLowerCase())) return false;
+    const learningCategory = item.category === "Sách" || item.category === "Văn phòng phẩm" || item.category === "Thiết bị tin học";
+    const learning = /laptop|xách tay|thinkpad|latitude|pc|desktop|để bàn|optiplex|prodesk|tablet|ipad|máy tính|tin học|màn hình|máy chiếu|projector|router|wifi|switch|bàn phím|chuột|camera|loa|sách|sgk|vở|bút|thước|compa|tẩy|gọt|hộp bút|cặp/;
+    if (!learningCategory && !learning.test(text)) return false;
     if (kindFilter === "laptop" && !/laptop|xách tay|thinkpad|latitude/.test(text)) return false;
     if (kindFilter === "pc" && !/pc|desktop|để bàn|optiplex|prodesk/.test(text)) return false;
-    if (kindFilter === "tablet" && !/tablet|ipad|tab /.test(text)) return false;
-    if (kindFilter === "sgk" && !/sách|giáo khoa/.test(text)) return false;
+    if (kindFilter === "tablet" && !/tablet|ipad|máy tính bảng/.test(text)) return false;
+    if (kindFilter === "display" && !/màn hình|máy chiếu|projector/.test(text)) return false;
+    if (kindFilter === "network" && !/router|wifi|switch|mạng/.test(text)) return false;
+    if (kindFilter === "book" && item.category !== "Sách") return false;
+    if (kindFilter === "notebook" && !/vở/.test(text)) return false;
+    if (kindFilter === "pen" && !/^bút/.test(text)) return false;
+    if (kindFilter === "tool" && !/thước|compa|tẩy|gọt|hộp bút|cặp/.test(text)) return false;
     if (statusFilter === "ready" && !/sẵn sàng|ready/.test(item.status.toLowerCase())) return false;
     if (statusFilter === "repair" && !/sửa|bảo trì|kiểm/.test(item.status.toLowerCase())) return false;
     if (statusFilter === "pending" && !/chờ|tiếp nhận|thanh lý/.test(`${item.status} ${item.condition}`.toLowerCase())) return false;
@@ -436,7 +418,8 @@ export default function InventoryAndCoordinatingItemsPage() {
       const rows = (response.data.data ?? []).filter((pledge) => pledge.status === "VERIFIED" || pledge.status === "PARTIALLY_RECEIVED");
       setIntakePledges(rows);
       setIntakePledgeId(rows[0]?.id || "");
-      setIntakeWarehouseId(warehouses[0]?.id || "");
+      const home = warehouses.find((row) => row.code === "WH-HAN") || warehouses[0];
+      if (home) setIntakeWarehouseId(home.id);
       if (rows.length === 0) showToast("error", "Chưa có phiếu để nhập", "Chỉ phiếu đã xác minh mới nhập được vào kho.");
     } catch (error) {
       showToast("error", "Không tải được phiếu", apiError(error, "Không đọc được danh sách cam kết."));
@@ -446,7 +429,7 @@ export default function InventoryAndCoordinatingItemsPage() {
   async function submitStockIn(event) {
     event.preventDefault();
     if (!intakePledgeId || !intakeWarehouseId) {
-      showToast("error", "Thiếu thông tin", "Chọn phiếu đã xác minh và kho nhận.");
+        showToast("error", "Thiếu thông tin", "Chọn phiếu đã xác minh. Hệ thống nhập vào kho duy nhất.");
       return;
     }
     try {
@@ -583,19 +566,17 @@ export default function InventoryAndCoordinatingItemsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2 flex-1">
             <div className="relative">
-              <select value={warehouseFilter} onChange={(event) => { setWarehouseFilter(event.target.value); setPage(1); }} className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
-                <option value="">Tất cả các kho</option>
-                {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.code}>{warehouse.name}</option>)}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
-            </div>
-            <div className="relative">
               <select value={kindFilter} onChange={(event) => { setKindFilter(event.target.value); setPage(1); }} className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
-                <option value="">Tất cả loại thiết bị</option>
-                <option value="laptop">Laptop giáo dục</option>
-                <option value="pc">Máy tính để bàn PC</option>
-                <option value="tablet">Máy tính bảng Tablet</option>
-                <option value="sgk">Sách giáo khoa & Nghe nhìn</option>
+                <option value="">Tất cả đồ dùng học tập</option>
+                <option value="laptop">Laptop học tập</option>
+                <option value="pc">Máy tính phòng máy</option>
+                <option value="tablet">Máy tính bảng học tập</option>
+                <option value="display">Màn hình và máy chiếu</option>
+                <option value="network">Thiết bị mạng phòng học</option>
+                <option value="book">Sách giáo khoa</option>
+                <option value="notebook">Vở</option>
+                <option value="pen">Bút</option>
+                <option value="tool">Thước, compa, tẩy, cặp</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
             </div>
@@ -751,20 +732,7 @@ export default function InventoryAndCoordinatingItemsPage() {
                     Cập nhật vị trí lưu trữ
                   </span>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-medium text-slate-600">
-                    Chọn Kho - Trạm
-                  </label>
-                  <div className="relative">
-                    <select value={warehouseId} onChange={(event) => setWarehouseId(event.target.value)} className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm pl-3 pr-8 py-2.5 rounded-lg outline-none cursor-pointer focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all">
-                      <option value="">Giữ kho hiện tại</option>
-                      {warehouses.map((warehouse) => (
-                        <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
-                  </div>
-                </div>
+                <p className="rounded bg-slate-50 px-3 py-2 text-xs text-slate-600">Chỉ có một kho. Vị trí hiện tại: {activeItem?.location || "Chưa xếp kệ"}.</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-medium text-slate-600">
@@ -789,23 +757,7 @@ export default function InventoryAndCoordinatingItemsPage() {
                     />
                   </div>
                 </div>
-                <button
-                  className="mt-2 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all"
-                  onClick={handleSaveLocation}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="animate-spin text-[18px] w-5 h-5" />
-                      <span>Đang lưu...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="text-[18px] w-5 h-5" />
-                      <span>Xác nhận & Lưu vị trí</span>
-                    </>
-                  )}
-                </button>
+                <p className="mt-2 rounded bg-slate-50 px-3 py-2 text-xs text-slate-500">Vị trí kệ chỉ để xem. Admin không sửa kệ từ trang này.</p>
               </div>
 
               <hr className="border-slate-100 my-2" />
@@ -855,10 +807,7 @@ export default function InventoryAndCoordinatingItemsPage() {
               {intakePledges.length === 0 && <option value="">Không có phiếu đã xác minh</option>}
               {intakePledges.map((pledge) => <option key={pledge.id} value={pledge.id}>{pledge.code} · {pledge.donor?.fullName || "Nhà hảo tâm"}</option>)}
             </select>
-            <label className="mt-3 block text-sm font-medium text-slate-700">Kho nhận</label>
-            <select value={intakeWarehouseId} onChange={(event) => setIntakeWarehouseId(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm">
-              {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}
-            </select>
+            <p className="mt-3 rounded bg-slate-50 px-3 py-2 text-sm text-slate-600">Nhập vào kho duy nhất của hệ thống.</p>
             <label className="mt-3 block text-sm font-medium text-slate-700">Số lượng nhập</label>
             <input type="number" min="1" value={intakeQty} onChange={(event) => setIntakeQty(event.target.value)} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
             <label className="mt-3 block text-sm font-medium text-slate-700">Vị trí kệ</label>

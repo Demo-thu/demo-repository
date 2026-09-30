@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api, { apiError } from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import { formatDateTime } from "../lib/labels";
 import { Breadcrumb } from "../components/system-ui";
 import {
@@ -116,16 +117,17 @@ export default function QuickResponeAndReceiptPage() {
       setNotice("Hồ sơ này chưa nằm trong database.");
       return;
     }
-    if (record.pledgeStatus !== "PENDING") {
-      setNotice(`${record.id} đã được xử lý (${record.status}).`);
-      return;
-    }
     try {
-      await api.patch(`/pledges/${record.pledgeId}/verify`);
-      setRecords((rows) => rows.map((row) => row.pledgeId === record.pledgeId ? { ...row, pledgeStatus: "VERIFIED", status: "Đã xác nhận" } : row));
-      setNotice(`Đã xác nhận ${record.id} và lưu vào database.`);
+      if (record.pledgeStatus === "PENDING") {
+        await api.patch(`/pledges/${record.pledgeId}/verify`);
+        setRecords((rows) => rows.map((row) => row.pledgeId === record.pledgeId ? { ...row, pledgeStatus: "VERIFIED", status: "Đã xác nhận" } : row));
+      }
+      const receipt = await api.get(`/pledges/${record.pledgeId}/receipt`);
+      const body = receipt.data;
+      downloadCsv(`bien-lai-${body.code}.csv`, ["Mã", "Nhà hảo tâm", "Trạng thái"], [[body.code, body.donorName, body.status]]);
+      setNotice(`Đã tải biên lai ${body.code}.`);
     } catch (error) {
-      setNotice(apiError(error, "Không xác nhận được cam kết."));
+      setNotice(apiError(error, "Không xác nhận hoặc tải được biên lai."));
     }
   }
 
@@ -418,7 +420,7 @@ export default function QuickResponeAndReceiptPage() {
                   </button>
                   <button type="button" onClick={confirmPledge} className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all">
                     <Download size={16} />
-                    <span>Xác nhận cam kết</span>
+                    <span>Xác nhận và tải biên lai</span>
                   </button>
                   <a
                     className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"

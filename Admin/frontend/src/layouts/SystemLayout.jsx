@@ -86,9 +86,29 @@ export default function SystemLayout() {
     navigate(`/tracking?q=${encodeURIComponent(term)}`);
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      /* Phiên local vẫn được xóa khi máy chủ không phản hồi. */
+    }
     clearSession();
     navigate("/login", { replace: true });
+  }
+
+  async function handleReject(id, schoolName) {
+    const reason = window.prompt("Lý do từ chối (ít nhất 5 ký tự)");
+    if (!reason || reason.trim().length < 5) {
+      setFeedback("Cần lý do từ chối trước khi gửi.");
+      return;
+    }
+    try {
+      await api.patch(`/requisitions/${id}/reject`, { reason: reason.trim() });
+      setRequests((prev) => prev.filter((req) => req.id !== id));
+      setFeedback(`Đã từ chối đề xuất của ${schoolName}`);
+    } catch (error) {
+      setFeedback(apiError(error, "Không từ chối được yêu cầu"));
+    }
   }
 
   return (
@@ -192,12 +212,15 @@ export default function SystemLayout() {
                             <button type="button" onClick={() => viewRequest(req.id)} className="text-[10px] font-medium text-blue-700 hover:underline">
                               ◉ Xem đề xuất
                             </button>
-                            <button
-                              onClick={() => handleApprove(req.id, req.school)}
-                              className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
-                            >
-                              Duyệt nhanh
-                            </button>
+                            <span className="flex gap-1">
+                              <button type="button" onClick={() => handleReject(req.id, req.school)} className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700">Từ chối</button>
+                              <button
+                                onClick={() => handleApprove(req.id, req.school)}
+                                className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
+                              >
+                                Duyệt nhanh
+                              </button>
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -227,7 +250,10 @@ export default function SystemLayout() {
             <dl className="mt-4 space-y-2 text-sm text-slate-700">
               <div className="flex justify-between gap-3"><dt>Trường</dt><dd className="text-right font-medium">{viewing.school?.profile?.organizationName || viewing.school?.fullName || "—"}</dd></div>
               <div className="flex justify-between gap-3"><dt>Mức khẩn</dt><dd>{priorityLabel[viewing.urgencyLevel] || viewing.urgencyLevel}</dd></div>
-              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd>{viewing.status}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd>{viewing.reviewStatus || viewing.status}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Số thứ tự</dt><dd>{viewing.queueOrder ?? "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Giấy nhà trường</dt><dd className="max-w-[16rem] truncate text-right">{viewing.schoolConfirmationUrl || "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Giấy ủy ban</dt><dd className="max-w-[16rem] truncate text-right">{viewing.committeeConfirmationUrl || "—"}</dd></div>
             </dl>
             <ul className="mt-4 space-y-1 text-sm text-slate-600">
               {(viewing.items ?? []).map((item) => <li key={item.id}>{item.quantityNeeded} · {item.category}</li>)}

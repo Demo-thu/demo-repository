@@ -77,7 +77,7 @@ export default function DispatchPage() {
 
   async function openIncidents() {
     try {
-      const response = await api.get('/waybills?status=FAILED&limit=20');
+      const response = await api.get('/waybills/incidents?limit=20');
       setIncidents(response.data.data ?? []);
       setShowIncidents(true);
     } catch (error) {
@@ -714,13 +714,14 @@ export default function DispatchPage() {
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Admin chỉ xem các chuyến đã bị dừng. Không tạo báo cáo mới từ trang này.</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Admin chỉ xem báo cáo sự cố. Không tạo và không sửa.</p>
               <ul className="max-h-72 space-y-2 overflow-auto text-sm">
-                {incidents.length === 0 && <li className="rounded bg-slate-50 px-3 py-3 text-slate-500">Chưa có vận đơn nào ở trạng thái sự cố.</li>}
-                {incidents.map((waybill) => (
-                  <li key={waybill.id} className="rounded bg-slate-50 px-3 py-2">
-                    <b>{waybill.code}</b>
-                    <span className="ml-2 text-slate-500">{WAYBILL_STATUS_LABEL[waybill.status] || waybill.status}</span>
+                {incidents.length === 0 && <li className="rounded bg-slate-50 px-3 py-3 text-slate-500">Chưa có báo cáo sự cố.</li>}
+                {incidents.map((incident) => (
+                  <li key={incident.id} className="rounded bg-slate-50 px-3 py-2">
+                    <b>{incident.waybill?.code || "Vận đơn"}</b>
+                    <span className="ml-2 text-slate-500">{incident.reporter?.fullName || "Tình nguyện viên"}</span>
+                    <p className="mt-1 text-slate-700">{incident.reason}</p>
                   </li>
                 ))}
               </ul>

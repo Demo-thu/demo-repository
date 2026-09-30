@@ -5,7 +5,7 @@
       "label": "EduShare API",
       "type": "npm",
       "script": "start:dev",
-      "path": "backend",
+      "path": "Admin/backend",
       "isBackground": true,
       "problemMatcher": {
         "owner": "nest",
