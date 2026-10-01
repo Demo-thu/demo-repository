@@ -149,4 +149,13 @@
   ::-webkit-scrollbar {
     display: none;
   }
+
+  @keyframes laserSweep {
+    0% { top: 6%; opacity: 0.8; }
+    50% { top: 88%; opacity: 1; }
+    100% { top: 6%; opacity: 0.8; }
+  }
+  .animate-laser {
+    animation: laserSweep 2.4s ease-in-out infinite;
+  }
 }

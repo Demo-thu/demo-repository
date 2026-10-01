@@ -274,7 +274,7 @@ export default function RepairPage() {
 
         {/* Kanban Board & Side Panel */}
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
-          {/* KANBAN WORKSPACE */}
+          {/* Kanban Workspace */}
           <div className="flex flex-col gap-4 lg:col-span-8">
             <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
               {/* Column 1 */}
@@ -423,7 +423,7 @@ export default function RepairPage() {
             </div>
           </div>
 
-          {/* RIGHT PANEL */}
+          {/* Right Panel */}
           <div className="sticky top-20 flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm lg:col-span-4 border border-slate-100">
             {/* Header */}
             <div className="flex items-start justify-between pb-3">

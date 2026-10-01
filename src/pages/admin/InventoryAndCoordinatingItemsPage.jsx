@@ -323,7 +323,7 @@ export default function InventoryAndCoordinatingItemsPage() {
     <>
       <Breadcrumb current="Tồn kho thiết bị" />
       <div className="flex flex-col w-full pb-16">
-        {/* BREADCRUMB & HEADER TITLE */}
+        {/* Breadcrumb & Header Title */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1 text-slate-500 text-xs font-medium tracking-wide">
@@ -356,7 +356,7 @@ export default function InventoryAndCoordinatingItemsPage() {
           </div>
         </div>
 
-        {/* TOP KPI CARDS */}
+        {/* Top Kpi Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <KPICard
             title="Tổng thiết bị đang lưu kho"
@@ -400,7 +400,7 @@ export default function InventoryAndCoordinatingItemsPage() {
           />
         </div>
 
-        {/* TOOLBAR & FILTERS */}
+        {/* Toolbar & Filters */}
         <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-[20px] w-5 h-5" />
@@ -458,9 +458,9 @@ export default function InventoryAndCoordinatingItemsPage() {
           </div>
         </div>
 
-        {/* MAIN DATA SECTION & SLIDE-OVER WORKSPACE */}
+        {/* Main Data Section & Slide-over Workspace */}
         <div className="relative flex gap-6 items-start">
-          {/* DATA TABLE CONTAINER */}
+          {/* Data Table Container */}
           <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300">
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left text-sm border-collapse">
