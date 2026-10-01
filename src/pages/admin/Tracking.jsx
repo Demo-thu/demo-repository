@@ -27,7 +27,7 @@ import {
   Verified,
   Warehouse,
 } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 export default function TrackingPage() {
   const [searchValue, setSearchValue] = useState("QR-8821");

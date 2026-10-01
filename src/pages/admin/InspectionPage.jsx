@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, Box, CheckCircle2, ClipboardList, Download, Factory, FilePlus2, Laptop, ScanLine, Search, ShieldCheck, Wrench } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 const inventory = [
   ["TB-DELL-5520", "Laptop Dell Latitude 5520", "i5 11th Gen • 8GB RAM", "Tập đoàn VNPT", "Cần nâng cấp SSD", "Trần Hùng", "Đang xem"],

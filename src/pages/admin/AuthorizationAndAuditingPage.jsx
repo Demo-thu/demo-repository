@@ -16,7 +16,7 @@ import {
   Truck,
   Monitor,
 } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 const usersData = [
   {

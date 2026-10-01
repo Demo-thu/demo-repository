@@ -4,7 +4,7 @@ import {
   GraduationCap, Laptop, MapPin, Monitor, RotateCcw, Search, ShieldCheck,
   Users,
 } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 const students = [
   ["HS-8273", "Nguyễn V*** A***", "Lớp 7A1", "PTDTBT THCS Trà Dơn", "Nam Trà My, Quảng Nam", ["Laptop", "Sách giáo khoa"], "24/10/2024"],

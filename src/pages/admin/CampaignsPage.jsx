@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Building2, CheckCircle2, ChevronRight, Download, Flag, MapPin, Package, PlusCircle, Search, SlidersHorizontal } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 const campaigns = [
   { id: "CD-2024-ML08", place: "Mường Lát, Thanh Hóa", name: "Chắp Cánh Ước Mơ Tin Học 2024", detail: "Trang bị đồng bộ phòng máy 35 bộ PC cấu hình Core i5 kèm bộ switch mạng cho trường...", progress: 85.7, received: "Đã tiếp nhận: 30 / 35 bộ PC", footer: "Đã kiểm định 100%", action: "Điều phối kho", image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80" },

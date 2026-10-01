@@ -21,7 +21,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { Breadcrumb } from "../components/system-ui";
+import { Breadcrumb } from "../../components/system-ui";
 
 const proofImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC8XWWo2cvIqSRwDIKw6QKN1HIn8acsK0jO0Ieph4Goc9_q3VNBmrQmksFqiwcsek1DYmFZFCby9p4REeBx9KlPOxm4Gi5u-aB7XLrnpZGPgZeCYBZUF0PF7X8NXYhIsrfIcTAQxw_Jv8SQrNUURyoTFxhStKmBKT6LVKIaRekjSzWJt35ZsiLIfgoLlPlUSCDEA1uPSq1p-IYxLqIZlMpyPmzj4LTEJJuSyV229RfLV_vTwOwmCk9O",
