@@ -28,6 +28,26 @@ import SchoolPoDPage from "./pages/school/SchoolPoDPage";
 import SchoolDeliveryHistoryPage from "./pages/school/SchoolDeliveryHistoryPage";
 import SchoolEquipmentPage from "./pages/school/SchoolEquipmentPage";
 
+// Warehouse
+import WarehouseDeliveryHistoryPage from "./pages/warehouse/WarehouseDeliveryHistoryPage";
+import WarehouseReceivePage from "./pages/warehouse/WarehouseReceivePage";
+import WarehouseScanQRPage from "./pages/warehouse/WarehouseScanQRPage";
+import WarehouseDonationReceiptPage from "./pages/warehouse/WarehouseDonationReceiptPage";
+import WarehouseInventoryPage from "./pages/warehouse/WarehouseInventoryPage";
+import WarehouseRacksPage from "./pages/warehouse/WarehouseRacksPage";
+import WarehouseAuditReportPage from "./pages/warehouse/WarehouseAuditReportPage";
+import WarehouseDispatchPage from "./pages/warehouse/WarehouseDispatchPage";
+import WarehouseIncidentReportPage from "./pages/warehouse/WarehouseIncidentReportPage";
+
+// Volunteer
+import VolunteerAttendancePage from "./pages/volunteer/VolunteerAttendancePage";
+import VolunteerLeaderboardPage from "./pages/volunteer/VolunteerLeaderboardPage";
+import VolunteerAssignedWaybillPage from "./pages/volunteer/VolunteerAssignedWaybillPage";
+import VolunteerRouteGPSPage from "./pages/volunteer/VolunteerRouteGPSPage";
+import VolunteerPoDPage from "./pages/volunteer/VolunteerPoDPage";
+import VolunteerIncidentReportPage from "./pages/volunteer/VolunteerIncidentReportPage";
+import VolunteerWarehousePickupPage from "./pages/volunteer/VolunteerWarehousePickupPage";
+
 
 // Admin (Moved from Donor)
 import DonorTransparencyPage from "./pages/admin/DonorTransparencyPage";
@@ -60,6 +80,27 @@ export default function App() {
         <Route path="/school/pod" element={<SchoolPoDPage />} />
         <Route path="/school/delivery-history" element={<SchoolDeliveryHistoryPage />} />
         <Route path="/school/equipment" element={<SchoolEquipmentPage />} />
+
+        {/* Warehouse */}
+        <Route path="/warehouse/delivery-history" element={<WarehouseDeliveryHistoryPage />} />
+        <Route path="/warehouse/receive" element={<WarehouseReceivePage />} />
+        <Route path="/warehouse/scan-qr" element={<WarehouseScanQRPage />} />
+        <Route path="/warehouse/donation-receipt" element={<WarehouseDonationReceiptPage />} />
+        <Route path="/warehouse/inventory" element={<WarehouseInventoryPage />} />
+        <Route path="/warehouse/racks" element={<WarehouseRacksPage />} />
+        <Route path="/warehouse/audit-report" element={<WarehouseAuditReportPage />} />
+        <Route path="/warehouse/dispatch" element={<WarehouseDispatchPage />} />
+        <Route path="/warehouse/incident-report" element={<WarehouseIncidentReportPage />} />
+        
+        {/* Volunteer */}
+        <Route path="/volunteer/attendance" element={<VolunteerAttendancePage />} />
+        <Route path="/volunteer/leaderboard" element={<VolunteerLeaderboardPage />} />
+        <Route path="/volunteer/waybill" element={<VolunteerAssignedWaybillPage />} />
+        <Route path="/volunteer/route-gps" element={<VolunteerRouteGPSPage />} />
+        <Route path="/volunteer/pod" element={<VolunteerPoDPage />} />
+        <Route path="/volunteer/incident" element={<VolunteerIncidentReportPage />} />
+        <Route path="/volunteer/warehouse-pickup" element={<VolunteerWarehousePickupPage />} />
+        
         <Route element={<SystemLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="proofs" element={<ProofsPage />} />
