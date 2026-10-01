@@ -95,11 +95,9 @@ function Kpi({ icon: Icon, label, value, note, blue, teal }) {
     <article className="rounded-lg bg-white p-5 shadow-sm">
       <div className="flex justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            {label}
-          </p>
+          <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{label}</p>
           <h2
-            className={`mt-3 font-display text-3xl font-semibold ${blue ? "text-blue-700" : teal ? "text-teal-700" : ""}`}
+            className={`font-display mt-3 text-3xl font-semibold ${blue ? "text-blue-700" : teal ? "text-teal-700" : ""}`}
           >
             {value}
           </h2>
@@ -138,13 +136,11 @@ export default function InspectionPage() {
               <p className="text-[10px] font-semibold text-teal-700">
                 TRẠM KỸ THUẬT TRỌNG ĐIỂM　• Trực thuộc Tổng Kho EduShare
               </p>
-              <h1 className="mt-1 max-w-3xl font-display text-2xl font-semibold leading-tight md:text-[28px]">
-                Quản Lý Kho Hàng & Trạm Kỹ Thuật Kiểm Định - Kho Miền Bắc (Hà
-                Nội)
+              <h1 className="font-display mt-1 max-w-3xl text-2xl leading-tight font-semibold md:text-[28px]">
+                Quản Lý Kho Hàng & Trạm Kỹ Thuật Kiểm Định - Kho Miền Bắc (Hà Nội)
               </h1>
               <p className="mt-1 text-sm text-slate-600">
-                Quy trình tiếp nhận, kiểm định 7 bước, chuẩn hóa thiết bị tin
-                học đường trao tặng vùng sâu.
+                Quy trình tiếp nhận, kiểm định 7 bước, chuẩn hóa thiết bị tin học đường trao tặng vùng sâu.
               </p>
             </div>
           </div>
@@ -165,12 +161,10 @@ export default function InspectionPage() {
         <section className="flex items-center gap-3 rounded-lg bg-rose-100 p-4 text-rose-800">
           <AlertTriangle size={25} />
           <div className="flex-1">
-            <b className="text-xs uppercase">
-              Cảnh báo tồn kho & linh kiện điều phối liên kho
-            </b>
+            <b className="text-xs uppercase">Cảnh báo tồn kho & linh kiện điều phối liên kho</b>
             <p className="text-xs">
-              Kho miền Trung sắp hết vật tư đóng gói chống sốc và dây sạc Type-C
-              65W. Dự kiến ảnh hưởng 42 đơn hàng xuất cho trường vùng cao.
+              Kho miền Trung sắp hết vật tư đóng gói chống sốc và dây sạc Type-C 65W. Dự kiến ảnh hưởng 42 đơn hàng xuất
+              cho trường vùng cao.
             </p>
           </div>
           <button className="rounded bg-rose-700 px-3 py-2 text-xs font-semibold text-white">
@@ -178,12 +172,7 @@ export default function InspectionPage() {
           </button>
         </section>
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Kpi
-            icon={Box}
-            label="Chờ tiếp nhận & phân loại"
-            value="320"
-            note="↓ 8 đợt tiếp nhận mới sáng nay"
-          />
+          <Kpi icon={Box} label="Chờ tiếp nhận & phân loại" value="320" note="↓ 8 đợt tiếp nhận mới sáng nay" />
           <Kpi
             icon={ClipboardList}
             label="Đang kiểm định chất lượng"
@@ -191,12 +180,7 @@ export default function InspectionPage() {
             blue
             note="◷ Ưu tiên: 35 máy cho điểm trường Mù Cang Chải"
           />
-          <Kpi
-            icon={Wrench}
-            label="Đang thay thế / sửa chữa"
-            value="88"
-            note="⚡ 14 máy chờ bổ sung SSD NVMe"
-          />
+          <Kpi icon={Wrench} label="Đang thay thế / sửa chữa" value="88" note="⚡ 14 máy chờ bổ sung SSD NVMe" />
           <Kpi
             icon={ShieldCheck}
             label="Đã đạt chuẩn – sẵn sàng xuất"
@@ -209,24 +193,14 @@ export default function InspectionPage() {
           <button className="rounded bg-blue-600 px-3 py-2 text-xs font-semibold text-white">
             ▦ Tất cả thiết bị (1,165)
           </button>
-          {[
-            "⌛ Chờ kiểm định (320)",
-            "⚒ Đang sửa chữa (88)",
-            "◉ Đạt chuẩn sẵn sàng (612)",
-          ].map((x) => (
-            <button
-              key={x}
-              className="rounded bg-blue-50 px-3 py-2 text-xs text-slate-600"
-            >
+          {["⌛ Chờ kiểm định (320)", "⚒ Đang sửa chữa (88)", "◉ Đạt chuẩn sẵn sàng (612)"].map((x) => (
+            <button key={x} className="rounded bg-blue-50 px-3 py-2 text-xs text-slate-600">
               {x}
             </button>
           ))}
           <label className="ml-auto flex items-center gap-1 rounded bg-blue-50 px-2 text-xs text-slate-500">
             <Search size={14} />
-            <input
-              className="w-36 bg-transparent py-1 outline-none"
-              placeholder="Mã lô hoặc serial..."
-            />
+            <input className="w-36 bg-transparent py-1 outline-none" placeholder="Mã lô hoặc serial..." />
           </label>
           <button className="rounded bg-blue-50 px-3 text-slate-600">
             <Download size={15} />
@@ -240,8 +214,7 @@ export default function InspectionPage() {
                   ☷ Danh Sách Lô Thiết Bị Tiếp Nhận & Điều Phối Kỹ Thuật
                 </h2>
                 <p className="text-[10px] text-slate-500">
-                  Tiến độ ca sáng: <b>48/70 thiết bị</b>　•　Hiệu suất đạt
-                  chuẩn: <b className="text-teal-700">89.4%</b>
+                  Tiến độ ca sáng: <b>48/70 thiết bị</b>　•　Hiệu suất đạt chuẩn: <b className="text-teal-700">89.4%</b>
                 </p>
               </div>
               <div className="h-2 w-40 overflow-hidden rounded bg-blue-100">
@@ -250,7 +223,7 @@ export default function InspectionPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px] text-left">
-                <thead className="bg-blue-50 text-[9px] uppercase text-slate-500">
+                <thead className="bg-blue-50 text-[9px] text-slate-500 uppercase">
                   <tr>
                     {[
                       "Mã định danh / QR",
@@ -276,16 +249,12 @@ export default function InspectionPage() {
                       <td className="px-4 py-3 font-semibold text-blue-700">
                         ▦ {row[0]}
                         <br />
-                        <span className="text-[10px] text-slate-500">
-                          Lô #2024-VNPT-08
-                        </span>
+                        <span className="text-[10px] text-slate-500">Lô #2024-VNPT-08</span>
                       </td>
                       <td className="px-4 py-3">
                         <b>{row[1]}</b>
                         <br />
-                        <span className="text-[10px] text-slate-500">
-                          {row[2]}
-                        </span>
+                        <span className="text-[10px] text-slate-500">{row[2]}</span>
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {row[3]}
@@ -293,15 +262,7 @@ export default function InspectionPage() {
                         <span className="text-[10px]">18/10/2024</span>
                       </td>
                       <td className="px-4 py-3">
-                        <Chip
-                          color={
-                            i === 3
-                              ? "red"
-                              : i === 1 || i === 4 || i === 5
-                                ? "teal"
-                                : "blue"
-                          }
-                        >
+                        <Chip color={i === 3 ? "red" : i === 1 || i === 4 || i === 5 ? "teal" : "blue"}>
                           ◉ {row[4]}
                         </Chip>
                       </td>
@@ -337,12 +298,9 @@ export default function InspectionPage() {
             <article className="rounded-lg bg-white p-5 shadow-sm">
               <div className="flex justify-between">
                 <div>
-                  <h2 className="font-display text-lg font-semibold">
-                    Phiếu Kỹ Thuật Số #PKD-8821
-                  </h2>
+                  <h2 className="font-display text-lg font-semibold">Phiếu Kỹ Thuật Số #PKD-8821</h2>
                   <p className="text-[10px] text-slate-500">
-                    Quy trình kiểm định chất lượng máy tính tái thiết bị giáo
-                    dục
+                    Quy trình kiểm định chất lượng máy tính tái thiết bị giáo dục
                   </p>
                 </div>
                 <Chip>TB-DELL-5520</Chip>
@@ -354,12 +312,10 @@ export default function InspectionPage() {
                   <br />
                   S/N: 7X89KL2 • Tiếp nhận từ: VNPT Hà Nội
                   <br />
-                  <span className="text-teal-700">
-                    ☼ Dự kiến phân bổ: THCS Tà Mung (Lai Châu)
-                  </span>
+                  <span className="text-teal-700">☼ Dự kiến phân bổ: THCS Tà Mung (Lai Châu)</span>
                 </p>
               </div>
-              <h3 className="mt-5 text-[10px] font-semibold uppercase text-slate-500">
+              <h3 className="mt-5 text-[10px] font-semibold text-slate-500 uppercase">
                 Hạng mục đánh giá kỹ thuật (5/5)
               </h3>
               {[
@@ -369,10 +325,7 @@ export default function InspectionPage() {
                 ["Ổ Cứng & Tốc Độ Đọc/Ghi", "Cần Nâng Cấp", "blue"],
                 ["Nhiệt Độ & Hiệu Năng CPU/RAM", "Ổn Định", "teal"],
               ].map((x) => (
-                <div
-                  key={x[0]}
-                  className="mt-2 flex items-center justify-between rounded bg-blue-50 p-3 text-xs"
-                >
+                <div key={x[0]} className="mt-2 flex items-center justify-between rounded bg-blue-50 p-3 text-xs">
                   <span>
                     <CheckCircle2
                       className={`mr-1 inline ${x[2] === "red" ? "text-rose-500" : "text-teal-700"}`}
@@ -380,48 +333,38 @@ export default function InspectionPage() {
                     />
                     <b>{x[0]}</b>
                     <br />
-                    <small className="ml-5 text-slate-500">
-                      Đo sáng, kiểm tra theo tiêu chuẩn kỹ thuật
-                    </small>
+                    <small className="ml-5 text-slate-500">Đo sáng, kiểm tra theo tiêu chuẩn kỹ thuật</small>
                   </span>
                   <Chip color={x[2]}>{x[1]}</Chip>
                 </div>
               ))}
               <div className="mt-4 rounded bg-blue-100 p-3">
                 <p className="text-xs">
-                  <b>KẾT LUẬN THẨM ĐỊNH</b>　{" "}
-                  <span className="text-blue-700">KTV: Nguyễn Văn Minh</span>
+                  <b>KẾT LUẬN THẨM ĐỊNH</b>　 <span className="text-blue-700">KTV: Nguyễn Văn Minh</span>
                 </p>
-                <h3 className="mt-2 font-display text-base font-semibold text-blue-700">
+                <h3 className="font-display mt-2 text-base font-semibold text-blue-700">
                   ⚒ Cần nâng cấp SSD + Thay pin mới
                 </h3>
                 <p className="mt-2 text-xs text-slate-600">
-                  Khung vỏ đạt 95%, bản lề chắc. Sau khi thay thỏi pin 4-cell và
-                  nâng cấp SSD NVMe 256GB từ Kho linh kiện sẵn sàng cấp mã
-                  EduSafe.
+                  Khung vỏ đạt 95%, bản lề chắc. Sau khi thay thỏi pin 4-cell và nâng cấp SSD NVMe 256GB từ Kho linh
+                  kiện sẵn sàng cấp mã EduSafe.
                 </p>
               </div>
               <div className="mt-4 flex gap-2">
-                <button className="flex-1 rounded bg-blue-100 py-2 text-xs font-semibold">
-                  ▣ Lưu Phiếu Tạm
-                </button>
+                <button className="flex-1 rounded bg-blue-100 py-2 text-xs font-semibold">▣ Lưu Phiếu Tạm</button>
                 <button className="flex-1 rounded bg-slate-600 py-2 text-xs font-semibold text-white">
                   ⚒ Chuyển Sang Sửa Chữa
                 </button>
               </div>
               <button
-                onClick={() =>
-                  setNotice(
-                    "Đã xác nhận nhập kho sẵn sàng điều phối và xuất tem EduSafe.",
-                  )
-                }
+                onClick={() => setNotice("Đã xác nhận nhập kho sẵn sàng điều phối và xuất tem EduSafe.")}
                 className="mt-2 w-full rounded bg-blue-600 py-3 text-xs font-semibold text-white"
               >
                 ◉ Xác Nhận Nhập Kho Sẵn Sàng Điều Phối (Xuất Tem)
               </button>
             </article>
             <article className="rounded-lg bg-white p-5 shadow-sm">
-              <h3 className="text-[10px] font-semibold uppercase text-slate-500">
+              <h3 className="text-[10px] font-semibold text-slate-500 uppercase">
                 Lịch sử di chuyển & nhật ký kho (Audit Trail)
               </h3>
               {[
@@ -429,10 +372,7 @@ export default function InspectionPage() {
                 "11:15 - Hoàn tất quét mã QR & phân loại sơ bộ",
                 "Dự kiến 14:00 - Thay cell pin và cài đặt Hệ điều hành EduShare Linux",
               ].map((x) => (
-                <p
-                  key={x}
-                  className="mt-3 border-l-2 border-blue-300 pl-3 text-xs"
-                >
+                <p key={x} className="mt-3 border-l-2 border-blue-300 pl-3 text-xs">
                   {x}
                 </p>
               ))}
@@ -443,51 +383,29 @@ export default function InspectionPage() {
           <div className="flex justify-between">
             <div>
               <h2 className="font-display text-lg font-semibold">
-                🚚 Lệnh Xuất Điều Phối Thiết Bị Ra Điểm Trường (Display
-                Warehouse Orders)
+                🚚 Lệnh Xuất Điều Phối Thiết Bị Ra Điểm Trường (Display Warehouse Orders)
               </h2>
               <p className="text-xs text-slate-500">
-                Tiến độ gom hàng, đóng thùng bảo vệ và niêm phong chứng chỉ
-                EduShare trước khi bàn giao cho xe vận chuyển.
+                Tiến độ gom hàng, đóng thùng bảo vệ và niêm phong chứng chỉ EduShare trước khi bàn giao cho xe vận
+                chuyển.
               </p>
             </div>
-            <button className="rounded bg-blue-100 px-4 text-xs">
-              Xem Toàn Bộ 18 Đơn
-            </button>
+            <button className="rounded bg-blue-100 px-4 text-xs">Xem Toàn Bộ 18 Đơn</button>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {[
-              [
-                "#ORD-2024-LC01",
-                "THCS Tà Mung, Lai Châu",
-                "35 / 35 máy (100%)",
-                "Xe Viettel Post lấy lúc 15:30",
-              ],
-              [
-                "#ORD-2024-HG04",
-                "Tiểu Học Pải Lủng, Mèo Vạc",
-                "16 / 20 máy (80%)",
-                "Dự kiến xuất: Sáng mai",
-              ],
-              [
-                "#ORD-2024-SL02",
-                "Trường Phổ Thông Số 2 Bắc Yên",
-                "15 / 15 PC",
-                "Thiếu 5 chiếc",
-              ],
+              ["#ORD-2024-LC01", "THCS Tà Mung, Lai Châu", "35 / 35 máy (100%)", "Xe Viettel Post lấy lúc 15:30"],
+              ["#ORD-2024-HG04", "Tiểu Học Pải Lủng, Mèo Vạc", "16 / 20 máy (80%)", "Dự kiến xuất: Sáng mai"],
+              ["#ORD-2024-SL02", "Trường Phổ Thông Số 2 Bắc Yên", "15 / 15 PC", "Thiếu 5 chiếc"],
             ].map((x) => (
               <article key={x[0]} className="rounded bg-blue-50 p-4">
                 <b className="text-xs text-blue-700">{x[0]}</b>
-                <h3 className="mt-2 font-display text-sm font-semibold">
-                  {x[1]}
-                </h3>
+                <h3 className="font-display mt-2 text-sm font-semibold">{x[1]}</h3>
                 <p className="mt-3 text-xs">
-                  Đã kiểm định & đóng hộp:{" "}
-                  <b className="text-teal-700">{x[2]}</b>
+                  Đã kiểm định & đóng hộp: <b className="text-teal-700">{x[2]}</b>
                 </p>
                 <footer className="mt-3 text-[10px] text-slate-500">
-                  {x[3]}　{" "}
-                  <b className="float-right text-blue-700">Theo dõi ›</b>
+                  {x[3]}　 <b className="float-right text-blue-700">Theo dõi ›</b>
                 </footer>
               </article>
             ))}
@@ -495,7 +413,7 @@ export default function InspectionPage() {
         </section>
       </main>
       {notice && (
-        <div className="fixed bottom-5 right-5 z-50 flex gap-3 rounded-lg bg-teal-700 px-4 py-3 text-sm text-white shadow-xl">
+        <div className="fixed right-5 bottom-5 z-50 flex gap-3 rounded-lg bg-teal-700 px-4 py-3 text-sm text-white shadow-xl">
           <CheckCircle2 size={18} />
           {notice}
           <button onClick={() => setNotice("")}>×</button>

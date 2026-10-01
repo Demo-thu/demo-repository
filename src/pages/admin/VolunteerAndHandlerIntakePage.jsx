@@ -141,36 +141,21 @@ const volunteers = [
   },
 ];
 
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  trend,
-  colorClass,
-  iconClass,
-  trendIcon: TrendIcon,
-}) {
+function StatCard({ title, value, subtitle, icon: Icon, trend, colorClass, iconClass, trendIcon: TrendIcon }) {
   return (
-    <div className="relative overflow-hidden bg-white rounded-xl p-6 shadow-sm flex items-start justify-between">
+    <div className="relative flex items-start justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-          {title}
-        </span>
-        <div className="flex items-baseline gap-1 mt-1">
-          <span className={`text-4xl font-display font-bold ${colorClass}`}>
-            {value}
-          </span>
+        <span className="text-xs font-medium tracking-wider text-slate-500 uppercase">{title}</span>
+        <div className="mt-1 flex items-baseline gap-1">
+          <span className={`font-display text-4xl font-bold ${colorClass}`}>{value}</span>
           <span className="text-xs font-medium text-slate-500">{subtitle}</span>
         </div>
-        <div className="flex items-center gap-1 mt-2 text-xs font-medium">
+        <div className="mt-2 flex items-center gap-1 text-xs font-medium">
           {TrendIcon && <TrendIcon className="text-[16px] text-teal-700" />}
           {trend}
         </div>
       </div>
-      <div
-        className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconClass}`}
-      >
+      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconClass}`}>
         <Icon className="text-[26px]" />
       </div>
     </div>
@@ -180,24 +165,20 @@ function StatCard({
 function VolunteerRow({ volunteer, onApprove, onReject }) {
   return (
     <tr
-      className={`hover:bg-slate-100 transition-colors group ${volunteer.status === "Pending" ? "bg-slate-50/40" : ""} ${volunteer.status === "Inactive" ? "opacity-85" : ""}`}
+      className={`group transition-colors hover:bg-slate-100 ${volunteer.status === "Pending" ? "bg-slate-50/40" : ""} ${volunteer.status === "Inactive" ? "opacity-85" : ""}`}
     >
-      <td className="py-4 px-6">
+      <td className="px-6 py-4">
         <div className="flex items-center gap-2">
           <img
-            className={`w-10 h-10 rounded-full object-cover shadow-sm bg-slate-200 ${volunteer.status === "Inactive" ? "filter grayscale-[30%]" : ""}`}
+            className={`h-10 w-10 rounded-full bg-slate-200 object-cover shadow-sm ${volunteer.status === "Inactive" ? "grayscale-[30%] filter" : ""}`}
             src={volunteer.avatar}
           />
-          <div className="flex flex-col min-w-0">
-            <span className="text-base font-display font-semibold text-slate-900 truncate">
-              {volunteer.name}
-            </span>
-            <div className="flex items-center gap-1 text-slate-500 text-sm font-mono">
+          <div className="flex min-w-0 flex-col">
+            <span className="font-display truncate text-base font-semibold text-slate-900">{volunteer.name}</span>
+            <div className="flex items-center gap-1 font-mono text-sm text-slate-500">
               <span
                 className={
-                  volunteer.status === "Inactive"
-                    ? "text-slate-500 font-semibold"
-                    : "text-blue-700 font-semibold"
+                  volunteer.status === "Inactive" ? "font-semibold text-slate-500" : "font-semibold text-blue-700"
                 }
               >
                 #{volunteer.id}
@@ -208,30 +189,26 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
           </div>
         </div>
       </td>
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <div className="flex flex-col">
-          <span className="text-sm font-mono text-slate-900 font-medium">
-            {volunteer.phone}
-          </span>
-          <span className="text-slate-500 text-xs truncate">
-            {volunteer.email}
-          </span>
+          <span className="font-mono text-sm font-medium text-slate-900">{volunteer.phone}</span>
+          <span className="truncate text-xs text-slate-500">{volunteer.email}</span>
         </div>
       </td>
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <div className="flex items-center gap-1 text-slate-900">
-          <MapPin className="text-[16px] text-slate-500 w-5 h-5" />
+          <MapPin className="h-5 w-5 text-[16px] text-slate-500" />
           <span className="font-medium">{volunteer.area}</span>
         </div>
       </td>
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <div className="flex flex-wrap gap-1">
           {volunteer.skills.map((skill, idx) => (
             <span
               key={idx}
-              className={`px-2 py-0.5 rounded-full text-[11px] ${
+              className={`rounded-full px-2 py-0.5 text-[11px] ${
                 skill.type === "primary"
-                  ? "bg-slate-200 text-slate-900 font-semibold"
+                  ? "bg-slate-200 font-semibold text-slate-900"
                   : skill.type === "secondary"
                     ? "bg-slate-100 text-slate-600"
                     : "bg-teal-100 text-teal-900"
@@ -242,8 +219,8 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
           ))}
         </div>
       </td>
-      <td className="py-4 px-4 text-center">
-        <span className="inline-flex items-center gap-1 text-sm font-medium font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded-lg">
+      <td className="px-4 py-4 text-center">
+        <span className="inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-sm font-bold font-medium text-slate-900">
           <span
             className={`text-[14px] ${volunteer.status === "Inactive" ? "text-amber-500/70" : volunteer.status === "Pending" ? "text-slate-500" : "text-amber-500"}`}
           >
@@ -252,72 +229,70 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
           {volunteer.hours} giờ
         </span>
       </td>
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         {volunteer.status === "Active" && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-100 text-teal-900 text-xs font-medium text-[11px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-600"></span>{" "}
-            Active
+          <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2.5 py-1 text-xs text-[11px] font-medium text-teal-900">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-600"></span> Active
           </span>
         )}
         {volunteer.status === "Pending" && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 text-xs font-medium text-[11px] font-semibold">
-            <Clock className="text-[12px] w-5 h-5" /> Pending
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs text-[11px] font-medium font-semibold text-rose-900">
+            <Clock className="h-5 w-5 text-[12px]" /> Pending
           </span>
         )}
         {volunteer.status === "Inactive" && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-300 text-slate-500 text-xs font-medium text-[11px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>{" "}
-            Inactive
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-300 px-2.5 py-1 text-xs text-[11px] font-medium text-slate-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span> Inactive
           </span>
         )}
       </td>
-      <td className="py-4 px-6 text-right">
+      <td className="px-6 py-4 text-right">
         <div className="flex items-center justify-end gap-1.5">
           {volunteer.status === "Pending" ? (
             <>
               <button
-                className="w-8 h-8 rounded-lg bg-teal-100 text-teal-900 hover:bg-teal-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-teal-900 shadow-sm transition-all hover:bg-teal-600 hover:text-white"
                 onClick={() => onApprove(volunteer.id, volunteer.name)}
                 title="Phê duyệt TNV"
               >
-                <Check className="text-[18px] w-5 h-5" />
+                <Check className="h-5 w-5 text-[18px]" />
               </button>
               <button
-                className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white"
                 onClick={() => onReject(volunteer.id, volunteer.name)}
                 title="Từ chối hồ sơ"
               >
-                <X className="text-[18px] w-5 h-5" />
+                <X className="h-5 w-5 text-[18px]" />
               </button>
             </>
           ) : volunteer.status === "Inactive" ? (
             <>
               <button
-                className="px-2.5 py-1 text-slate-500 hover:text-blue-700 hover:bg-slate-200 rounded-lg text-xs font-medium font-label-sm text-label-sm flex items-center gap-1 transition-colors"
+                className="font-label-sm text-label-sm flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-200 hover:text-blue-700"
                 title="Kích hoạt lại tài khoản"
               >
-                <RefreshCcw className="text-[16px] w-5 h-5" /> Kích hoạt lại
+                <RefreshCcw className="h-5 w-5 text-[16px]" /> Kích hoạt lại
               </button>
               <button
-                className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-lg transition-colors"
+                className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900"
                 title="Xem hồ sơ chi tiết"
               >
-                <Eye className="text-[18px] w-5 h-5" />
+                <Eye className="h-5 w-5 text-[18px]" />
               </button>
             </>
           ) : (
             <>
               <button
-                className="px-2.5 py-1 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium font-label-sm text-label-sm flex items-center gap-1 transition-colors"
+                className="font-label-sm text-label-sm flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
                 title="Điều phối tuyến giao nhận"
               >
-                <Route className="text-[16px] w-5 h-5" /> Điều phối
+                <Route className="h-5 w-5 text-[16px]" /> Điều phối
               </button>
               <button
-                className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-lg transition-colors"
+                className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900"
                 title="Xem hồ sơ chi tiết"
               >
-                <Eye className="text-[18px] w-5 h-5" />
+                <Eye className="h-5 w-5 text-[18px]" />
               </button>
             </>
           )}
@@ -327,27 +302,18 @@ function VolunteerRow({ volunteer, onApprove, onReject }) {
   );
 }
 
-function ProcessCard({
-  number,
-  title,
-  text,
-  colorClass,
-  iconClass,
-  icon: Icon,
-}) {
+function ProcessCard({ number, title, text, colorClass, iconClass, icon: Icon }) {
   return (
-    <div className="bg-slate-50 rounded-xl p-4 flex flex-col gap-2 relative">
+    <div className="relative flex flex-col gap-2 rounded-xl bg-slate-50 p-4">
       <div className="flex items-center justify-between">
         <span
-          className={`w-7 h-7 rounded-full text-sm font-medium font-bold flex items-center justify-center ${colorClass}`}
+          className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold font-medium ${colorClass}`}
         >
           {number}
         </span>
-        <Icon className={`text-[20px] w-5 h-5 ${iconClass}`} />
+        <Icon className={`h-5 w-5 text-[20px] ${iconClass}`} />
       </div>
-      <h4 className="text-base font-display font-semibold text-slate-900">
-        {title}
-      </h4>
+      <h4 className="font-display text-base font-semibold text-slate-900">{title}</h4>
       <p className="text-xs text-slate-600">{text}</p>
     </div>
   );
@@ -367,11 +333,7 @@ export default function VolunteerAndHandlerIntakePage() {
   };
 
   const approveVolunteer = (id, name) => {
-    showToast(
-      "success",
-      "Đã phê duyệt",
-      `Hồ sơ của TNV ${name} đã được duyệt.`,
-    );
+    showToast("success", "Đã phê duyệt", `Hồ sơ của TNV ${name} đã được duyệt.`);
   };
 
   const rejectVolunteer = (id, name) => {
@@ -379,56 +341,45 @@ export default function VolunteerAndHandlerIntakePage() {
   };
 
   return (
-    <main className="relative bg-canvas min-h-screen">
+    <main className="bg-canvas relative min-h-screen">
       <Breadcrumb current="Đội ngũ tiếp nhận" />
       <div className="w-full px-6 py-6">
-        <div className="flex flex-col w-full space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex w-full flex-col space-y-6">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center gap-1 text-xs text-slate-500">
-              <span className="hover:text-blue-700 transition-colors cursor-pointer">
-                EduShare VN
-              </span>
-              <ChevronRight className="text-[16px] text-slate-300 w-5 h-5" />
-              <span className="hover:text-blue-700 transition-colors cursor-pointer">
-                Tình Nguyện Viên
-              </span>
-              <ChevronRight className="text-[16px] text-slate-300 w-5 h-5" />
-              <span className="text-sm font-medium text-blue-700 font-semibold">
-                Đội ngũ tiếp nhận
-              </span>
+              <span className="cursor-pointer transition-colors hover:text-blue-700">EduShare VN</span>
+              <ChevronRight className="h-5 w-5 text-[16px] text-slate-300" />
+              <span className="cursor-pointer transition-colors hover:text-blue-700">Tình Nguyện Viên</span>
+              <ChevronRight className="h-5 w-5 text-[16px] text-slate-300" />
+              <span className="text-sm font-medium font-semibold text-blue-700">Đội ngũ tiếp nhận</span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 px-4 py-1 bg-white text-slate-900 hover:bg-slate-200 rounded-lg shadow-sm transition-all text-sm font-medium">
-                <Download className="text-[18px] text-slate-500 w-5 h-5" /> Xuất
-                danh sách CSV
+              <button className="flex items-center gap-1 rounded-lg bg-white px-4 py-1 text-sm font-medium text-slate-900 shadow-sm transition-all hover:bg-slate-200">
+                <Download className="h-5 w-5 text-[18px] text-slate-500" /> Xuất danh sách CSV
               </button>
-              <button className="flex items-center gap-1 px-4 py-1 bg-blue-600 hover:bg-blue-200 text-white rounded-lg shadow-sm transition-all text-sm font-medium">
-                <UserPlus className="text-[18px] w-5 h-5" /> Thêm tình nguyện
-                viên mới
+              <button className="flex items-center gap-1 rounded-lg bg-blue-600 px-4 py-1 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-200">
+                <UserPlus className="h-5 w-5 text-[18px]" /> Thêm tình nguyện viên mới
               </button>
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-display font-semibold text-slate-900 tracking-tight">
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-slate-900">
               {" "}
               Quản Lý Đội Ngũ Tình Nguyện Viên &amp; Tiếp Nhận{" "}
             </h1>
-            <p className="text-sm text-slate-600 max-w-4xl">
-              Hệ thống quản lý, phê duyệt và điều phối nhân sự tình nguyện viên
-              phụ trách tiếp nhận, kiểm thử và vận chuyển thiết bị trên toàn
-              quốc.
+            <p className="max-w-4xl text-sm text-slate-600">
+              Hệ thống quản lý, phê duyệt và điều phối nhân sự tình nguyện viên phụ trách tiếp nhận, kiểm thử và vận
+              chuyển thiết bị trên toàn quốc.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <StatCard
               title="Tổng TNV Toàn Quốc"
               value="1.280"
               subtitle="nhân sự"
-              trend={
-                <span className="text-teal-700">+18% so với quý trước</span>
-              }
+              trend={<span className="text-teal-700">+18% so với quý trước</span>}
               trendIcon={TrendingUp}
               colorClass="text-slate-900"
               iconClass="bg-blue-100 text-blue-700"
@@ -439,9 +390,8 @@ export default function VolunteerAndHandlerIntakePage() {
               value="942"
               subtitle="sẵn sàng điều động"
               trend={
-                <span className="px-1 py-0.5 rounded bg-teal-100 text-teal-900 text-xs font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-600"></span>{" "}
-                  Hoạt động tích cực
+                <span className="flex items-center gap-1 rounded bg-teal-100 px-1 py-0.5 text-xs font-medium text-teal-900">
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal-600"></span> Hoạt động tích cực
                 </span>
               }
               colorClass="text-slate-900"
@@ -453,9 +403,8 @@ export default function VolunteerAndHandlerIntakePage() {
               value="46"
               subtitle="hồ sơ mới nộp"
               trend={
-                <span className="px-1 py-0.5 rounded bg-rose-100 text-rose-900 text-xs font-medium flex items-center gap-1">
-                  <AlertTriangle className="text-[14px] w-5 h-5" /> Cần xử lý
-                  ngay
+                <span className="flex items-center gap-1 rounded bg-rose-100 px-1 py-0.5 text-xs font-medium text-rose-900">
+                  <AlertTriangle className="h-5 w-5 text-[14px]" /> Cần xử lý ngay
                 </span>
               }
               colorClass="text-rose-600"
@@ -464,9 +413,9 @@ export default function VolunteerAndHandlerIntakePage() {
             />
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="w-full lg:w-96 flex items-center bg-slate-50 rounded-lg px-4 py-1 text-slate-900">
-              <Search className="text-slate-500 text-[20px] mr-1 w-5 h-5" />
+          <div className="flex flex-col items-center justify-between gap-4 rounded-xl bg-white p-4 shadow-sm lg:flex-row">
+            <div className="flex w-full items-center rounded-lg bg-slate-50 px-4 py-1 text-slate-900 lg:w-96">
+              <Search className="mr-1 h-5 w-5 text-[20px] text-slate-500" />
               <input
                 className="w-full bg-transparent text-xs placeholder:text-slate-600 focus:outline-none"
                 id="volunteerSearchInput"
@@ -474,10 +423,10 @@ export default function VolunteerAndHandlerIntakePage() {
                 type="text"
               />
             </div>
-            <div className="w-full lg:w-auto flex flex-wrap items-center gap-2">
-              <div className="relative flex items-center bg-slate-50 rounded-lg px-2 py-1">
-                <MapPin className="text-[18px] text-slate-500 mr-1 w-5 h-5" />
-                <select className="bg-transparent text-sm font-medium text-slate-900 focus:outline-none pr-4 cursor-pointer">
+            <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
+              <div className="relative flex items-center rounded-lg bg-slate-50 px-2 py-1">
+                <MapPin className="mr-1 h-5 w-5 text-[18px] text-slate-500" />
+                <select className="cursor-pointer bg-transparent pr-4 text-sm font-medium text-slate-900 focus:outline-none">
                   <option>Tất cả khu vực</option>
                   <option>Miền Bắc (Hà Nội, Tây Bắc)</option>
                   <option>Miền Trung (Đà Nẵng, Quảng Nam)</option>
@@ -485,9 +434,9 @@ export default function VolunteerAndHandlerIntakePage() {
                   <option>Tây Nguyên (Đắk Lắk, Gia Lai)</option>
                 </select>
               </div>
-              <div className="relative flex items-center bg-slate-50 rounded-lg px-2 py-1">
-                <Wrench className="text-[18px] text-slate-500 mr-1 w-5 h-5" />
-                <select className="bg-transparent text-sm font-medium text-slate-900 focus:outline-none pr-4 cursor-pointer">
+              <div className="relative flex items-center rounded-lg bg-slate-50 px-2 py-1">
+                <Wrench className="mr-1 h-5 w-5 text-[18px] text-slate-500" />
+                <select className="cursor-pointer bg-transparent pr-4 text-sm font-medium text-slate-900 focus:outline-none">
                   <option>Tất cả kỹ năng</option>
                   <option>Lái xe tải</option>
                   <option>Sửa máy tính</option>
@@ -497,9 +446,9 @@ export default function VolunteerAndHandlerIntakePage() {
                   <option>Giao tiếp sư phạm</option>
                 </select>
               </div>
-              <div className="relative flex items-center bg-slate-50 rounded-lg px-2 py-1">
-                <SlidersHorizontal className="text-[18px] text-slate-500 mr-1 w-5 h-5" />
-                <select className="bg-transparent text-sm font-medium text-slate-900 focus:outline-none pr-4 cursor-pointer">
+              <div className="relative flex items-center rounded-lg bg-slate-50 px-2 py-1">
+                <SlidersHorizontal className="mr-1 h-5 w-5 text-[18px] text-slate-500" />
+                <select className="cursor-pointer bg-transparent pr-4 text-sm font-medium text-slate-900 focus:outline-none">
                   <option>Tất cả trạng thái</option>
                   <option>Active (Đang hoạt động)</option>
                   <option>Pending (Chờ duyệt)</option>
@@ -507,26 +456,26 @@ export default function VolunteerAndHandlerIntakePage() {
                 </select>
               </div>
               <button
-                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-slate-200 rounded-lg transition-colors"
+                className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-rose-600"
                 title="Đặt lại bộ lọc"
               >
-                <RefreshCw className="text-[20px] w-5 h-5" />
+                <RefreshCw className="h-5 w-5 text-[20px]" />
               </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-xs font-medium uppercase tracking-wider">
-                    <th className="py-4 px-6">Tình nguyện viên</th>
-                    <th className="py-4 px-4">Liên hệ</th>
-                    <th className="py-4 px-4">Khu vực phụ trách</th>
-                    <th className="py-4 px-4">Kỹ năng chuyên môn</th>
-                    <th className="py-4 px-4 text-center">Cống hiến</th>
-                    <th className="py-4 px-4">Trạng thái</th>
-                    <th className="py-4 px-6 text-right">Thao tác</th>
+                  <tr className="bg-slate-50 text-xs font-medium tracking-wider text-slate-500 uppercase">
+                    <th className="px-6 py-4">Tình nguyện viên</th>
+                    <th className="px-4 py-4">Liên hệ</th>
+                    <th className="px-4 py-4">Khu vực phụ trách</th>
+                    <th className="px-4 py-4">Kỹ năng chuyên môn</th>
+                    <th className="px-4 py-4 text-center">Cống hiến</th>
+                    <th className="px-4 py-4">Trạng thái</th>
+                    <th className="px-6 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-transparent text-xs">
@@ -542,57 +491,52 @@ export default function VolunteerAndHandlerIntakePage() {
               </table>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col items-center justify-between gap-4 bg-slate-50/50 px-6 py-4 sm:flex-row">
               <div className="text-xs text-slate-500">
-                Đang xem{" "}
-                <span className="font-semibold text-slate-900">
-                  1 - {volunteers.length}
-                </span>{" "}
-                trong tổng số{" "}
-                <span className="font-semibold text-slate-900">1.280</span> tình
-                nguyện viên
+                Đang xem <span className="font-semibold text-slate-900">1 - {volunteers.length}</span> trong tổng số{" "}
+                <span className="font-semibold text-slate-900">1.280</span> tình nguyện viên
               </div>
               <div className="flex items-center gap-1">
                 <button
-                  className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-40 transition-colors text-sm font-medium flex items-center gap-1"
+                  className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
                   disabled
                 >
-                  <ChevronLeft className="text-[16px] w-5 h-5" /> Trước
+                  <ChevronLeft className="h-5 w-5 text-[16px]" /> Trước
                 </button>
-                <button className="w-8 h-8 rounded-lg bg-blue-600 text-white text-sm font-medium font-semibold flex items-center justify-center">
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-medium font-semibold text-white">
                   1
                 </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200">
                   2
                 </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200">
                   3
                 </button>
                 <span className="px-1 text-slate-500">...</span>
-                <button className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center transition-colors">
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200">
                   183
                 </button>
-                <button className="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium flex items-center gap-1">
-                  Sau <ChevronRight className="text-[16px] w-5 h-5" />
+                <button className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-200">
+                  Sau <ChevronRight className="h-5 w-5 text-[16px]" />
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm flex flex-col gap-4">
+          <div className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <Network className="text-blue-700 text-[22px] w-5 h-5" />
-                <h3 className="text-base font-display font-semibold text-slate-900">
+                <Network className="h-5 w-5 text-[22px] text-blue-700" />
+                <h3 className="font-display text-base font-semibold text-slate-900">
                   Quy Trình Chuẩn Điều Phối Tình Nguyện Viên Tiếp Nhận EduShare
                 </h3>
               </div>
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-medium tracking-wider text-slate-500 uppercase">
                 Quy chuẩn ISO TNV-VN-2024
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            <div className="relative grid grid-cols-1 gap-6 md:grid-cols-3">
               <ProcessCard
                 number="1"
                 title="Đăng ký & Thẩm định hồ sơ"
@@ -624,23 +568,17 @@ export default function VolunteerAndHandlerIntakePage() {
 
       {/* Action Toast */}
       <div
-        className={`fixed bottom-6 right-6 transition-all duration-300 z-50 flex items-center gap-2 bg-white p-4 rounded-lg shadow-xl border-l-4 ${
+        className={`fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-lg border-l-4 bg-white p-4 shadow-xl transition-all duration-300 ${
           toast.type === "success" ? "border-teal-600" : "border-rose-600"
-        } ${
-          toast.visible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-24 pointer-events-none"
-        }`}
+        } ${toast.visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-24 opacity-0"}`}
       >
         {toast.type === "success" ? (
-          <Check className="w-6 h-6 text-teal-600" />
+          <Check className="h-6 w-6 text-teal-600" />
         ) : (
-          <X className="w-6 h-6 text-rose-600" />
+          <X className="h-6 w-6 text-rose-600" />
         )}
         <div className="flex flex-col">
-          <span className="text-sm font-medium font-bold text-slate-900">
-            {toast.title}
-          </span>
+          <span className="text-sm font-bold font-medium text-slate-900">{toast.title}</span>
           <span className="text-xs text-slate-500">{toast.message}</span>
         </div>
       </div>

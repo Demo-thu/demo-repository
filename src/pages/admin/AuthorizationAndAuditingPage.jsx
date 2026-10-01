@@ -135,8 +135,7 @@ const auditLogs = [
     time: "13:10:04 • Hôm nay",
     action: "Nâng quyền người dùng",
     target: "Lê Hoàng Long",
-    detail:
-      "từ [Volunteer] lên [Volunteer Leader] để điều phối đội xe lên Hà Giang.",
+    detail: "từ [Volunteer] lên [Volunteer Leader] để điều phối đội xe lên Hà Giang.",
     ip: "118.70.12.84 (Hà Nội, VN)",
     device: "Chrome 122 / MacOS Darwin",
     signature: "Ký số SHA-256 Valid",
@@ -149,12 +148,8 @@ function Metric({ icon: Icon, label, value, children, red }) {
     <article className="flex min-h-36 flex-col justify-between rounded-lg bg-white p-5 shadow-sm">
       <div className="flex justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            {label}
-          </p>
-          <h2
-            className={`mt-2 font-display text-3xl font-semibold ${red ? "text-rose-600" : "text-slate-950"}`}
-          >
+          <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{label}</p>
+          <h2 className={`font-display mt-2 text-3xl font-semibold ${red ? "text-rose-600" : "text-slate-950"}`}>
             {value}
           </h2>
         </div>
@@ -176,26 +171,25 @@ export default function AuthorizationAndAuditingPage() {
     <>
       <Breadcrumb current="Phân quyền & Kiểm toán" />
       <main className="mx-auto max-w-[1540px] space-y-5 px-4 py-5 lg:px-6">
-        <header className="flex flex-col justify-between gap-4 md:flex-row md:items-end relative">
+        <header className="relative flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide">
+            <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold tracking-wide uppercase">
               <span className="inline-flex items-center gap-1 rounded bg-teal-100 px-2 py-1 text-teal-800">
-                <span className="size-1.5 rounded-full bg-teal-600 animate-pulse"></span>
+                <span className="size-1.5 animate-pulse rounded-full bg-teal-600"></span>
                 TRUNG TÂM PHÂN QUYỀN & KIỂM TOÁN HỆ THỐNG
               </span>
               <span className="text-slate-500">• RBAC & AUDIT TRAIL</span>
             </div>
-            <h1 className="max-w-3xl font-display text-2xl font-semibold leading-tight md:text-[28px]">
+            <h1 className="font-display max-w-3xl text-2xl leading-tight font-semibold md:text-[28px]">
               Phân Quyền Người Dùng & Nhật Ký Kiểm Toán
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              Quản lý vai trò (Role-Based Access Control), phê duyệt xác thực
-              danh tính KYC cho các thực thể và giám sát toàn bộ hoạt động giao
-              dịch, xuất nhập kho theo thời gian thực.
+              Quản lý vai trò (Role-Based Access Control), phê duyệt xác thực danh tính KYC cho các thực thể và giám sát
+              toàn bộ hoạt động giao dịch, xuất nhập kho theo thời gian thực.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className="inline-flex items-center gap-1 rounded bg-white px-3 py-2.5 text-xs font-semibold shadow-sm border border-slate-200">
+            <button className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold shadow-sm">
               <Download size={15} /> Xuất nhật ký (Audit Export)
             </button>
             <button className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
@@ -207,7 +201,7 @@ export default function AuthorizationAndAuditingPage() {
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Metric icon={Users} label="Tổng Tài Khoản" value="1,420">
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 flex items-center gap-1">
+              <span className="flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700">
                 <CheckCircle2 size={12} /> Active 98.4%
               </span>
               <span className="text-[10px]">23 tài khoản tạm khóa</span>
@@ -216,14 +210,12 @@ export default function AuthorizationAndAuditingPage() {
           <Metric icon={Clock} label="Chờ Xác Thực KYC" value="18" red>
             <div className="flex items-center justify-between">
               <span>12 Trường học • 6 Tổ chức</span>
-              <span className="text-[10px] font-semibold text-rose-600">
-                Cần xử lý sớm
-              </span>
+              <span className="text-[10px] font-semibold text-rose-600">Cần xử lý sớm</span>
             </div>
           </Metric>
           <Metric icon={Zap} label="Hành Động Hôm Nay" value="842">
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 flex items-center gap-1">
+              <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
                 <Zap size={12} /> Ghi log tự động
               </span>
               <span className="text-[10px]">Thời gian thực 100%</span>
@@ -246,9 +238,7 @@ export default function AuthorizationAndAuditingPage() {
             className={`flex items-center gap-2 border-b-2 py-3 text-sm font-semibold transition-colors ${tab === "users" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}
           >
             <Users size={18} /> Quản lý Người dùng
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
-              1,420
-            </span>
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">1,420</span>
           </button>
           <button
             onClick={() => setTab("audit")}
@@ -256,8 +246,7 @@ export default function AuthorizationAndAuditingPage() {
           >
             <History size={18} /> Nhật ký Hệ thống (Audit Log)
             <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700">
-              <span className="size-1.5 rounded-full bg-teal-600 animate-pulse"></span>{" "}
-              Real-time
+              <span className="size-1.5 animate-pulse rounded-full bg-teal-600"></span> Real-time
             </span>
           </button>
         </section>
@@ -266,7 +255,7 @@ export default function AuthorizationAndAuditingPage() {
         {tab === "users" && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 rounded-lg bg-white p-3 shadow-sm xl:flex-row xl:items-center xl:justify-between">
-              <label className="flex flex-1 max-w-md items-center gap-2 rounded bg-slate-50 px-3 py-2 text-slate-500 border border-slate-200">
+              <label className="flex max-w-md flex-1 items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-slate-500">
                 <Search size={16} />
                 <input
                   className="w-full bg-transparent text-xs outline-none"
@@ -292,7 +281,7 @@ export default function AuthorizationAndAuditingPage() {
             <div className="overflow-hidden rounded-lg bg-white shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1000px] text-left text-sm">
-                  <thead className="bg-slate-50 text-[10px] uppercase text-slate-500 border-b border-slate-200">
+                  <thead className="border-b border-slate-200 bg-slate-50 text-[10px] text-slate-500 uppercase">
                     <tr>
                       <th className="px-4 py-3">Người dùng / Đơn vị</th>
                       <th className="px-4 py-3">Liên hệ & Email</th>
@@ -311,11 +300,7 @@ export default function AuthorizationAndAuditingPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             {user.avatar ? (
-                              <img
-                                src={user.avatar}
-                                className="size-9 rounded-full object-cover"
-                                alt={user.name}
-                              />
+                              <img src={user.avatar} className="size-9 rounded-full object-cover" alt={user.name} />
                             ) : (
                               <div
                                 className={`flex size-9 items-center justify-center rounded-full text-xs font-bold ${user.type === "pending" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}
@@ -325,23 +310,15 @@ export default function AuthorizationAndAuditingPage() {
                             )}
                             <div>
                               <div className="font-semibold">{user.name}</div>
-                              <div className="text-[11px] text-slate-500">
-                                {user.sub}
-                              </div>
+                              <div className="text-[11px] text-slate-500">{user.sub}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-slate-900">
-                            {user.email}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {user.phone}
-                          </div>
+                          <div className="font-medium text-slate-900">{user.email}</div>
+                          <div className="text-[11px] text-slate-500">{user.phone}</div>
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">
-                          {user.date}
-                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{user.date}</td>
                         <td className="px-4 py-3">
                           <select className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 outline-none">
                             <option value={user.roleValue}>{user.role}</option>
@@ -383,27 +360,16 @@ export default function AuthorizationAndAuditingPage() {
               </div>
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
                 <span>
-                  Hiển thị <strong className="text-slate-900">1 - 7</strong>{" "}
-                  trong tổng số{" "}
+                  Hiển thị <strong className="text-slate-900">1 - 7</strong> trong tổng số{" "}
                   <strong className="text-slate-900">1,420</strong> người dùng
                 </span>
                 <div className="flex items-center gap-1">
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    Trước
-                  </button>
-                  <button className="rounded bg-blue-600 px-2 py-1 text-white">
-                    1
-                  </button>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    2
-                  </button>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    3
-                  </button>
+                  <button className="rounded border border-slate-200 bg-white px-2 py-1">Trước</button>
+                  <button className="rounded bg-blue-600 px-2 py-1 text-white">1</button>
+                  <button className="rounded border border-slate-200 bg-white px-2 py-1">2</button>
+                  <button className="rounded border border-slate-200 bg-white px-2 py-1">3</button>
                   <span>...</span>
-                  <button className="rounded border border-slate-200 bg-white px-2 py-1">
-                    Sau
-                  </button>
+                  <button className="rounded border border-slate-200 bg-white px-2 py-1">Sau</button>
                 </div>
               </div>
             </div>
@@ -426,50 +392,39 @@ export default function AuthorizationAndAuditingPage() {
                     <option>Hôm nay (24 giờ qua)</option>
                   </select>
                 </div>
-                <label className="flex items-center gap-2 rounded bg-slate-50 px-3 py-2 text-slate-500 border border-slate-200">
+                <label className="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-slate-500">
                   <Filter size={14} />
-                  <input
-                    className="w-full bg-transparent outline-none"
-                    placeholder="Lọc theo IP..."
-                  />
+                  <input className="w-full bg-transparent outline-none" placeholder="Lọc theo IP..." />
                 </label>
               </div>
               <span className="flex items-center gap-2 text-xs font-semibold text-teal-700">
-                <span className="size-2 rounded-full bg-teal-600 animate-pulse"></span>
+                <span className="size-2 animate-pulse rounded-full bg-teal-600"></span>
                 Hệ thống ghi nhận 842 sự kiện
               </span>
             </div>
 
             <div className="rounded-lg bg-white p-6 shadow-sm">
-              <div className="relative border-l-2 border-slate-100 pl-6 space-y-6">
+              <div className="relative space-y-6 border-l-2 border-slate-100 pl-6">
                 {auditLogs.map((log) => (
                   <div key={log.id} className="relative">
-                    <span className="absolute -left-[35px] top-1 flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm ring-4 ring-white">
+                    <span className="absolute top-1 -left-[35px] flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm ring-4 ring-white">
                       {log.icon}
                     </span>
                     <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900">
-                            {log.name}
-                          </span>
+                          <span className="font-semibold text-slate-900">{log.name}</span>
                           <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
                             {log.role}
                           </span>
-                          <span className="text-xs text-slate-500">
-                            đã thực hiện thao tác:
-                          </span>
+                          <span className="text-xs text-slate-500">đã thực hiện thao tác:</span>
                         </div>
                         <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
                           <Clock size={14} /> {log.time}
                         </span>
                       </div>
                       <p className="mt-2 text-sm text-slate-700">
-                        {log.action}{" "}
-                        <strong className="font-semibold text-blue-700">
-                          {log.target}
-                        </strong>{" "}
-                        {log.detail}
+                        {log.action} <strong className="font-semibold text-blue-700">{log.target}</strong> {log.detail}
                       </p>
                       <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-slate-200 pt-3 text-[10px] text-slate-500">
                         <span className="flex items-center gap-1">

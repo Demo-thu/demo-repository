@@ -27,15 +27,7 @@ const students = [
     ["Laptop", "Sách giáo khoa"],
     "24/10/2024",
   ],
-  [
-    "HS-8274",
-    "Trần T*** B***",
-    "Lớp 8B",
-    "PTDTBT THCS Trà Dơn",
-    "Nam Trà My, Quảng Nam",
-    ["Laptop"],
-    "24/10/2024",
-  ],
+  ["HS-8274", "Trần T*** B***", "Lớp 8B", "PTDTBT THCS Trà Dơn", "Nam Trà My, Quảng Nam", ["Laptop"], "24/10/2024"],
   [
     "HS-8275",
     "Lò T*** M***",
@@ -54,15 +46,7 @@ const students = [
     ["Laptop", "Ba lô & Đồ dùng"],
     "20/10/2024",
   ],
-  [
-    "HS-8277",
-    "Giàng T*** S***",
-    "Lớp 6A2",
-    "THCS Vượt Đèo Hà Giang",
-    "Mèo Vạc, Hà Giang",
-    ["Xe đạp"],
-    "19/10/2024",
-  ],
+  ["HS-8277", "Giàng T*** S***", "Lớp 6A2", "THCS Vượt Đèo Hà Giang", "Mèo Vạc, Hà Giang", ["Xe đạp"], "19/10/2024"],
   [
     "HS-8278",
     "Phạm Đ*** K***",
@@ -93,32 +77,20 @@ function Metric({ icon: Icon, value, title, subtitle, teal }) {
           <Icon size={22} />
         </span>
         {title === "Tổng học sinh nhận hỗ trợ" && (
-          <b className="rounded-full bg-teal-100 px-2 py-1 text-[10px] text-teal-700">
-            ↗ +12.4%
-          </b>
+          <b className="rounded-full bg-teal-100 px-2 py-1 text-[10px] text-teal-700">↗ +12.4%</b>
         )}
         {title === "Danh tính được bảo vệ" && (
-          <b className="rounded-full bg-teal-50 px-2 py-1 text-[10px] text-teal-700">
-            Chuẩn ISO-27701
-          </b>
+          <b className="rounded-full bg-teal-50 px-2 py-1 text-[10px] text-teal-700">Chuẩn ISO-27701</b>
         )}
         {title === "Hạng mục thiết bị / quà tặng" && (
-          <b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">
-            Q3/2024
-          </b>
+          <b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">Q3/2024</b>
         )}
         {title === "Điểm trường tại 18 tỉnh thành" && (
-          <b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">
-            Toàn quốc
-          </b>
+          <b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">Toàn quốc</b>
         )}
       </div>
-      <h2
-        className={`mt-6 font-display text-4xl font-semibold ${teal ? "text-teal-700" : ""}`}
-      >
-        {value}
-      </h2>
-      <h3 className="mt-2 font-display text-base font-semibold">{title}</h3>
+      <h2 className={`font-display mt-6 text-4xl font-semibold ${teal ? "text-teal-700" : ""}`}>{value}</h2>
+      <h3 className="font-display mt-2 text-base font-semibold">{title}</h3>
       <p className="mt-2 text-xs leading-5 text-slate-500">{subtitle}</p>
     </article>
   );
@@ -133,17 +105,14 @@ export default function StudentsPage() {
         <section className="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div>
             <span className="inline-flex rounded-xl bg-blue-100 px-3 py-1 text-[10px] font-semibold tracking-wide text-blue-700">
-              ♢ CỔNG TRƯỜNG HỌC & ĐIỂM BẢN · BẢO MẬT & MINH BẠCH DỮ LIỆU TRẺ EM
-              (COPPA/GDPR-K)
+              ♢ CỔNG TRƯỜNG HỌC & ĐIỂM BẢN · BẢO MẬT & MINH BẠCH DỮ LIỆU TRẺ EM (COPPA/GDPR-K)
             </span>
-            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
+            <h1 className="font-display mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
               Danh sách Học sinh Tiếp nhận Hỗ trợ
             </h1>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              Hệ thống quản lý và công khai danh sách học sinh vùng khó khăn đã
-              nhận thiết bị & học bổng. Dữ liệu được mã hóa và ẩn danh hóa danh
-              tính nhằm bảo vệ quyền riêng tư của trẻ em theo quy định pháp
-              luật.
+              Hệ thống quản lý và công khai danh sách học sinh vùng khó khăn đã nhận thiết bị & học bổng. Dữ liệu được
+              mã hóa và ẩn danh hóa danh tính nhằm bảo vệ quyền riêng tư của trẻ em theo quy định pháp luật.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -194,15 +163,8 @@ export default function StudentsPage() {
                 placeholder="Tìm kiếm theo Mã số HS (vd: HS-8273), tên trường, lớp..."
               />
             </label>
-            {[
-              "Tất cả Tỉnh/Thành",
-              "Tất cả Trường học",
-              "Tất cả Đợt chiến dịch",
-            ].map((item) => (
-              <button
-                key={item}
-                className="rounded bg-blue-50 px-4 py-2 text-xs"
-              >
+            {["Tất cả Tỉnh/Thành", "Tất cả Trường học", "Tất cả Đợt chiến dịch"].map((item) => (
+              <button key={item} className="rounded bg-blue-50 px-4 py-2 text-xs">
                 {item}⌄
               </button>
             ))}
@@ -212,18 +174,14 @@ export default function StudentsPage() {
             </button>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button className="rounded bg-blue-50 px-4 py-2 text-xs">
-              Tất cả hạng mục⌄
-            </button>
+            <button className="rounded bg-blue-50 px-4 py-2 text-xs">Tất cả hạng mục⌄</button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 bg-blue-50 p-3 text-xs text-slate-600">
             <ShieldCheck size={18} className="text-blue-600" />
             <b className="text-blue-700">Quy chuẩn ẩn danh:</b>
             <span>
-              Tên học sinh được mã hóa định dạng{" "}
-              <u className="font-semibold text-blue-700">Họ T*** Đ***</u> nhằm
-              đảm bảo tính bảo mật trẻ em. Mã định danh gắn liền với hồ sơ gốc
-              đã đóng dấu phê duyệt.
+              Tên học sinh được mã hóa định dạng <u className="font-semibold text-blue-700">Họ T*** Đ***</u> nhằm đảm
+              bảo tính bảo mật trẻ em. Mã định danh gắn liền với hồ sơ gốc đã đóng dấu phê duyệt.
             </span>
             <button className="ml-auto flex items-center gap-1 font-medium text-blue-700">
               Chính sách bảo vệ trẻ em <ExternalLink size={13} />
@@ -270,8 +228,8 @@ export default function StudentsPage() {
           </div>
           <footer className="flex flex-wrap items-center justify-between gap-4 bg-blue-50 p-4 text-xs text-slate-500">
             <span>
-              Hiển thị <b className="text-slate-800">1 - 7</b> trong tổng số{" "}
-              <b className="text-slate-800">3,842</b> học sinh tiếp nhận
+              Hiển thị <b className="text-slate-800">1 - 7</b> trong tổng số <b className="text-slate-800">3,842</b> học
+              sinh tiếp nhận
             </span>
             <div className="flex items-center gap-3">
               <span>
@@ -280,9 +238,7 @@ export default function StudentsPage() {
               <button>
                 <ChevronLeft size={16} />
               </button>
-              <button className="grid size-8 place-items-center rounded bg-blue-600 text-white">
-                1
-              </button>
+              <button className="grid size-8 place-items-center rounded bg-blue-600 text-white">1</button>
               <button>2</button>
               <button>3</button>
               <span>...</span>
@@ -297,17 +253,12 @@ export default function StudentsPage() {
         <section className="mt-6 rounded-lg bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="font-display text-base font-semibold">
-                Quy trình Xác thực & Quản trị Dữ liệu Bảo trợ
-              </h2>
+              <h2 className="font-display text-base font-semibold">Quy trình Xác thực & Quản trị Dữ liệu Bảo trợ</h2>
               <p className="mt-1 text-xs text-slate-500">
-                Chuỗi xác minh minh bạch bảo đảm thiết bị đến đúng tay học sinh
-                đủ điều kiện
+                Chuỗi xác minh minh bạch bảo đảm thiết bị đến đúng tay học sinh đủ điều kiện
               </p>
             </div>
-            <b className="rounded bg-blue-50 px-3 py-1 text-[10px] text-blue-700">
-              Mã Hash: #EDUSH-KYC-2024-X9
-            </b>
+            <b className="rounded bg-blue-50 px-3 py-1 text-[10px] text-blue-700">Mã Hash: #EDUSH-KYC-2024-X9</b>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <GovernanceStep
@@ -333,9 +284,7 @@ export default function StudentsPage() {
         <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/35 p-4">
           <article className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
             <div className="flex justify-between">
-              <h2 className="font-display text-xl font-semibold">
-                Hồ sơ học sinh tiếp nhận
-              </h2>
+              <h2 className="font-display text-xl font-semibold">Hồ sơ học sinh tiếp nhận</h2>
               <button onClick={() => setSelected(null)}>×</button>
             </div>
             <div className="mt-4 space-y-3 text-sm">
@@ -359,15 +308,11 @@ export default function StudentsPage() {
   );
 }
 
-function StudentRow({
-  student: [id, name, grade, school, location, items, date],
-}) {
+function StudentRow({ student: [id, name, grade, school, location, items, date] }) {
   return (
     <tr className="border-b border-slate-100 last:border-0">
       <td className="p-4">
-        <b className="rounded bg-blue-50 px-2 py-1 font-semibold text-blue-700">
-          {id}
-        </b>
+        <b className="rounded bg-blue-50 px-2 py-1 font-semibold text-blue-700">{id}</b>
       </td>
       <td className="p-4">
         <div className="flex items-center gap-2">
@@ -376,9 +321,7 @@ function StudentRow({
           </span>
           <div>
             <b>{name}</b>
-            <small className="block text-[10px] text-teal-700">
-              Đã ẩn danh
-            </small>
+            <small className="block text-[10px] text-teal-700">Đã ẩn danh</small>
           </div>
         </div>
       </td>
@@ -390,10 +333,7 @@ function StudentRow({
       </td>
       <td className="p-4">
         {items.map((item) => (
-          <span
-            key={item}
-            className="mr-1 inline-flex rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700"
-          >
+          <span key={item} className="mr-1 inline-flex rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">
             {item === "Xe đạp" ? (
               <Bike className="mr-1" size={12} />
             ) : item === "Laptop" ? (
@@ -425,7 +365,7 @@ function GovernanceStep({ number, title, text, teal }) {
     <article className="rounded bg-blue-50 p-4">
       <div className="flex items-center gap-2">
         <i
-          className={`grid size-6 place-items-center rounded-full text-[10px] not-italic text-white ${teal ? "bg-teal-700" : "bg-blue-600"}`}
+          className={`grid size-6 place-items-center rounded-full text-[10px] text-white not-italic ${teal ? "bg-teal-700" : "bg-blue-600"}`}
         >
           {number}
         </i>

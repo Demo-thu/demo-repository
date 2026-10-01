@@ -55,42 +55,32 @@ const KPICard = ({
   badgeText,
   badgeColorClass,
 }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+  <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm">
     <div className="flex items-start justify-between">
       <div className="flex flex-col">
         <span className="text-sm font-medium text-slate-600">{title}</span>
-        <div className="flex items-baseline gap-1 mt-1">
-          <span className={`text-4xl font-display font-bold ${textClass}`}>
-            {value}
-          </span>
+        <div className="mt-1 flex items-baseline gap-1">
+          <span className={`font-display text-4xl font-bold ${textClass}`}>{value}</span>
           <span className={`text-xs ${textClass} font-medium`}>{unit}</span>
         </div>
       </div>
       <div
-        className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform ${iconBgClass} ${iconTextClass}`}
+        className={`flex h-12 w-12 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${iconBgClass} ${iconTextClass}`}
       >
-        <Icon className="text-[26px] w-6 h-6" />
+        <Icon className="h-6 w-6 text-[26px]" />
       </div>
     </div>
 
-    <div className="mt-4 pt-2 flex items-center justify-between">
+    <div className="mt-4 flex items-center justify-between pt-2">
       {TrendIcon && (
-        <span
-          className={`inline-flex items-center text-xs font-semibold ${trendColorClass}`}
-        >
-          <TrendIcon className="text-[16px] mr-0.5 w-4 h-4" />
+        <span className={`inline-flex items-center text-xs font-semibold ${trendColorClass}`}>
+          <TrendIcon className="mr-0.5 h-4 w-4 text-[16px]" />
           {trendText}
         </span>
       )}
-      {trendDesc && (
-        <span className="text-xs text-slate-600 truncate mr-2">
-          {trendDesc}
-        </span>
-      )}
+      {trendDesc && <span className="mr-2 truncate text-xs text-slate-600">{trendDesc}</span>}
       {badgeText && (
-        <span
-          className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${badgeColorClass}`}
-        >
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${badgeColorClass}`}>
           {badgeText}
         </span>
       )}
@@ -101,83 +91,75 @@ const KPICard = ({
 const InventoryRow = ({ item, isSelected, onSelect, onOpenDetails }) => {
   return (
     <tr
-      className={`transition-colors cursor-pointer group ${isSelected ? "bg-slate-200/40 hover:bg-slate-200" : item.isAlert ? "bg-rose-100/20 hover:bg-rose-100/40" : "hover:bg-slate-50"}`}
+      className={`group cursor-pointer transition-colors ${isSelected ? "bg-slate-200/40 hover:bg-slate-200" : item.isAlert ? "bg-rose-100/20 hover:bg-rose-100/40" : "hover:bg-slate-50"}`}
       onClick={() => onSelect(item.id)}
     >
       <td className="p-4" onClick={(e) => e.stopPropagation()}>
         <input
           checked={isSelected}
           onChange={() => onSelect(item.id)}
-          className="rounded accent-primary cursor-pointer w-4 h-4"
+          className="accent-primary h-4 w-4 cursor-pointer rounded"
           type="checkbox"
         />
       </td>
-      <td className="py-4 px-2">
-        <span className="inline-flex items-center gap-1 text-blue-700 text-sm font-mono font-semibold hover:underline">
-          <QrCode className="text-[16px] w-4 h-4" />
+      <td className="px-2 py-4">
+        <span className="inline-flex items-center gap-1 font-mono text-sm font-semibold text-blue-700 hover:underline">
+          <QrCode className="h-4 w-4 text-[16px]" />
           {item.id}
         </span>
       </td>
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <div className="flex flex-col">
           <span className="font-medium text-slate-900">{item.name}</span>
           <span className="text-xs text-slate-600">{item.desc}</span>
         </div>
       </td>
-      <td className="py-4 px-2">
-        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-xs font-medium">
-          {item.category}
-        </span>
+      <td className="px-2 py-4">
+        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{item.category}</span>
       </td>
-      <td className="py-4 px-2">
-        <span
-          className={`px-2 py-0.5 rounded text-xs font-semibold ${item.conditionColorClass}`}
-        >
+      <td className="px-2 py-4">
+        <span className={`rounded px-2 py-0.5 text-xs font-semibold ${item.conditionColorClass}`}>
           {item.condition}
         </span>
       </td>
-      <td className="py-4 px-4">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 text-slate-900 text-sm font-mono">
-          <item.locationIcon className="text-[15px] text-blue-700 w-4 h-4" />
+      <td className="px-4 py-4">
+        <div className="inline-flex items-center gap-1.5 rounded bg-slate-50 px-2.5 py-1 font-mono text-sm text-slate-900">
+          <item.locationIcon className="h-4 w-4 text-[15px] text-blue-700" />
           <span>{item.location}</span>
         </div>
       </td>
-      <td
-        className={`py-4 px-2 text-sm font-mono font-medium ${item.isAlert ? "text-rose-600" : "text-slate-900"}`}
-      >
+      <td className={`px-2 py-4 font-mono text-sm font-medium ${item.isAlert ? "text-rose-600" : "text-slate-900"}`}>
         {item.date}
       </td>
-      <td className="py-4 px-2">
+      <td className="px-2 py-4">
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${item.statusColorClass}`}
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${item.statusColorClass}`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${item.statusDotClass}`}
-          ></span>
+          <span className={`h-1.5 w-1.5 rounded-full ${item.statusDotClass}`}></span>
           {item.status}
         </span>
       </td>
-      <td className="py-4 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+      <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
         <div className="inline-flex items-center gap-1">
           <button
-            className="p-1.5 rounded hover:bg-white text-slate-500 hover:text-blue-700 transition-colors"
+            className="rounded p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-blue-700"
             onClick={() => {
               onSelect(item.id);
               onOpenDetails();
             }}
             title="Chỉnh sửa vị trí lưu trữ"
           >
-            <MapPin className="text-[18px] w-5 h-5" />
+            <MapPin className="h-5 w-5 text-[18px]" />
           </button>
           <button
-            className="p-1.5 rounded hover:bg-white text-slate-500 hover:text-blue-700 transition-colors"
+            className="rounded p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-blue-700"
             onClick={() => {
               onSelect(item.id);
               onOpenDetails();
             }}
             title="Mở thông tin chi tiết"
           >
-            <Eye className="text-[18px] w-5 h-5" />
+            <Eye className="h-5 w-5 text-[18px]" />
           </button>
         </div>
       </td>
@@ -306,58 +288,50 @@ export default function InventoryAndCoordinatingItemsPage() {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      showToast(
-        "success",
-        "Đã lưu thành công",
-        "Vị trí lưu trữ đã được cập nhật.",
-      );
+      showToast("success", "Đã lưu thành công", "Vị trí lưu trữ đã được cập nhật.");
       setSlideOverOpen(false);
     }, 2000);
   };
 
-  const activeItem =
-    inventoryItems.find((item) => item.id === selectedDevice) ||
-    inventoryItems[0];
+  const activeItem = inventoryItems.find((item) => item.id === selectedDevice) || inventoryItems[0];
 
   return (
     <>
       <Breadcrumb current="Tồn kho thiết bị" />
-      <div className="flex flex-col w-full pb-16">
+      <div className="flex w-full flex-col pb-16">
         {/* Breadcrumb & Header Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6">
+        <div className="flex flex-col justify-between gap-4 py-6 md:flex-row md:items-center">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1 text-slate-500 text-xs font-medium tracking-wide">
+            <div className="flex items-center gap-1 text-xs font-medium tracking-wide text-slate-500">
               <span>EduShare VN</span>
-              <ChevronRight className="text-[14px] w-4 h-4" />
+              <ChevronRight className="h-4 w-4 text-[14px]" />
               <span>Kho & Kỹ thuật</span>
-              <ChevronRight className="text-[14px] w-4 h-4" />
-              <span className="text-blue-700 font-semibold">
-                Tồn kho thiết bị
-              </span>
+              <ChevronRight className="h-4 w-4 text-[14px]" />
+              <span className="font-semibold text-blue-700">Tồn kho thiết bị</span>
             </div>
-            <h1 className="text-3xl font-display font-semibold text-slate-900">
+            <h1 className="font-display text-3xl font-semibold text-slate-900">
               Quản Lý Tồn Kho Thiết Bị & Điều Phối Vật Phẩm
             </h1>
-            <p className="text-sm text-slate-600 max-w-3xl">
-              Kiểm soát số lượng hiện vật giáo dục, vị trí lưu trữ tại các tổng
-              kho và tình trạng sẵn sàng điều phối chi viện vùng cao.
+            <p className="max-w-3xl text-sm text-slate-600">
+              Kiểm soát số lượng hiện vật giáo dục, vị trí lưu trữ tại các tổng kho và tình trạng sẵn sàng điều phối chi
+              viện vùng cao.
             </p>
           </div>
           {/* Top Action Pills */}
-          <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-white hover:bg-slate-200 text-slate-900 text-sm font-medium rounded-lg shadow-sm transition-all">
-              <HelpCircle className="text-[18px] text-blue-700 w-5 h-5" />
+          <div className="flex shrink-0 items-center gap-2 self-start md:self-auto">
+            <button className="inline-flex items-center gap-1 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition-all hover:bg-slate-200">
+              <HelpCircle className="h-5 w-5 text-[18px] text-blue-700" />
               <span>Xuất báo cáo Excel / PDF</span>
             </button>
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium rounded-lg transition-colors">
-              <RefreshCcw className="text-[18px] w-5 h-5" />
+            <button className="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-slate-300">
+              <RefreshCcw className="h-5 w-5 text-[18px]" />
               <span>Đồng bộ quét RFID/Barcode</span>
             </button>
           </div>
         </div>
 
         {/* Top Kpi Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           <KPICard
             title="Tổng thiết bị đang lưu kho"
             value="15,240"
@@ -401,85 +375,82 @@ export default function InventoryAndCoordinatingItemsPage() {
         </div>
 
         {/* Toolbar & Filters */}
-        <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-[20px] w-5 h-5" />
+        <div className="mb-6 flex flex-col items-stretch justify-between gap-4 rounded-xl bg-white p-4 shadow-sm lg:flex-row lg:items-center">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-[20px] text-slate-600" />
             <input
-              className="w-full pl-10 pr-12 py-2 bg-slate-50 text-slate-900 text-sm rounded-lg outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full rounded-lg bg-slate-50 py-2 pr-12 pl-10 text-sm text-slate-900 transition-all outline-none focus:bg-white focus:ring-2 focus:ring-blue-100"
               id="inventory-search"
               placeholder="Tìm theo Mã QR, Tên thiết bị, số serial, mã lô..."
               type="text"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-slate-200 text-slate-500 rounded text-xs font-mono font-medium">
+            <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs font-medium text-slate-500">
               ⌘K
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 flex-1">
+          <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select className="cursor-pointer appearance-none rounded-lg bg-slate-50 py-2 pr-8 pl-3 text-sm text-slate-900 transition-colors outline-none hover:bg-slate-100">
                 <option value="">Tất cả các kho</option>
                 <option value="hn">Tổng Kho Kỹ thuật HN</option>
                 <option value="dn">Trạm Tiếp vận Đà Nẵng</option>
                 <option value="hcm">Kho Trung chuyển TP.HCM</option>
                 <option value="tb">Kho Vệ tinh Tây Bắc</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 text-[18px] text-slate-500" />
             </div>
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select className="cursor-pointer appearance-none rounded-lg bg-slate-50 py-2 pr-8 pl-3 text-sm text-slate-900 transition-colors outline-none hover:bg-slate-100">
                 <option value="">Tất cả loại thiết bị</option>
                 <option value="laptop">Laptop giáo dục</option>
                 <option value="pc">Máy tính để bàn PC</option>
                 <option value="tablet">Máy tính bảng Tablet</option>
                 <option value="sgk">Sách giáo khoa & Nghe nhìn</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 text-[18px] text-slate-500" />
             </div>
             <div className="relative">
-              <select className="appearance-none bg-slate-50 text-slate-900 text-sm pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+              <select className="cursor-pointer appearance-none rounded-lg bg-slate-50 py-2 pr-8 pl-3 text-sm text-slate-900 transition-colors outline-none hover:bg-slate-100">
                 <option value="">Tất cả tình trạng</option>
                 <option value="new">Mới 100%</option>
                 <option value="good">Cũ - Tốt (&gt;90%)</option>
                 <option value="upgrade">Cần nâng cấp/sửa chữa</option>
                 <option value="pending">Chờ thanh lý</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 text-[18px] text-slate-500" />
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-blue-700 text-sm font-medium font-semibold rounded-lg transition-all shadow-sm">
-              <Download className="text-[18px] w-5 h-5" />
+          <div className="flex shrink-0 items-center gap-2">
+            <button className="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium font-semibold text-blue-700 shadow-sm transition-all hover:bg-slate-300">
+              <Download className="h-5 w-5 text-[18px]" />
               <span>Nhập kho (Stock In)</span>
             </button>
-            <button className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium font-semibold rounded-lg shadow-sm transition-all">
-              <Upload className="text-[18px] w-5 h-5" />
+            <button className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium font-semibold text-white shadow-sm transition-all hover:bg-blue-700">
+              <Upload className="h-5 w-5 text-[18px]" />
               <span>Xuất kho (Stock Out)</span>
             </button>
           </div>
         </div>
 
         {/* Main Data Section & Slide-over Workspace */}
-        <div className="relative flex gap-6 items-start">
+        <div className="relative flex items-start gap-6">
           {/* Data Table Container */}
-          <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left text-sm border-collapse">
+          <div className="flex flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-xs font-medium uppercase tracking-wider border-b border-slate-100">
-                    <th className="p-4 w-10">
-                      <input
-                        className="rounded accent-primary cursor-pointer w-4 h-4"
-                        type="checkbox"
-                      />
+                  <tr className="border-b border-slate-100 bg-slate-50 text-xs font-medium tracking-wider text-slate-500 uppercase">
+                    <th className="w-10 p-4">
+                      <input className="accent-primary h-4 w-4 cursor-pointer rounded" type="checkbox" />
                     </th>
-                    <th className="py-4 px-2">Mã QR</th>
-                    <th className="py-4 px-4">Tên thiết bị / Vật phẩm</th>
-                    <th className="py-4 px-2">Phân loại</th>
-                    <th className="py-4 px-2">Tình trạng</th>
-                    <th className="py-4 px-4">Vị trí lưu trữ</th>
-                    <th className="py-4 px-2">Ngày nhập kho</th>
-                    <th className="py-4 px-2">Trạng thái</th>
-                    <th className="py-4 px-4 text-right">Thao tác</th>
+                    <th className="px-2 py-4">Mã QR</th>
+                    <th className="px-4 py-4">Tên thiết bị / Vật phẩm</th>
+                    <th className="px-2 py-4">Phân loại</th>
+                    <th className="px-2 py-4">Tình trạng</th>
+                    <th className="px-4 py-4">Vị trí lưu trữ</th>
+                    <th className="px-2 py-4">Ngày nhập kho</th>
+                    <th className="px-2 py-4">Trạng thái</th>
+                    <th className="px-4 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -497,34 +468,30 @@ export default function InventoryAndCoordinatingItemsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="p-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100">
+            <div className="flex flex-col items-center justify-between gap-2 border-t border-slate-100 bg-slate-50 p-4 sm:flex-row">
               <span className="text-xs text-slate-600">
-                Hiển thị{" "}
-                <span className="font-semibold text-slate-900">1 - 6</span> của{" "}
-                <span className="font-semibold text-slate-900">15,240</span>{" "}
-                thiết bị
+                Hiển thị <span className="font-semibold text-slate-900">1 - 6</span> của{" "}
+                <span className="font-semibold text-slate-900">15,240</span> thiết bị
               </span>
               <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50">
-                  <ChevronLeft className="text-[18px] w-5 h-5" />
+                <button className="rounded border border-slate-200 bg-white p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50">
+                  <ChevronLeft className="h-5 w-5 text-[18px]" />
                 </button>
-                <button className="w-8 h-8 rounded bg-blue-600 text-white text-sm font-mono font-semibold flex items-center justify-center">
+                <button className="flex h-8 w-8 items-center justify-center rounded bg-blue-600 font-mono text-sm font-semibold text-white">
                   1
                 </button>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
+                <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-200 bg-white font-mono text-sm text-slate-700 transition-colors hover:bg-slate-50">
                   2
                 </button>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
+                <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-200 bg-white font-mono text-sm text-slate-700 transition-colors hover:bg-slate-50">
                   3
                 </button>
-                <span className="px-1 text-slate-500 text-sm font-mono">
-                  ...
-                </span>
-                <button className="w-8 h-8 rounded bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-mono flex items-center justify-center transition-colors">
+                <span className="px-1 font-mono text-sm text-slate-500">...</span>
+                <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-200 bg-white font-mono text-sm text-slate-700 transition-colors hover:bg-slate-50">
                   254
                 </button>
-                <button className="p-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
-                  <ChevronRight className="text-[18px] w-5 h-5" />
+                <button className="rounded border border-slate-200 bg-white p-1.5 text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900">
+                  <ChevronRight className="h-5 w-5 text-[18px]" />
                 </button>
               </div>
             </div>
@@ -532,153 +499,132 @@ export default function InventoryAndCoordinatingItemsPage() {
 
           {/* SLIDE-OVER PANEL: DETAIL & LOCATION UPDATE */}
           {slideOverOpen && (
-            <div className="w-[390px] shrink-0 bg-white rounded-xl shadow-md p-6 flex flex-col gap-4 border border-slate-100 transition-all">
+            <div className="flex w-[390px] shrink-0 flex-col gap-4 rounded-xl border border-slate-100 bg-white p-6 shadow-md transition-all">
               {/* Panel Header */}
               <div className="flex items-center justify-between pb-1">
                 <div className="flex flex-col">
-                  <span className="text-base font-display font-semibold text-slate-900 font-bold">
+                  <span className="font-display text-base font-bold font-semibold text-slate-900">
                     Chi tiết thiết bị & Vị trí
                   </span>
-                  <span className="text-sm font-mono text-blue-700 font-semibold">
-                    #{activeItem.id}
-                  </span>
+                  <span className="font-mono text-sm font-semibold text-blue-700">#{activeItem.id}</span>
                 </div>
                 <button
-                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100"
                   onClick={() => setSlideOverOpen(false)}
                 >
-                  <X className="text-[20px] w-5 h-5" />
+                  <X className="h-5 w-5 text-[20px]" />
                 </button>
               </div>
 
               {/* Upper section: Device Image, QR Code, Spec Sheet */}
-              <div className="bg-slate-50 rounded-xl p-4 flex flex-col gap-4 border border-slate-100">
-                <div className="grid grid-cols-2 gap-2 items-center">
-                  <div className="relative h-28 rounded-lg overflow-hidden bg-slate-200 flex items-center justify-center border border-slate-200">
+              <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="grid grid-cols-2 items-center gap-2">
+                  <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
                     <img
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                       src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
                       alt="Device"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-2">
-                      <span className="text-[10px] text-white font-medium">
-                        Hình ảnh thực tế
-                      </span>
+                    <div className="absolute inset-0 flex items-end bg-gradient-to-t from-slate-900/60 to-transparent p-2">
+                      <span className="text-[10px] font-medium text-white">Hình ảnh thực tế</span>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg h-28 flex flex-col items-center justify-center border border-slate-200">
-                    <QrCode className="text-[48px] text-slate-900 w-12 h-12" />
-                    <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {activeItem.id}
-                    </span>
+                  <div className="flex h-28 flex-col items-center justify-center rounded-lg border border-slate-200 bg-white">
+                    <QrCode className="h-12 w-12 text-[48px] text-slate-900" />
+                    <span className="mt-1 font-mono text-[10px] text-slate-500">{activeItem.id}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <span className="font-semibold text-slate-900 text-sm">
-                    {activeItem.name}
-                  </span>
+                  <span className="text-sm font-semibold text-slate-900">{activeItem.name}</span>
                   <div className="flex flex-wrap gap-1">
-                    <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-medium font-mono">
+                    <span className="rounded bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-700">
                       SN: 8A9B2C3D4E
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-medium">
+                    <span className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700">
                       {activeItem.condition}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    {activeItem.desc}
-                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">{activeItem.desc}</p>
                 </div>
               </div>
 
-              <hr className="border-slate-100 my-2" />
+              <hr className="my-2 border-slate-100" />
 
               {/* Action: Update Location */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="text-blue-700 text-[18px] w-5 h-5" />
-                  <span className="text-sm font-semibold text-slate-900">
-                    Cập nhật vị trí lưu trữ
-                  </span>
+                  <MapPin className="h-5 w-5 text-[18px] text-blue-700" />
+                  <span className="text-sm font-semibold text-slate-900">Cập nhật vị trí lưu trữ</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-medium text-slate-600">
-                    Chọn Kho - Trạm
-                  </label>
+                  <label className="text-xs font-medium text-slate-600">Chọn Kho - Trạm</label>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm pl-3 pr-8 py-2.5 rounded-lg outline-none cursor-pointer focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all">
+                    <select className="w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-8 pl-3 text-sm text-slate-900 transition-all outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100">
                       <option>Tổng Kho Kỹ thuật HN (Đông Anh)</option>
                       <option>Kho Vệ tinh Tây Bắc (Lào Cai)</option>
                       <option>Trạm Tiếp vận Đà Nẵng</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] w-4 h-4" />
+                    <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-[18px] text-slate-500" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-medium text-slate-600">
-                      Khu vực / Dãy
-                    </label>
+                    <label className="text-xs font-medium text-slate-600">Khu vực / Dãy</label>
                     <input
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm px-3 py-2.5 rounded-lg outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all uppercase font-mono"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm text-slate-900 uppercase transition-all outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
                       defaultValue="KHU A"
                       type="text"
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-medium text-slate-600">
-                      Kệ / Tầng / Ô
-                    </label>
+                    <label className="text-xs font-medium text-slate-600">Kệ / Tầng / Ô</label>
                     <input
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm px-3 py-2.5 rounded-lg outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all font-mono"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm text-slate-900 transition-all outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
                       defaultValue="Kệ 02"
                       type="text"
                     />
                   </div>
                 </div>
                 <button
-                  className="mt-2 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all"
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700"
                   onClick={handleSaveLocation}
                   disabled={isSaving}
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="animate-spin text-[18px] w-5 h-5" />
+                      <Loader2 className="h-5 w-5 animate-spin text-[18px]" />
                       <span>Đang lưu...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="text-[18px] w-5 h-5" />
+                      <CheckCircle2 className="h-5 w-5 text-[18px]" />
                       <span>Xác nhận & Lưu vị trí</span>
                     </>
                   )}
                 </button>
               </div>
 
-              <hr className="border-slate-100 my-2" />
+              <hr className="my-2 border-slate-100" />
 
               {/* Action: Stock Out / Allocate */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Truck className="text-teal-700 text-[18px] w-5 h-5" />
-                    <span className="text-sm font-semibold text-slate-900">
-                      Khởi tạo lệnh điều phối
-                    </span>
+                    <Truck className="h-5 w-5 text-[18px] text-teal-700" />
+                    <span className="text-sm font-semibold text-slate-900">Khởi tạo lệnh điều phối</span>
                   </div>
                 </div>
                 <p className="text-xs text-slate-600">
-                  Gắn thiết bị này vào một lệnh vận chuyển số hoặc cấp phát cho
-                  Tình nguyện viên/Đơn vị trường học.
+                  Gắn thiết bị này vào một lệnh vận chuyển số hoặc cấp phát cho Tình nguyện viên/Đơn vị trường học.
                 </p>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <button className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
-                    <Network className="text-[16px] w-4 h-4" />
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  <button className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100">
+                    <Network className="h-4 w-4 text-[16px]" />
                     Gán Lệnh xuất
                   </button>
-                  <button className="flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
-                    <Printer className="text-[16px] w-4 h-4" />
+                  <button className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100">
+                    <Printer className="h-4 w-4 text-[16px]" />
                     In phiếu PXK
                   </button>
                 </div>
@@ -690,23 +636,17 @@ export default function InventoryAndCoordinatingItemsPage() {
 
       {/* Action Toast */}
       <div
-        className={`fixed bottom-6 right-6 transition-all duration-300 z-50 flex items-center gap-2 bg-white p-4 rounded-lg shadow-xl border-l-4 ${
+        className={`fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-lg border-l-4 bg-white p-4 shadow-xl transition-all duration-300 ${
           toast.type === "success" ? "border-teal-600" : "border-rose-600"
-        } ${
-          toast.visible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-24 pointer-events-none"
-        }`}
+        } ${toast.visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-24 opacity-0"}`}
       >
         {toast.type === "success" ? (
-          <Check className="w-6 h-6 text-teal-600" />
+          <Check className="h-6 w-6 text-teal-600" />
         ) : (
-          <X className="w-6 h-6 text-rose-600" />
+          <X className="h-6 w-6 text-rose-600" />
         )}
         <div className="flex flex-col">
-          <span className="text-sm font-medium font-bold text-slate-900">
-            {toast.title}
-          </span>
+          <span className="text-sm font-bold font-medium text-slate-900">{toast.title}</span>
           <span className="text-xs text-slate-500">{toast.message}</span>
         </div>
       </div>

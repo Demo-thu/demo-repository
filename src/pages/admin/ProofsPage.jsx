@@ -145,95 +145,77 @@ const modalPhotos = [
 
 function PodCard({ card, onOpen }) {
   return (
-    <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
-      <div className="relative h-56 w-full overflow-hidden bg-surface-dim">
+    <div className="bg-surface-container-lowest group flex flex-col overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-md">
+      <div className="bg-surface-dim relative h-56 w-full overflow-hidden">
         <img
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           alt={card.school}
           src={card.img}
         />
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-container/90 text-on-tertiary-container backdrop-blur-md font-label-sm text-[11px] shadow-sm font-semibold">
-          <span className="material-symbols-outlined text-[14px]">
-            verified
-          </span>
+        <div className="bg-tertiary-container/90 text-on-tertiary-container font-label-sm absolute top-3 right-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur-md">
+          <span className="material-symbols-outlined text-[14px]">verified</span>
           Đã xác nhận PoD
         </div>
-        <div className="absolute top-3 left-3 px-2 py-0.5 rounded bg-inverse-surface/80 text-inverse-on-surface backdrop-blur-md font-code-num text-body-sm">
+        <div className="bg-inverse-surface/80 text-inverse-on-surface font-code-num text-body-sm absolute top-3 left-3 rounded px-2 py-0.5 backdrop-blur-md">
           {card.id}
         </div>
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-6 flex items-end justify-between">
-          <div className="text-white flex items-center gap-1.5 font-code-num text-[11px] tracking-tight">
-            <span className="material-symbols-outlined text-[14px] text-tertiary-fixed">
-              pin_drop
-            </span>
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-6">
+          <div className="font-code-num flex items-center gap-1.5 text-[11px] tracking-tight text-white">
+            <span className="material-symbols-outlined text-tertiary-fixed text-[14px]">pin_drop</span>
             <span>{card.gps}</span>
           </div>
-          <span className="material-symbols-outlined text-white/80 text-[16px]">
-            fingerprint
-          </span>
+          <span className="material-symbols-outlined text-[16px] text-white/80">fingerprint</span>
         </div>
       </div>
-      <div className="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+      <div className="p-space-md gap-space-sm flex flex-1 flex-col justify-between">
         <div className="space-y-space-xs">
           <div className="flex items-center justify-between">
-            <span className="text-secondary font-label-sm text-[11px] uppercase tracking-wider">
+            <span className="text-secondary font-label-sm text-[11px] tracking-wider uppercase">
               Điểm trường thụ hưởng
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-[10px]">
+            <span className="bg-secondary-container text-on-secondary-fixed font-label-sm rounded-full px-2 py-0.5 text-[10px]">
               {card.province}
             </span>
           </div>
-          <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary line-clamp-1 font-semibold transition-colors">
             {card.school}
           </h3>
           <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">
-              location_on
-            </span>
+            <span className="material-symbols-outlined text-[14px]">location_on</span>
             {card.address}
           </p>
         </div>
-        <div className="bg-surface-container-low rounded-lg p-2.5 flex items-center justify-between">
+        <div className="bg-surface-container-low flex items-center justify-between rounded-lg p-2.5">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[20px]">
-              {card.icon}
-            </span>
+            <span className="material-symbols-outlined text-primary text-[20px]">{card.icon}</span>
             <div className="flex flex-col">
-              <span className="font-label-md text-label-md font-semibold text-on-surface">
-                {card.equipCount}
-              </span>
-              <span className="font-body-sm text-[11px] text-on-surface-variant line-clamp-1">
-                {card.equipDetail}
-              </span>
+              <span className="font-label-md text-label-md text-on-surface font-semibold">{card.equipCount}</span>
+              <span className="font-body-sm text-on-surface-variant line-clamp-1 text-[11px]">{card.equipDetail}</span>
             </div>
           </div>
-          <span className="font-code-num text-label-sm font-bold text-primary px-2 py-1 bg-surface-container-lowest rounded">
+          <span className="font-code-num text-label-sm text-primary bg-surface-container-lowest rounded px-2 py-1 font-bold">
             Đủ 100%
           </span>
         </div>
-        <div className="pt-2 space-y-1.5 font-body-sm text-body-sm">
-          <div className="flex items-center justify-between text-on-surface-variant">
+        <div className="font-body-sm text-body-sm space-y-1.5 pt-2">
+          <div className="text-on-surface-variant flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[12px]">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">
+              <span className="bg-primary/10 text-primary flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold">
                 {card.tnvInit}
               </span>
               {card.tnv}
             </span>
           </div>
-          <div className="flex items-center justify-between text-on-surface">
-            <span className="font-label-sm text-label-sm text-on-surface-variant">
-              Ký nhận:
-            </span>
-            <span className="font-label-md text-label-md font-semibold text-tertiary flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">
-                edit_document
-              </span>
+          <div className="text-on-surface flex items-center justify-between">
+            <span className="font-label-sm text-label-sm text-on-surface-variant">Ký nhận:</span>
+            <span className="font-label-md text-label-md text-tertiary flex items-center gap-1 font-semibold">
+              <span className="material-symbols-outlined text-[14px]">edit_document</span>
               {card.signer}
             </span>
           </div>
         </div>
         <button
-          className={`w-full mt-2 py-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors ${
+          className={`font-label-md text-label-md mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 transition-colors ${
             card.featured
               ? "bg-primary-container text-on-primary hover:bg-primary"
               : "bg-surface-container-high text-on-surface hover:bg-surface-variant"
@@ -241,9 +223,7 @@ function PodCard({ card, onOpen }) {
           onClick={onOpen}
         >
           <span>Xem chi tiết biên bản &amp; Chữ ký số</span>
-          <span className="material-symbols-outlined text-[16px]">
-            open_in_new
-          </span>
+          <span className="material-symbols-outlined text-[16px]">open_in_new</span>
         </button>
       </div>
     </div>
@@ -254,54 +234,39 @@ export default function ProofsPage() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <main className="relative pt-0 bg-surface w-full p-gutter-desktop min-h-screen">
-      <div className="flex flex-col w-full">
+    <main className="bg-surface p-gutter-desktop relative min-h-screen w-full pt-0">
+      <div className="flex w-full flex-col">
         {/* Breadcrumb */}
-        <div className="flex flex-col gap-space-sm pb-space-lg">
-          <nav className="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              EduShare VN
-            </span>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              Cổng Trường Học
-            </span>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="text-primary font-semibold">
-              Biên bản bàn giao &amp; Minh chứng
-            </span>
+        <div className="gap-space-sm pb-space-lg flex flex-col">
+          <nav className="gap-space-xs font-label-sm text-label-sm text-on-surface-variant flex items-center">
+            <span className="hover:text-primary cursor-pointer transition-colors">EduShare VN</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="hover:text-primary cursor-pointer transition-colors">Cổng Trường Học</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="text-primary font-semibold">Biên bản bàn giao &amp; Minh chứng</span>
           </nav>
 
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mt-space-xs">
+          <div className="gap-space-md mt-space-xs flex flex-col justify-between lg:flex-row lg:items-center">
             <div className="space-y-space-xs max-w-3xl">
-              <div className="inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wider">
-                <span className="material-symbols-outlined text-[14px] text-primary">
-                  verified
-                </span>
+              <div className="gap-space-xs px-space-sm bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm inline-flex items-center rounded-full py-0.5 tracking-wider uppercase">
+                <span className="material-symbols-outlined text-primary text-[14px]">verified</span>
                 Minh bạch &amp; Xác thực thực địa (Proof of Delivery - PoD)
               </div>
               <h1 className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">
                 Biên bản Bàn giao &amp; Hồ sơ Minh chứng (PoD)
               </h1>
               <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                Hệ thống lưu trữ ảnh chụp hiện trường bàn giao kèm Watermark tọa
-                độ GPS thời gian thực, chữ ký số điện tử của đại diện nhà trường
-                và bảng kê chi tiết thiết bị bàn giao.
+                Hệ thống lưu trữ ảnh chụp hiện trường bàn giao kèm Watermark tọa độ GPS thời gian thực, chữ ký số điện
+                tử của đại diện nhà trường và bảng kê chi tiết thiết bị bàn giao.
               </p>
             </div>
-            <div className="flex items-center gap-space-sm shrink-0">
+            <div className="gap-space-sm flex shrink-0 items-center">
               <button
-                className="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors shadow-sm"
+                className="gap-space-xs px-space-md bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md inline-flex items-center rounded-lg py-2.5 shadow-sm transition-colors"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[18px] text-secondary">
-                  download
-                </span>
+                <span className="material-symbols-outlined text-secondary text-[18px]">download</span>
                 Xuất báo cáo PoD (Excel/PDF)
               </button>
             </div>
@@ -309,7 +274,7 @@ export default function ProofsPage() {
         </div>
 
         {/* KPI Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter-desktop mb-space-xl">
+        <div className="gap-gutter-desktop mb-space-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               label: "Tổng biên bản bàn giao",
@@ -348,75 +313,53 @@ export default function ProofsPage() {
           ].map((m) => (
             <div
               key={m.label}
-              className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all"
+              className="bg-surface-container-lowest p-space-md group relative flex flex-col justify-between overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-md"
             >
               <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant font-semibold">
+                <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase">
                   {m.label}
                 </span>
-                <div
-                  className={`w-8 h-8 rounded-lg ${m.iconBg} flex items-center justify-center`}
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {m.icon}
-                  </span>
+                <div className={`h-8 w-8 rounded-lg ${m.iconBg} flex items-center justify-center`}>
+                  <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
                 </div>
               </div>
-              <div className="mt-space-md flex items-baseline gap-space-xs">
+              <div className="mt-space-md gap-space-xs flex items-baseline">
                 <span
-                  className={`font-headline-lg text-headline-lg font-bold font-code-num ${m.valueColor || "text-on-surface"}`}
+                  className={`font-headline-lg text-headline-lg font-code-num font-bold ${m.valueColor || "text-on-surface"}`}
                 >
                   {m.value}
                 </span>
                 {m.change && (
-                  <span className="font-label-sm text-label-sm font-semibold text-tertiary flex items-center">
-                    <span className="material-symbols-outlined text-[14px]">
-                      {m.changeIcon}
-                    </span>{" "}
-                    {m.change}
+                  <span className="font-label-sm text-label-sm text-tertiary flex items-center font-semibold">
+                    <span className="material-symbols-outlined text-[14px]">{m.changeIcon}</span> {m.change}
                   </span>
                 )}
                 {m.badge && (
-                  <span className="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-label-sm text-[10px]">
+                  <span className="bg-surface-container-high text-on-surface font-label-sm inline-block rounded px-1.5 py-0.5 text-[10px]">
                     {m.badge}
                   </span>
                 )}
-                {m.unit && (
-                  <span className="font-label-sm text-label-sm text-secondary font-medium">
-                    {m.unit}
-                  </span>
-                )}
+                {m.unit && <span className="font-label-sm text-label-sm text-secondary font-medium">{m.unit}</span>}
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                {m.sub}
-              </p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{m.sub}</p>
             </div>
           ))}
         </div>
 
         {/* Filter Toolbar */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm mb-space-lg flex flex-col lg:flex-row items-center justify-between gap-space-md">
-          <div className="w-full lg:w-96 flex items-center bg-surface-container-low rounded-lg px-space-md py-2 text-on-surface">
-            <span className="material-symbols-outlined text-on-surface-variant text-[20px] mr-space-xs">
-              search
-            </span>
+        <div className="bg-surface-container-lowest p-space-md mb-space-lg gap-space-md flex flex-col items-center justify-between rounded-xl shadow-sm lg:flex-row">
+          <div className="bg-surface-container-low px-space-md text-on-surface flex w-full items-center rounded-lg py-2 lg:w-96">
+            <span className="material-symbols-outlined text-on-surface-variant mr-space-xs text-[20px]">search</span>
             <input
-              className="w-full bg-transparent font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none"
+              className="font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant w-full bg-transparent focus:outline-none"
               placeholder="Tìm kiếm mã PoD, tên trường, thiết bị, TNV..."
               type="text"
             />
           </div>
-          <div className="w-full lg:w-auto flex flex-wrap items-center gap-space-sm">
+          <div className="gap-space-sm flex w-full flex-wrap items-center lg:w-auto">
             {[
               {
-                options: [
-                  "Địa bàn: Tất cả tỉnh",
-                  "Quảng Nam",
-                  "Hà Giang",
-                  "Thanh Hóa",
-                  "Lai Châu",
-                  "Điện Biên",
-                ],
+                options: ["Địa bàn: Tất cả tỉnh", "Quảng Nam", "Hà Giang", "Thanh Hóa", "Lai Châu", "Điện Biên"],
               },
               {
                 options: [
@@ -428,163 +371,134 @@ export default function ProofsPage() {
                 ],
               },
               {
-                options: [
-                  "Trạng thái: Đã ký điện tử",
-                  "Chờ duyệt đối soát",
-                  "Tất cả trạng thái",
-                ],
+                options: ["Trạng thái: Đã ký điện tử", "Chờ duyệt đối soát", "Tất cả trạng thái"],
               },
             ].map((dropdown, i) => (
               <div key={i} className="relative inline-block">
-                <select className="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md px-space-md py-2 pr-8 rounded-lg focus:outline-none cursor-pointer">
+                <select className="bg-surface-container-low text-on-surface font-label-md text-label-md px-space-md cursor-pointer appearance-none rounded-lg py-2 pr-8 focus:outline-none">
                   {dropdown.options.map((o) => (
                     <option key={o}>{o}</option>
                   ))}
                 </select>
-                <span className="material-symbols-outlined text-[16px] text-on-surface-variant absolute right-2.5 top-2.5 pointer-events-none">
+                <span className="material-symbols-outlined text-on-surface-variant pointer-events-none absolute top-2.5 right-2.5 text-[16px]">
                   expand_more
                 </span>
               </div>
             ))}
           </div>
-          <div className="flex items-center bg-surface-container-low p-1 rounded-lg shrink-0">
-            <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary font-label-sm text-label-sm shadow-xs font-semibold">
-              <span className="material-symbols-outlined text-[16px]">
-                grid_view
-              </span>
+          <div className="bg-surface-container-low flex shrink-0 items-center rounded-lg p-1">
+            <button className="bg-surface-container-lowest text-primary font-label-sm text-label-sm flex items-center gap-1 rounded-lg px-3 py-1.5 font-semibold shadow-xs">
+              <span className="material-symbols-outlined text-[16px]">grid_view</span>
               Thẻ ảnh PoD
             </button>
-            <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
-              <span className="material-symbols-outlined text-[16px]">
-                table_rows
-              </span>
+            <button className="text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1 rounded-lg px-3 py-1.5 transition-colors">
+              <span className="material-symbols-outlined text-[16px]">table_rows</span>
               Bảng đối soát
             </button>
           </div>
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter-desktop">
+        <div className="gap-gutter-desktop grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {podCards.map((card) => (
-            <PodCard
-              key={card.id}
-              card={card}
-              onOpen={() => setShowModal(true)}
-            />
+            <PodCard key={card.id} card={card} onOpen={() => setShowModal(true)} />
           ))}
         </div>
 
         {/* PoD Detail Modal */}
         {showModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm overflow-y-auto"
+            className="bg-on-surface/50 fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 backdrop-blur-sm"
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowModal(false);
             }}
           >
-            <div className="bg-surface-container-lowest rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl my-8 flex flex-col max-h-[92vh]">
+            <div className="bg-surface-container-lowest my-8 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl shadow-2xl">
               {/* Modal Header */}
-              <div className="px-space-lg py-space-md bg-surface-container-low flex items-center justify-between shrink-0 border-b-0">
-                <div className="flex items-center gap-space-md">
-                  <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
-                    <span className="material-symbols-outlined text-[24px]">
-                      verified_user
-                    </span>
+              <div className="px-space-lg py-space-md bg-surface-container-low flex shrink-0 items-center justify-between border-b-0">
+                <div className="gap-space-md flex items-center">
+                  <div className="bg-primary text-on-primary flex h-10 w-10 items-center justify-center rounded-xl">
+                    <span className="material-symbols-outlined text-[24px]">verified_user</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">
                         Chi tiết Biên bản Bàn giao &amp; Minh chứng Thực địa
                       </h2>
-                      <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-code-num text-label-sm font-bold">
+                      <span className="bg-primary-fixed text-on-primary-fixed font-code-num text-label-sm rounded px-2 py-0.5 font-bold">
                         #POD-2024-8891
                       </span>
                     </div>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      Chiến dịch: Ánh Sáng Tri Thức Miền Tây xứ Quảng • Bàn giao
-                      thành công lúc 14:30 12/10/2024
+                      Chiến dịch: Ánh Sáng Tri Thức Miền Tây xứ Quảng • Bàn giao thành công lúc 14:30 12/10/2024
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-space-sm">
+                <div className="gap-space-sm flex items-center">
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md transition-colors"
+                    className="bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md inline-flex items-center gap-1 rounded-lg px-3 py-1.5 transition-colors"
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-primary">
-                      print
-                    </span>
+                    <span className="material-symbols-outlined text-primary text-[16px]">print</span>
                     In PDF có chữ ký số
                   </button>
                   <button
-                    className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors"
+                    className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
                     onClick={() => setShowModal(false)}
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[20px]">
-                      close
-                    </span>
+                    <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
               </div>
 
               {/* Modal Body */}
-              <div className="p-space-lg overflow-y-auto space-y-space-lg">
+              <div className="p-space-lg space-y-space-lg overflow-y-auto">
                 {/* Main Photo */}
                 <div className="space-y-space-sm">
                   <div className="flex items-center justify-between">
-                    <span className="font-label-sm text-label-sm uppercase text-secondary font-bold tracking-wider flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        photo_camera
-                      </span>
-                      Ảnh chụp thực địa kèm Watermark pháp lý &amp; Hash chuỗi
-                      khối
+                    <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-bold tracking-wider uppercase">
+                      <span className="material-symbols-outlined text-primary text-[16px]">photo_camera</span>
+                      Ảnh chụp thực địa kèm Watermark pháp lý &amp; Hash chuỗi khối
                     </span>
-                    <span className="font-code-num text-[11px] text-tertiary font-semibold flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                    <span className="font-code-num text-tertiary flex items-center gap-1 text-[11px] font-semibold">
+                      <span className="bg-tertiary h-2 w-2 animate-pulse rounded-full"></span>
                       Xác thực GPS Độ tin cậy: Tuyệt đối (Sai số ±2.4m)
                     </span>
                   </div>
-                  <div className="relative rounded-xl overflow-hidden bg-inverse-surface shadow-md">
+                  <div className="bg-inverse-surface relative overflow-hidden rounded-xl shadow-md">
                     <div className="h-80 w-full overflow-hidden">
                       <img
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                         alt="Lễ bàn giao thiết bị tại Trường THCS Trà Dơn"
                         src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80"
                       />
                     </div>
-                    <div className="absolute bottom-0 inset-x-0 bg-inverse-surface/90 text-inverse-on-surface p-space-md backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-2 text-left">
+                    <div className="bg-inverse-surface/90 text-inverse-on-surface p-space-md absolute inset-x-0 bottom-0 flex flex-col justify-between gap-2 text-left backdrop-blur-md md:flex-row md:items-center">
                       <div className="space-y-0.5">
-                        <div className="font-code-num text-body-sm font-semibold flex items-center gap-2 text-tertiary-fixed">
-                          <span className="material-symbols-outlined text-[16px]">
-                            location_on
-                          </span>
-                          TỌA ĐỘ GPS: 15.0823° N, 108.0512° E (Trường PTDTBT
-                          THCS Trà Dơn, Nam Trà My)
+                        <div className="font-code-num text-body-sm text-tertiary-fixed flex items-center gap-2 font-semibold">
+                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          TỌA ĐỘ GPS: 15.0823° N, 108.0512° E (Trường PTDTBT THCS Trà Dơn, Nam Trà My)
                         </div>
                         <div className="font-code-num text-body-sm text-outline-variant">
-                          THỜI GIAN CHỤP: 14:30:22 GMT+7 12/10/2024 • MẠNG THIẾT
-                          BỊ: 4G Viettel Cell ID #VT-QNM-4819
+                          THỜI GIAN CHỤP: 14:30:22 GMT+7 12/10/2024 • MẠNG THIẾT BỊ: 4G Viettel Cell ID #VT-QNM-4819
                         </div>
                       </div>
-                      <div className="bg-surface-container-lowest/10 px-3 py-1 rounded font-code-num text-label-sm text-tertiary-fixed-dim">
+                      <div className="bg-surface-container-lowest/10 font-code-num text-label-sm text-tertiary-fixed-dim rounded px-3 py-1">
                         SHA256: #9921e3f88bc92d04a771c
                       </div>
                     </div>
                   </div>
                   {/* Thumbnails */}
-                  <div className="grid grid-cols-3 gap-space-sm pt-1">
+                  <div className="gap-space-sm grid grid-cols-3 pt-1">
                     {modalPhotos.map((p) => (
-                      <div
-                        key={p.label}
-                        className="h-20 rounded-lg overflow-hidden relative group cursor-pointer"
-                      >
+                      <div key={p.label} className="group relative h-20 cursor-pointer overflow-hidden rounded-lg">
                         <img
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
                           alt={p.label}
                           src={p.src}
                         />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-label-sm text-[11px] font-semibold">
+                        <div className="font-label-sm absolute inset-0 flex items-center justify-center bg-black/40 text-[11px] font-semibold text-white">
                           {p.label}
                         </div>
                       </div>
@@ -593,27 +507,25 @@ export default function ProofsPage() {
                 </div>
 
                 {/* Split Panel */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg pt-space-xs">
+                <div className="gap-space-lg pt-space-xs grid grid-cols-1 lg:grid-cols-12">
                   {/* E-Signature (5 cols) */}
-                  <div className="lg:col-span-5 space-y-space-md">
-                    <span className="font-label-sm text-label-sm uppercase text-secondary font-bold tracking-wider flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        draw
-                      </span>
+                  <div className="space-y-space-md lg:col-span-5">
+                    <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-bold tracking-wider uppercase">
+                      <span className="material-symbols-outlined text-primary text-[16px]">draw</span>
                       Chữ ký điện tử &amp; Xác thực pháp lý
                     </span>
-                    <div className="bg-surface-container-low rounded-xl p-space-md space-y-space-sm">
+                    <div className="bg-surface-container-low p-space-md space-y-space-sm rounded-xl">
                       <div className="flex items-center justify-between">
-                        <span className="font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                        <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold">
                           CHỮ KÝ ĐẠI DIỆN TRƯỜNG
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-[10px] font-bold">
+                        <span className="bg-tertiary-fixed text-on-tertiary-fixed font-label-sm rounded px-2 py-0.5 text-[10px] font-bold">
                           HỢP LỆ
                         </span>
                       </div>
-                      <div className="h-28 bg-surface-container-lowest rounded-lg flex flex-col items-center justify-center p-2 relative shadow-xs">
+                      <div className="bg-surface-container-lowest relative flex h-28 flex-col items-center justify-center rounded-lg p-2 shadow-xs">
                         <svg
-                          className="w-48 h-16 text-primary"
+                          className="text-primary h-16 w-48"
                           fill="none"
                           stroke="currentColor"
                           strokeLinecap="round"
@@ -625,17 +537,17 @@ export default function ProofsPage() {
                           <path d="M 35,65 Q 90,75 165,60"></path>
                         </svg>
                         <span
-                          className="font-body-sm text-[11px] text-on-surface-variant italic mt-1"
+                          className="font-body-sm text-on-surface-variant mt-1 text-[11px] italic"
                           style={{ fontFamily: "serif" }}
                         >
                           Đã ký bằng chữ ký số cảm ứng màn hình
                         </span>
-                        <div className="absolute bottom-1 right-2 font-code-num text-[9px] text-outline">
+                        <div className="font-code-num text-outline absolute right-2 bottom-1 text-[9px]">
                           14:38:10 12/10/2024
                         </div>
                       </div>
                       <div className="space-y-1 pt-1">
-                        <div className="font-headline-sm text-headline-sm font-bold text-on-surface">
+                        <div className="font-headline-sm text-headline-sm text-on-surface font-bold">
                           Thầy Hồ Văn Hạnh
                         </div>
                         <div className="font-body-sm text-body-sm text-on-surface-variant">
@@ -645,132 +557,101 @@ export default function ProofsPage() {
                           CCCD: 04908200**** • SĐT: 0914.***.882
                         </div>
                       </div>
-                      <div className="bg-surface-container-highest rounded-lg p-2.5 flex items-center gap-space-sm mt-space-sm">
-                        <div className="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center text-on-tertiary shrink-0">
-                          <span className="material-symbols-outlined text-[18px]">
-                            workspace_premium
-                          </span>
+                      <div className="bg-surface-container-highest gap-space-sm mt-space-sm flex items-center rounded-lg p-2.5">
+                        <div className="bg-tertiary text-on-tertiary flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                          <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
                         </div>
                         <div className="flex flex-col text-left">
-                          <span className="font-label-sm text-label-sm font-bold text-on-surface">
+                          <span className="font-label-sm text-label-sm text-on-surface font-bold">
                             CHỨNG THƯ SỐ GIÁO DỤC MOET CA
                           </span>
-                          <span className="font-code-num text-[11px] text-on-surface-variant font-medium">
+                          <span className="font-code-num text-on-surface-variant text-[11px] font-medium">
                             SERIAL: VN-EDU-9948218-QNM
                           </span>
                         </div>
                       </div>
-                      <div className="pt-space-xs flex items-center justify-between text-body-sm text-on-surface-variant">
+                      <div className="pt-space-xs text-body-sm text-on-surface-variant flex items-center justify-between">
                         <span>Đại diện Đoàn Tiếp nhận:</span>
-                        <span className="font-semibold text-on-surface">
-                          Lê Hoàng Long (Trưởng đoàn)
-                        </span>
+                        <span className="text-on-surface font-semibold">Lê Hoàng Long (Trưởng đoàn)</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Equipment Table (7 cols) */}
-                  <div className="lg:col-span-7 space-y-space-md">
-                    <span className="font-label-sm text-label-sm uppercase text-secondary font-bold tracking-wider flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        inventory
-                      </span>
+                  <div className="space-y-space-md lg:col-span-7">
+                    <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-bold tracking-wider uppercase">
+                      <span className="material-symbols-outlined text-primary text-[16px]">inventory</span>
                       Bảng kê chi tiết thiết bị bàn giao theo mã định danh
                     </span>
-                    <div className="bg-surface-container-low rounded-xl overflow-hidden shadow-xs">
-                      <table className="w-full text-left font-body-sm text-body-sm">
-                        <thead className="bg-surface-container text-on-surface-variant font-label-sm text-[11px] uppercase tracking-wider">
+                    <div className="bg-surface-container-low overflow-hidden rounded-xl shadow-xs">
+                      <table className="font-body-sm text-body-sm w-full text-left">
+                        <thead className="bg-surface-container text-on-surface-variant font-label-sm text-[11px] tracking-wider uppercase">
                           <tr>
                             <th className="px-3 py-2.5">STT</th>
                             <th className="px-3 py-2.5">Mã QR / Định danh</th>
-                            <th className="px-3 py-2.5">
-                              Tên thiết bị &amp; Cấu hình
-                            </th>
+                            <th className="px-3 py-2.5">Tên thiết bị &amp; Cấu hình</th>
                             <th className="px-3 py-2.5 text-center">SL</th>
                             <th className="px-3 py-2.5">Tình trạng &amp; BH</th>
                           </tr>
                         </thead>
                         <tbody className="text-on-surface divide-y-0">
                           {equipmentRows.map((r) => (
-                            <tr
-                              key={r.stt}
-                              className="hover:bg-surface-container-lowest transition-colors"
-                            >
-                              <td className="px-3 py-3 font-code-num font-semibold text-secondary">
-                                {r.stt}
-                              </td>
-                              <td className="px-3 py-3 font-code-num text-primary font-medium">
-                                {r.code}
-                              </td>
+                            <tr key={r.stt} className="hover:bg-surface-container-lowest transition-colors">
+                              <td className="font-code-num text-secondary px-3 py-3 font-semibold">{r.stt}</td>
+                              <td className="font-code-num text-primary px-3 py-3 font-medium">{r.code}</td>
                               <td className="px-3 py-3">
-                                <div className="font-semibold text-on-surface">
-                                  {r.name}
-                                </div>
-                                <div className="text-[11px] text-on-surface-variant">
-                                  {r.spec}
-                                </div>
+                                <div className="text-on-surface font-semibold">{r.name}</div>
+                                <div className="text-on-surface-variant text-[11px]">{r.spec}</div>
                               </td>
-                              <td className="px-3 py-3 text-center font-code-num font-bold">
-                                {r.qty}
-                              </td>
+                              <td className="font-code-num px-3 py-3 text-center font-bold">{r.qty}</td>
                               <td className="px-3 py-3">
                                 <span
-                                  className={`inline-block px-1.5 py-0.5 rounded font-label-sm text-[10px] font-semibold ${r.statusBg || "bg-tertiary-fixed text-on-tertiary-fixed"}`}
+                                  className={`font-label-sm inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${r.statusBg || "bg-tertiary-fixed text-on-tertiary-fixed"}`}
                                 >
                                   {r.status}
                                 </span>
-                                <div className="text-[10px] text-on-surface-variant mt-0.5">
-                                  {r.warranty}
-                                </div>
+                                <div className="text-on-surface-variant mt-0.5 text-[10px]">{r.warranty}</div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    <div className="flex items-center justify-between px-space-sm font-label-sm text-label-sm text-on-surface-variant">
+                    <div className="px-space-sm font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between">
                       <span>
                         Đơn vị đồng hành vận chuyển:{" "}
-                        <strong className="text-on-surface font-semibold">
-                          Viettel Post Logistics
-                        </strong>
+                        <strong className="text-on-surface font-semibold">Viettel Post Logistics</strong>
                       </span>
-                      <span className="font-code-num">
-                        Mã Vận Đơn: #VT-POD-9912803
-                      </span>
+                      <span className="font-code-num">Mã Vận Đơn: #VT-POD-9912803</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Modal Footer */}
-              <div className="px-space-lg py-3 bg-surface-container flex flex-col sm:flex-row items-center justify-between gap-space-md shrink-0">
-                <div className="flex items-center gap-space-md text-on-surface font-label-md text-label-md">
-                  <span className="flex items-center gap-1 font-semibold text-primary">
-                    <span className="material-symbols-outlined text-[18px]">
-                      check_circle
-                    </span>
+              <div className="px-space-lg bg-surface-container gap-space-md flex shrink-0 flex-col items-center justify-between py-3 sm:flex-row">
+                <div className="gap-space-md text-on-surface font-label-md text-label-md flex items-center">
+                  <span className="text-primary flex items-center gap-1 font-semibold">
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
                     Tổng cộng: 40 Máy tính + 30 Bộ phụ kiện
                   </span>
                   <span className="text-on-surface-variant text-body-sm hidden md:inline">
                     | Đã qua 3 lớp kiểm định chất lượng
                   </span>
                 </div>
-                <div className="flex items-center gap-space-sm w-full sm:w-auto">
+                <div className="gap-space-sm flex w-full items-center sm:w-auto">
                   <button
-                    className="w-full sm:w-auto px-space-md py-2 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-variant font-label-md text-label-md transition-colors"
+                    className="px-space-md bg-surface-container-highest text-on-surface hover:bg-surface-variant font-label-md text-label-md w-full rounded-lg py-2 transition-colors sm:w-auto"
                     onClick={() => setShowModal(false)}
                     type="button"
                   >
                     Đóng cửa sổ
                   </button>
                   <button
-                    className="w-full sm:w-auto px-space-md py-2 rounded-lg bg-tertiary text-on-tertiary hover:bg-tertiary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                    className="px-space-md bg-tertiary text-on-tertiary hover:bg-tertiary-container font-label-md text-label-md flex w-full items-center justify-center gap-1.5 rounded-lg py-2 shadow-sm transition-colors sm:w-auto"
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[18px]">
-                      task_alt
-                    </span>
+                    <span className="material-symbols-outlined text-[18px]">task_alt</span>
                     Xác nhận đối soát hoàn tất
                   </button>
                 </div>
