@@ -13,7 +13,7 @@ function qr(category: string): string {
 }
 
 const extraWarehouses = [
-  { code: 'WH-HAN', name: 'Tổng kho Hà Nội', address: 'Cầu Giấy, Hà Nội', city: 'Hà Nội', capacity: 5000 },
+  { code: 'WH-HAN', name: 'Tổng kho Miền Trung', address: 'Hải Châu, Đà Nẵng', city: 'Đà Nẵng', capacity: 5000 },
   { code: 'WH-HPH', name: 'Kho Hải Phòng', address: 'Ngô Quyền, Hải Phòng', city: 'Hải Phòng', capacity: 1500 },
   { code: 'WH-QNH', name: 'Kho Quảng Ninh', address: 'Hạ Long, Quảng Ninh', city: 'Quảng Ninh', capacity: 800 },
   { code: 'WH-LCA', name: 'Kho Lào Cai', address: 'Lào Cai', city: 'Lào Cai', capacity: 600 },

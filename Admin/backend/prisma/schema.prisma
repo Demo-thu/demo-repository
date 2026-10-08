@@ -97,6 +97,7 @@ model User {
   waybillAssignments  WaybillVolunteer[]
   transferAssignments StockTransferVolunteer[]
   incidentReports     IncidentReport[]
+  schoolTransfers      StockTransferOrder[]     @relation("TransferTargetSchool")
   confirmedPlans      AllocationPlan[]         @relation("AllocationAdminConfirmedBy")
   volunteerProofs     DeliveryProof[]          @relation("VolunteerProofReporter")
   inspections         InspectionReport[]
@@ -132,8 +133,13 @@ model DonationPledge {
   handoverMethod String               @default("DROP_OFF") // DROP_OFF | PICK_UP
   scheduledAt    DateTime?
   address        String?
+  contactName    String?
+  contactPhone   String?
   status         PledgeStatus         @default(PENDING)
   notes          String?
+  cancelReason   String?
+  cancelNote     String?
+  cancelledAt    DateTime?
   items          DonationPledgeItem[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
@@ -221,8 +227,13 @@ model StockTransferOrder {
   code              String    @unique // TR-YYYYMMDD-XXXX
   sourceWarehouseId String
   sourceWarehouse   Warehouse @relation("SourceWarehouse", fields: [sourceWarehouseId], references: [id])
-  targetWarehouseId String
-  targetWarehouse   Warehouse @relation("TargetWarehouse", fields: [targetWarehouseId], references: [id])
+  targetWarehouseId String?
+  targetWarehouse   Warehouse? @relation("TargetWarehouse", fields: [targetWarehouseId], references: [id])
+  targetSchoolId    String?
+  targetSchool      User?              @relation("TransferTargetSchool", fields: [targetSchoolId], references: [id])
+  requisitionId     String?
+  requisition       SupportRequisition? @relation(fields: [requisitionId], references: [id])
+  deliveryAddress   String?
   createdById       String
   status            String    @default("PENDING") // PENDING, IN_TRANSIT, RECEIVED, CANCELLED
   itemsCount        Int       @default(0)
@@ -250,9 +261,12 @@ model SupportRequisition {
   verificationDocUrl       String?
   schoolConfirmationUrl    String?
   committeeConfirmationUrl String?
+  description              String?
+  studentInfo              Json?
   status                   RequisitionStatus  @default(PENDING)
   items              RequisitionItem[]
   allocationPlan     AllocationPlan?
+  transfers          StockTransferOrder[]
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -267,6 +281,9 @@ model RequisitionItem {
   category          ItemCategory
   quantityNeeded    Int
   quantityFulfilled Int                @default(0)
+  specification     String?
+  unit              String?
+  reason            String?
 
   @@map("requisition_items")
 }
@@ -351,13 +368,16 @@ model WaybillVolunteer {
 }
 
 model IncidentReport {
-  id         String   @id @default(uuid())
-  waybillId  String
-  waybill    Waybill  @relation(fields: [waybillId], references: [id], onDelete: Cascade)
-  reporterId String
-  reporter   User     @relation(fields: [reporterId], references: [id])
-  reason     String
-  createdAt  DateTime @default(now())
+  id           String   @id @default(uuid())
+  waybillId    String?
+  waybill      Waybill? @relation(fields: [waybillId], references: [id], onDelete: Cascade)
+  reporterId   String
+  reporter     User     @relation(fields: [reporterId], references: [id])
+  reason       String
+  incidentType String?
+  qrCode       String?
+  photoUrls    String[] @default([])
+  createdAt    DateTime @default(now())
 
   @@index([waybillId])
   @@index([reporterId])

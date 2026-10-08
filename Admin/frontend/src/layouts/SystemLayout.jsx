@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import api, { apiError, clearSession, currentUser } from "../lib/api";
 import {
-  Activity, Archive, Bell, Box, CheckCircle2, ClipboardCheck, FileText, GraduationCap,
-  HeartHandshake, LayoutDashboard, Menu, Search, Settings, ShieldCheck,
-  Truck, Users, Wrench, X, Zap,
+  Activity, Archive, Bell, Box, CheckCircle2, GraduationCap,
+  HeartHandshake, LayoutDashboard, Menu, Search, ShieldAlert, ShieldCheck,
+  Truck, X, Zap,
 } from "lucide-react";
+import AccountMenu from "./AccountMenu";
 
 const groups = [
-  ["TRUNG TÂM ĐIỀU HÀNH", [["Tổng quan", "/", LayoutDashboard], ["Chiến dịch", "/campaigns", Zap], ["Phân quyền & Kiểm toán", "/audit", ShieldCheck]]],
-  ["KHO & KỸ THUẬT", [["Kiểm định", "/inspection", Settings], ["Sửa chữa", "/repairs", Wrench], ["Tồn kho thiết bị", "/inventory", Archive]]],
-  ["CỔNG TRƯỜNG HỌC", [["Yêu cầu tài trợ", "/school-requests", GraduationCap], ["Học sinh tiếp nhận", "/students", Users], ["Biên bản bàn giao", "/proofs", ClipboardCheck]]],
-  ["NHÀ HẢO TÂM", [["Đợt quyên góp", "/donations", HeartHandshake], ["Tra cứu hành trình", "/tracking", Activity], ["QR & Biên lai số", "/receipts", FileText]]],
-  ["TÌNH NGUYỆN VIÊN", [["Đội ngũ tiếp nhận", "/volunteers", Users], ["Tuyến đường & Phân công", "/dispatch", Truck]]],
+  ["1. CHIẾN DỊCH & TÀI KHOẢN", [["Tổng quan", "/", LayoutDashboard], ["Tạo chiến dịch & hạng mục", "/campaigns", Zap], ["Tài khoản & vai trò", "/accounts", HeartHandshake]]],
+  ["2. DUYỆT YÊU CẦU CỦA TRƯỜNG", [["Duyệt / từ chối yêu cầu", "/school-requests", GraduationCap]]],
+  ["3. GHÉP TỒN KHO & PHÂN BỔ", [["Ghép tồn kho & xác nhận phương án", "/allocations", Archive]]],
+  ["4. VẬN ĐƠN & SỰ CỐ (CHỈ XEM)", [["Vận đơn", "/waybills", Truck], ["Hồ sơ sự cố", "/incidents", ShieldAlert], ["Tra cứu hành trình", "/tracking", Activity]]],
+  ["KIỂM TOÁN", [["Nhật ký kiểm toán", "/audit", ShieldCheck]]],
 ];
 
 const priorityLabel = { CRITICAL: "ƯU TIÊN 1", HIGH: "ƯU TIÊN 2", MEDIUM: "ƯU TIÊN 3", LOW: "ƯU TIÊN 4" };
@@ -26,6 +27,7 @@ export default function SystemLayout() {
   const [query, setQuery] = useState("");
   const [requests, setRequests] = useState([]);
   const [viewing, setViewing] = useState(null);
+  const [, setProfileVersion] = useState(0);
   const dropdownRef = useRef(null);
   const { pathname } = useLocation();
 
@@ -230,7 +232,7 @@ export default function SystemLayout() {
               )}
             </div>
 
-            <button type="button" onClick={logout} className="text-[10px] font-semibold text-slate-500 hover:text-blue-700">{user?.fullName || "Tài khoản"} · Thoát</button>
+            <AccountMenu onLogout={logout} onSaved={() => setProfileVersion((value) => value + 1)} />
           </div>
         </header>
 
@@ -258,7 +260,7 @@ export default function SystemLayout() {
             <ul className="mt-4 space-y-1 text-sm text-slate-600">
               {(viewing.items ?? []).map((item) => <li key={item.id}>{item.quantityNeeded} · {item.category}</li>)}
             </ul>
-            <button type="button" onClick={() => { setViewing(null); navigate("/school-requests"); }} className="mt-5 w-full rounded bg-blue-600 py-2 text-sm font-semibold text-white">Mở trang yêu cầu tài trợ</button>
+            <button type="button" onClick={() => { setViewing(null); navigate("/school-requests"); }} className="mt-5 w-full rounded bg-blue-600 py-2 text-sm font-semibold text-white">Mở trang duyệt yêu cầu của trường</button>
           </article>
         </div>
       )}

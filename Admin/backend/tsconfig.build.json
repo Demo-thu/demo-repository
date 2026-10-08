@@ -1,5 +1,14 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*"],
+  "compilerOptions": {
+    "rootDir": "../.."
+  },
+  "include": [
+    "src/**/*",
+    "../../Donor/backend/src/**/*",
+    "../../School/backend/src/**/*",
+    "../../Warehouse/backend/src/**/*",
+    "../../Volunteer/backend/src/**/*"
+  ],
   "exclude": ["node_modules", "dist", "prisma"]
 }

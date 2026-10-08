@@ -141,10 +141,10 @@ export default function DashboardPage() {
       {/* THAO TÁC NỔI BẬT */}
       <section className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mr-auto flex items-center gap-2 text-xs font-semibold text-slate-800"><Zap size={16} className="text-blue-600 shrink-0" /><span>Thao tác Quản trị Khẩn cấp:</span></div>
-        <button type="button" onClick={() => navigate("/campaigns")} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">⊕ Phê duyệt chiến dịch mới</button>
-        <button type="button" onClick={() => navigate("/audit")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">◉ Phân quyền người dùng</button>
-        <button type="button" onClick={() => navigate("/inventory")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">↻ Cập nhật hệ thống kho</button>
-        <button type="button" onClick={() => navigate("/proofs")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">▣ Xuất biên bản đối soát</button>
+        <button type="button" onClick={() => navigate("/campaigns")} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">⊕ Tạo chiến dịch mới</button>
+        <button type="button" onClick={() => navigate("/school-requests")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">◉ Duyệt yêu cầu của trường</button>
+        <button type="button" onClick={() => navigate("/allocations")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">↻ Ghép tồn kho & xác nhận phân bổ</button>
+        <button type="button" onClick={() => navigate("/incidents")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">▣ Xem hồ sơ sự cố</button>
       </section>
 
       {/* BỐ CỤC ĐÃ ĐƯỢC CẢI TIẾN: SỬ DỤNG xl:grid-cols-12 VA min-w-0 */}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
 
             <footer className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
               <span>Hiển thị {shipments.length} vận đơn gần nhất</span>
-              <Link to="/dispatch" className="flex items-center gap-1 font-semibold text-blue-700 hover:underline">Xem tuyến đường <ArrowRight size={14} /></Link>
+              <Link to="/waybills" className="flex items-center gap-1 font-semibold text-blue-700 hover:underline">Xem vận đơn <ArrowRight size={14} /></Link>
             </footer>
           </article>
 
@@ -233,7 +233,7 @@ export default function DashboardPage() {
               <p className="leading-relaxed text-slate-600 break-words">Thiếu 85 thanh RAM DDR4 8GB và 40 ổ SSD 256GB tại Kho Miền Bắc để kịp xuất xưởng lô 120 laptop.</p>
               <div className="mt-3 flex flex-col gap-1.5">
                 <button type="button" onClick={() => navigate("/campaigns")} className="rounded-lg bg-red-600 px-3 py-1.5 text-center text-[11px] font-semibold text-white shadow-sm hover:bg-red-700 transition">Tạo Đề Xuất Mua / Kêu Gọi</button>
-                <button type="button" onClick={() => navigate("/inspection")} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-center text-[11px] font-medium text-slate-700 hover:bg-slate-50 transition">Điều chuyển từ Kho SG</button>
+                <button type="button" onClick={() => navigate("/allocations")} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-center text-[11px] font-medium text-slate-700 hover:bg-slate-50 transition">Ghép tồn kho</button>
               </div>
             </div>
           </article>

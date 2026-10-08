@@ -83,6 +83,7 @@ export class UsersService {
 
   async update(actor: AuthenticatedUser, id: string, dto: UpdateUserDto, ipAddress: string | null) {
     await this.ensureEditable(id);
+    const before = await this.prisma.user.findUnique({ where: { id }, select: { fullName: true, phone: true } });
     const user = await this.prisma.user.update({
       where: { id },
       data: {
@@ -103,15 +104,21 @@ export class UsersService {
       userId: actor.id,
       action: 'USER_UPDATED',
       resource: 'User',
-      details: { userId: id },
+      details: {
+        userId: id,
+        changes: [
+          { field: 'fullName', label: 'Họ tên', from: before?.fullName ?? null, to: user.fullName },
+          { field: 'phone', label: 'Số điện thoại', from: before?.phone ?? null, to: user.phone ?? null },
+        ].filter((change) => change.from !== change.to),
+      },
       ipAddress,
     });
     return user;
   }
 
   async updateRole(actor: AuthenticatedUser, id: string, dto: UpdateRoleDto, ipAddress: string | null) {
-    const found = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
-    if (!found) {
+    const target = await this.prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
+    if (!target) {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
     if (actor.id === id && dto.role !== Role.ADMIN) {
@@ -126,7 +133,7 @@ export class UsersService {
       userId: actor.id,
       action: 'USER_ROLE_CHANGED',
       resource: 'User',
-      details: { userId: id, role: user.role },
+      details: { userId: id, from: target.role, role: user.role },
       ipAddress,
     });
     return user;
@@ -137,6 +144,7 @@ export class UsersService {
     if (actor.id === id && dto.status === 'SUSPENDED') {
       throw new ConflictException('Không thể tự khóa tài khoản đang dùng');
     }
+    const previous = await this.prisma.user.findUnique({ where: { id }, select: { status: true } });
     const user = await this.prisma.user.update({
       where: { id },
       data: {
@@ -149,7 +157,7 @@ export class UsersService {
       userId: actor.id,
       action: 'USER_STATUS_CHANGED',
       resource: 'User',
-      details: { userId: id, status: dto.status },
+      details: { userId: id, from: previous?.status ?? null, status: dto.status },
       ipAddress,
     });
     return user;

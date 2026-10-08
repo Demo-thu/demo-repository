@@ -12,6 +12,7 @@ export class AllocationsController {
   constructor(private readonly allocations: AllocationsService) {}
 
   @Post('match/:requisitionId')
+  @Roles(Role.ADMIN)
   match(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('requisitionId', ParseUUIDPipe) requisitionId: string,

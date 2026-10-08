@@ -11,7 +11,7 @@ export class CampaignsController {
   constructor(private readonly campaigns: CampaignsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.ADMIN)
   create(@CurrentUser() actor: AuthenticatedUser, @Body() dto: CreateCampaignDto, @Req() req: HttpRequestContext) {
     return this.campaigns.create(actor, dto, readClientIp(req.headers, req.ip));
   }
@@ -33,7 +33,7 @@ export class CampaignsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.ADMIN)
   update(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -44,7 +44,7 @@ export class CampaignsController {
   }
 
   @Patch(':id/status')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.ADMIN)
   updateStatus(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -55,7 +55,7 @@ export class CampaignsController {
   }
 
   @Post(':id/targets')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.ADMIN)
   addTarget(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

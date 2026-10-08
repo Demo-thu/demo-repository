@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "lucide-react";
 import api, { saveSession } from "../lib/api";
+import { homeForRole } from "../lib/roles";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       saveSession(data);
-      navigate("/", { replace: true });
+      navigate(homeForRole(data.user?.role), { replace: true });
     } catch (err) {
       const message = err.response?.data?.message;
       setError(typeof message === "string" ? message : "Không đăng nhập được. Kiểm tra API đang chạy tại cổng 3000.");
@@ -46,8 +47,9 @@ export default function LoginPage() {
         </label>
         {error && <p className="mt-3 rounded bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
         <button disabled={pending} className="mt-5 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
-          {pending ? "Đang đăng nhập..." : "Vào trung tâm điều hành"}
+          {pending ? "Đang đăng nhập..." : "Vào đúng cổng của tài khoản"}
         </button>
+        <a className="mt-4 block text-center text-xs font-semibold text-blue-700" href="/register">Đăng ký tài khoản nhà hảo tâm</a>
       </form>
     </main>
   );

@@ -7,7 +7,7 @@ import { AuditService } from '../audit/audit.service';
 import { JwtPayload } from '../common/types';
 import { publicUserSelect } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto, RefreshDto, RegisterDto } from './dto';
+import { LoginDto, RefreshDto, RegisterDto, UpdateProfileDto } from './dto';
 
 interface TokenPair {
   accessToken: string;
@@ -116,6 +116,30 @@ export class AuthService {
     await this.prisma.user.update({ where: { id: userId }, data: { refreshTokenHash: null } });
     await this.audit.log({ userId, action: 'AUTH_LOGOUT', resource: 'User', ipAddress });
     return { success: true };
+  }
+
+  async updateMe(userId: string, dto: UpdateProfileDto, ipAddress: string | null) {
+    const phone = dto.phone?.trim();
+    const before = await this.prisma.user.findUnique({ where: { id: userId }, select: { fullName: true, phone: true } });
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { fullName: dto.fullName.trim(), phone: phone ? phone : null },
+      select: publicUserSelect,
+    });
+    await this.audit.log({
+      userId,
+      action: 'PROFILE_UPDATED',
+      resource: 'User',
+      details: {
+        userId,
+        changes: [
+          { field: 'fullName', label: 'Họ tên', from: before?.fullName ?? null, to: user.fullName },
+          { field: 'phone', label: 'Số điện thoại', from: before?.phone ?? null, to: user.phone ?? null },
+        ].filter((change) => change.from !== change.to),
+      },
+      ipAddress,
+    });
+    return user;
   }
 
   async me(userId: string) {

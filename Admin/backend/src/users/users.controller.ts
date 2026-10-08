@@ -29,7 +29,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.ADMIN)
   update(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

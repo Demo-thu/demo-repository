@@ -120,7 +120,16 @@ export class CampaignsService {
       userId: actor.id,
       action: 'CAMPAIGN_UPDATED',
       resource: 'Campaign',
-      details: { campaignId: id },
+      details: {
+        campaignId: id,
+        title: campaign.title,
+        changes: [
+          { field: 'title', label: 'Tên chiến dịch', from: current.title, to: campaign.title },
+          { field: 'description', label: 'Mô tả', from: current.description, to: campaign.description },
+          { field: 'startDate', label: 'Ngày bắt đầu', from: current.startDate.toISOString().slice(0, 10), to: campaign.startDate.toISOString().slice(0, 10) },
+          { field: 'endDate', label: 'Ngày kết thúc', from: current.endDate.toISOString().slice(0, 10), to: campaign.endDate.toISOString().slice(0, 10) },
+        ].filter((change) => change.from !== change.to),
+      },
       ipAddress,
     });
     return this.withProgress(campaign);

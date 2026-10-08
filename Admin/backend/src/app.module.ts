@@ -10,18 +10,18 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { HealthModule } from './health/health.module';
-import { InspectionsModule } from './inspections/inspections.module';
-import { ItemsModule } from './items/items.module';
-import { PledgesModule } from './pledges/pledges.module';
+import { PledgesModule } from '../../../Donor/backend/src/pledges/pledges.module';
+import { RequisitionsModule } from '../../../School/backend/src/requisitions/requisitions.module';
+import { InspectionsModule } from '../../../Warehouse/backend/src/inspections/inspections.module';
+import { ItemsModule } from '../../../Warehouse/backend/src/items/items.module';
+import { TransfersModule } from '../../../Warehouse/backend/src/transfers/transfers.module';
+import { WarehousesModule } from '../../../Warehouse/backend/src/warehouses/warehouses.module';
+import { WaybillsModule } from '../../../Warehouse/backend/src/waybills/waybills.module';
+import { VolunteersModule } from '../../../Volunteer/backend/src/volunteers/volunteers.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
-import { RequisitionsModule } from './requisitions/requisitions.module';
 import { TrackingModule } from './tracking/tracking.module';
-import { TransfersModule } from './transfers/transfers.module';
 import { UsersModule } from './users/users.module';
-import { VolunteersModule } from './volunteers/volunteers.module';
-import { WarehousesModule } from './warehouses/warehouses.module';
-import { WaybillsModule } from './waybills/waybills.module';
 
 @Module({
   imports: [

@@ -1,10 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
+  // Chữ ký tay và ảnh biên bản được gửi dưới dạng data URL đã nén nên cần giới hạn body lớn hơn mặc định 100kb.
+  app.useBodyParser('json', { limit: '12mb' });
+  app.useBodyParser('urlencoded', { limit: '12mb', extended: true });
   const config = app.get(ConfigService);
   app.setGlobalPrefix('api');
   app.enableCors({

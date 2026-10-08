@@ -1,25 +1,34 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import SystemLayout from "./layouts/SystemLayout";
+import PortalLayout from "./layouts/PortalLayout";
 import LoginPage from "./pages/LoginPage";
-import { isLoggedIn } from "./lib/api";
+import RegisterPage from "@donor/pages/RegisterPage";
+import DonorPage from "@donor/pages/DonorPage";
+import SchoolPage from "@school/pages/SchoolPage";
+import WarehousePage from "@warehouse/pages/WarehousePage";
+import VolunteerPage from "@volunteer/pages/VolunteerPage";
+import { currentUser, isLoggedIn } from "./lib/api";
+import { homeForRole } from "./lib/roles";
 import DashboardPage from "./pages/DashboardPage";
-import ProofsPage from "./pages/ProofsPage";
-import StudentsPage from "./pages/StudentsPage";
-import DonorTransparencyPage from "./pages/DonorTransparencyPage";
-import CampaignsPage from "./pages/CampaignsPage";
-import SchoolSupportPage from "./pages/SchoolSupportPage";
-import InspectionPage from "./pages/InspectionPage";
-import DispatchPage from "./pages/DispatchPage";
-import AuthorizationAndAuditingPage from "./pages/AuthorizationAndAuditingPage";
-import QuickResponeAndReceiptPage from "./pages/QuickResponeAndReceiptPage";
-import RepairPage from "./pages/RepairPage";
-import VolunteerAndHandlerIntakePage from "./pages/VolunteerAndHandlerIntakePage";
-import InventoryAndCoordinatingItemsPage from "./pages/InventoryAndCoordinatingItemsPage";
+import AdminCampaigns from "./pages/admin/AdminCampaigns";
+import AdminAccounts from "./pages/admin/AdminAccounts";
+import AdminRequests from "./pages/admin/AdminRequests";
+import AdminAllocations from "./pages/admin/AdminAllocations";
+import AdminWaybills from "./pages/admin/AdminWaybills";
+import AdminIncidents from "./pages/admin/AdminIncidents";
+import AdminAudit from "./pages/admin/AdminAudit";
 import TrackingPage from "./pages/Tracking";
 import NotFoundPage from "./pages/NotFoundPage";
 
-function RequireAuth() {
+function RequireSession() {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
+
+function RequireAdmin() {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  const role = currentUser()?.role;
+  if (role !== "ADMIN") return <Navigate to={homeForRole(role)} replace />;
   return <SystemLayout />;
 }
 
@@ -28,20 +37,24 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="login" element={<LoginPage />} />
-        <Route element={<RequireAuth />}>
+        <Route path="register" element={<RegisterPage />} />
+        <Route element={<RequireSession />}>
+          <Route element={<PortalLayout />}>
+            <Route path="donor" element={<DonorPage />} />
+            <Route path="school" element={<SchoolPage />} />
+            <Route path="warehouse" element={<WarehousePage />} />
+            <Route path="volunteer" element={<VolunteerPage />} />
+          </Route>
+        </Route>
+        <Route element={<RequireAdmin />}>
           <Route index element={<DashboardPage />} />
-          <Route path="proofs" element={<ProofsPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="donations" element={<DonorTransparencyPage />} />
-          <Route path="campaigns" element={<CampaignsPage />} />
-          <Route path="school-requests" element={<SchoolSupportPage />} />
-          <Route path="inspection" element={<InspectionPage />} />
-          <Route path="dispatch" element={<DispatchPage />} />
-          <Route path="audit" element={<AuthorizationAndAuditingPage />} />
-          <Route path="receipts" element={<QuickResponeAndReceiptPage />} />
-          <Route path="repairs" element={<RepairPage />} />
-          <Route path="volunteers" element={<VolunteerAndHandlerIntakePage />} />
-          <Route path="inventory" element={<InventoryAndCoordinatingItemsPage />} />
+          <Route path="campaigns" element={<AdminCampaigns />} />
+          <Route path="accounts" element={<AdminAccounts />} />
+          <Route path="school-requests" element={<AdminRequests />} />
+          <Route path="allocations" element={<AdminAllocations />} />
+          <Route path="waybills" element={<AdminWaybills />} />
+          <Route path="incidents" element={<AdminIncidents />} />
+          <Route path="audit" element={<AdminAudit />} />
           <Route path="tracking" element={<TrackingPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

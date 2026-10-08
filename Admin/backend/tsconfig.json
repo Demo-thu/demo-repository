@@ -21,6 +21,13 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "prisma/seed.ts"],
+  "include": [
+    "src/**/*",
+    "prisma/seed.ts",
+    "../../Donor/backend/src/**/*",
+    "../../School/backend/src/**/*",
+    "../../Warehouse/backend/src/**/*",
+    "../../Volunteer/backend/src/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

@@ -81,7 +81,7 @@ export const CAMPAIGN_TRANSITIONS = {
 } as const;
 
 export const TRANSFER_TRANSITIONS = {
-  PENDING: ['RECEIVED', 'CANCELLED'],
+  PENDING: ['IN_TRANSIT', 'CANCELLED'],
   IN_TRANSIT: ['RECEIVED'],
   RECEIVED: [],
   CANCELLED: [],

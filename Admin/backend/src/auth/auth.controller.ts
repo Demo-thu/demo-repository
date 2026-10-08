@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
 import { CurrentUser, Public } from '../common/decorators';
 import { AuthenticatedUser, HttpRequestContext } from '../common/types';
 import { readClientIp } from '../common/utils';
 import { AuthService } from './auth.service';
-import { LoginDto, RefreshDto, RegisterDto } from './dto';
+import { LoginDto, RefreshDto, RegisterDto, UpdateProfileDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +30,11 @@ export class AuthController {
   @Post('logout')
   logout(@CurrentUser() user: AuthenticatedUser, @Req() req: HttpRequestContext) {
     return this.auth.logout(user.id, readClientIp(req.headers, req.ip));
+  }
+
+  @Patch('me')
+  updateMe(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto, @Req() req: HttpRequestContext) {
+    return this.auth.updateMe(user.id, dto, readClientIp(req.headers, req.ip));
   }
 
   @Get('me')
