@@ -7,14 +7,25 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    10  ],
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      "@donor": path.resolve(import.meta.dirname, "../../Donor/frontend/src"),
+      "@school": path.resolve(import.meta.dirname, "../../School/frontend/src"),
+      "@warehouse": path.resolve(import.meta.dirname, "../../Warehouse/frontend/src"),
+      "@volunteer": path.resolve(import.meta.dirname, "../../Volunteer/frontend/src"),
+      react: path.resolve(import.meta.dirname, "node_modules/react"),
+      "react-dom": path.resolve(import.meta.dirname, "node_modules/react-dom"),
+      "react-router-dom": path.resolve(import.meta.dirname, "node_modules/react-router-dom"),
+      "lucide-react": path.resolve(import.meta.dirname, "node_modules/lucide-react"),
     },
   },
   server: {
     host: true,
     port: 5173,
+    fs: {
+      allow: [path.resolve(import.meta.dirname, "../..")],
+    },
   },
 })

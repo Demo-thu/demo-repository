@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { downloadCsv } from "../lib/actions";
 import { WAYBILL_STATUS_LABEL, formatNumber, initials } from "../lib/labels";
 import {
   Activity, AlertTriangle, Archive, ArrowRight, CalendarDays,
@@ -57,11 +58,13 @@ function FlowNode({ icon: Icon, eyebrow, title, text, badge, teal }) {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState(null);
   const [shipments, setShipments] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [region, setRegion] = useState("all");
 
-  useEffect(() => {
+  function loadDashboard() {
     api.get("/analytics/dashboard").then((response) => {
       setKpis(response.data.kpis);
       setShipments((response.data.recentWaybills ?? []).map((row) => ({
@@ -77,7 +80,18 @@ export default function DashboardPage() {
       })));
     }).catch(() => setShipments([]));
     api.get("/audit-logs?limit=4").then((response) => setLogs(response.data.data ?? [])).catch(() => setLogs([]));
+  }
+
+  useEffect(() => {
+    loadDashboard();
   }, []);
+
+  const visibleShipments = shipments.filter((row) => {
+    const place = `${row.school} ${row.location}`.toLowerCase();
+    if (region === "north") return /hà|hanoi|nội|giang|lào|lai|sơn|yên|tuyên|cao|bắc|quảng ninh|thanh|nghệ/.test(place);
+    if (region === "highlands") return /gia|đắk|dak|kon|lâm|đồng nai|trà/.test(place);
+    return true;
+  });
 
   const received = kpis ? formatNumber(kpis.itemsReceived) : "—";
   const inspected = kpis ? formatNumber(kpis.itemsInspectedOrBeyond) : "—";
@@ -97,8 +111,8 @@ export default function DashboardPage() {
           <p className="mt-1 max-w-2xl text-xs md:text-sm leading-relaxed text-slate-500">Tổng hợp dữ liệu luân chuyển thiết bị học tập, kiểm định kho và kế hoạch tài trợ điểm trường học sinh vùng cao.</p>
         </div>
         <div className="relative z-10 flex flex-wrap gap-2 shrink-0">
-          <button className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><CalendarDays size={15} /> Quý 4 - 2024</button>
-          <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"><Download size={15} /> Xuất Báo Cáo Quốc Gia</button>
+          <button type="button" onClick={loadDashboard} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><CalendarDays size={15} /> Tải lại số liệu</button>
+          <button type="button" onClick={() => downloadCsv("bao-cao-edushare.csv", ["Chỉ số", "Giá trị"], [["Tiếp nhận", kpis?.itemsReceived ?? 0], ["Đã kiểm định", kpis?.itemsInspectedOrBeyond ?? 0], ["Đã giao", kpis?.itemsDelivered ?? 0], ["Chiến dịch", `${kpis?.activeCampaigns ?? 0}/${kpis?.totalCampaigns ?? 0}`], ...visibleShipments.map((row) => [row.id, `${row.school} · ${row.status}`])])} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"><Download size={15} /> Xuất Báo Cáo Quốc Gia</button>
         </div>
         <div className="absolute -right-12 -top-12 size-60 rounded-full bg-blue-100/50 blur-3xl" />
       </section>
@@ -127,10 +141,10 @@ export default function DashboardPage() {
       {/* THAO TÁC NỔI BẬT */}
       <section className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mr-auto flex items-center gap-2 text-xs font-semibold text-slate-800"><Zap size={16} className="text-blue-600 shrink-0" /><span>Thao tác Quản trị Khẩn cấp:</span></div>
-        <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">⊕ Phê duyệt chiến dịch mới</button>
-        <button className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">◉ Phân quyền người dùng</button>
-        <button className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">↻ Cập nhật hệ thống kho</button>
-        <button className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">▣ Xuất biên bản đối soát</button>
+        <button type="button" onClick={() => navigate("/campaigns")} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">⊕ Tạo chiến dịch mới</button>
+        <button type="button" onClick={() => navigate("/school-requests")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">◉ Duyệt yêu cầu của trường</button>
+        <button type="button" onClick={() => navigate("/allocations")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">↻ Ghép tồn kho & xác nhận phân bổ</button>
+        <button type="button" onClick={() => navigate("/incidents")} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition">▣ Xem hồ sơ sự cố</button>
       </section>
 
       {/* BỐ CỤC ĐÃ ĐƯỢC CẢI TIẾN: SỬ DỤNG xl:grid-cols-12 VA min-w-0 */}
@@ -141,9 +155,9 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">Luồng Điều Phối Thiết Bị Trực Tiếp</h3>
               <div className="flex text-xs bg-slate-100 p-1 rounded-lg">
-                <button className="rounded bg-white px-3 py-1 font-semibold text-blue-700 shadow-sm">Toàn bộ 63 Tỉnh</button>
-                <button className="px-3 py-1 font-medium text-slate-600">Miền Bắc</button>
-                <button className="px-3 py-1 font-medium text-slate-600">Tây Nguyên</button>
+                <button type="button" onClick={() => setRegion("all")} className={`rounded px-3 py-1 ${region === "all" ? "bg-white font-semibold text-blue-700 shadow-sm" : "font-medium text-slate-600"}`}>Toàn bộ</button>
+                <button type="button" onClick={() => setRegion("north")} className={`px-3 py-1 ${region === "north" ? "rounded bg-white font-semibold text-blue-700 shadow-sm" : "font-medium text-slate-600"}`}>Miền Bắc</button>
+                <button type="button" onClick={() => setRegion("highlands")} className={`px-3 py-1 ${region === "highlands" ? "rounded bg-white font-semibold text-blue-700 shadow-sm" : "font-medium text-slate-600"}`}>Tây Nguyên</button>
               </div>
             </div>
 
@@ -161,7 +175,7 @@ export default function DashboardPage() {
                   <tr>{["MÃ ĐƠN", "ĐIỂM TRƯỜNG TIẾP NHẬN", "LOẠI THIẾT BỊ", "TÌNH NGUYỆN VIÊN", "TRẠNG THÁI", "THAO TÁC"].map((h) => <th key={h} className="p-3">{h}</th>)}</tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {shipments.map((row) => {
+                  {visibleShipments.map((row) => {
                     const Action = row.action;
                     return (
                       <tr key={row.id} className="hover:bg-slate-50/80">
@@ -180,7 +194,7 @@ export default function DashboardPage() {
 
             <footer className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
               <span>Hiển thị {shipments.length} vận đơn gần nhất</span>
-              <Link to="/dispatch" className="flex items-center gap-1 font-semibold text-blue-700 hover:underline">Xem tuyến đường <ArrowRight size={14} /></Link>
+              <Link to="/waybills" className="flex items-center gap-1 font-semibold text-blue-700 hover:underline">Xem vận đơn <ArrowRight size={14} /></Link>
             </footer>
           </article>
 
@@ -218,8 +232,8 @@ export default function DashboardPage() {
               <b className="font-semibold block mb-1">Thiếu hụt linh kiện nâng cấp</b>
               <p className="leading-relaxed text-slate-600 break-words">Thiếu 85 thanh RAM DDR4 8GB và 40 ổ SSD 256GB tại Kho Miền Bắc để kịp xuất xưởng lô 120 laptop.</p>
               <div className="mt-3 flex flex-col gap-1.5">
-                <button className="rounded-lg bg-red-600 px-3 py-1.5 text-center text-[11px] font-semibold text-white shadow-sm hover:bg-red-700 transition">Tạo Đề Xuất Mua / Kêu Gọi</button>
-                <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-center text-[11px] font-medium text-slate-700 hover:bg-slate-50 transition">Điều chuyển từ Kho SG</button>
+                <button type="button" onClick={() => navigate("/campaigns")} className="rounded-lg bg-red-600 px-3 py-1.5 text-center text-[11px] font-semibold text-white shadow-sm hover:bg-red-700 transition">Tạo Đề Xuất Mua / Kêu Gọi</button>
+                <button type="button" onClick={() => navigate("/allocations")} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-center text-[11px] font-medium text-slate-700 hover:bg-slate-50 transition">Ghép tồn kho</button>
               </div>
             </div>
           </article>

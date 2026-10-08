@@ -1,6 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @source "./**/*.{js,jsx}";
+@source "../../../Donor/frontend/src/**/*.{js,jsx}";
+@source "../../../School/frontend/src/**/*.{js,jsx}";
+@source "../../../Warehouse/frontend/src/**/*.{js,jsx}";
+@source "../../../Volunteer/frontend/src/**/*.{js,jsx}";
 
 @theme {
   --color-on-primary-fixed-variant: #003ea8;
@@ -74,6 +78,9 @@
   --font-headline-sm: "Be Vietnam Pro", sans-serif;
   --font-body-lg: "Inter", sans-serif;
   --font-label-md: "Inter", sans-serif;
+  --font-display-hero: "Be Vietnam Pro", sans-serif;
+  --font-display-hero-mobile: "Be Vietnam Pro", sans-serif;
+  --font-code-inline: "Inter", sans-serif;
 
   --text-body-sm: 12px;
   --text-body-sm--line-height: 16px;
@@ -127,6 +134,23 @@
   --text-label-md: 13px;
   --text-label-md--line-height: 18px;
   --text-label-md--font-weight: 500;
+
+  --text-display-hero: 40px;
+  --text-display-hero--line-height: 48px;
+  --text-display-hero--letter-spacing: -0.02em;
+  --text-display-hero--font-weight: 700;
+
+  --text-display-hero-mobile: 30px;
+  --text-display-hero-mobile--line-height: 38px;
+  --text-display-hero-mobile--letter-spacing: -0.015em;
+  --text-display-hero-mobile--font-weight: 700;
+
+  --text-code-inline: 12px;
+  --text-code-inline--line-height: 16px;
+  --text-code-inline--font-weight: 500;
+
+  --spacing-gutter-mobile: 0.75rem;
+  --spacing-margin-mobile: 1rem;
 }
 
 @layer base {
@@ -148,5 +172,20 @@
   }
   ::-webkit-scrollbar {
     display: none;
+  }
+}
+
+
+@media print {
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  .md\:pl-64 {
+    padding-left: 0 !important;
+  }
+  body {
+    background: #fff !important;
   }
 }

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-high":"#222a3d","surface-tint":"#4edea3","on-tertiary-fixed":"#2a1700","on-primary":"#003824","surface-container-lowest":"#060e20","inverse-surface":"#dae2fd","secondary-container":"#0053db","on-tertiary-fixed-variant":"#653e00","inverse-primary":"#006c49","surface-variant":"#2d3449","on-primary-fixed-variant":"#005236","primary-fixed":"#6ffbbe","tertiary":"#ffb95f","surface-container":"#171f33","secondary-fixed":"#dbe1ff","on-error-container":"#ffdad6","outline-variant":"#3c4a42","on-secondary-container":"#cdd7ff","on-error":"#690005","outline":"#86948a","on-tertiary":"#472a00","surface-bright":"#31394d","on-secondary-fixed-variant":"#003ea8","on-primary-fixed":"#002113","background":"#0b1326","surface-dim":"#0b1326","secondary":"#b4c5ff","surface-container-highest":"#2d3449","primary-container":"#10b981","on-surface":"#dae2fd","error":"#ffb4ab","on-background":"#dae2fd","on-primary-container":"#00422b","primary-fixed-dim":"#4edea3","secondary-fixed-dim":"#b4c5ff","tertiary-fixed-dim":"#ffb95f","error-container":"#93000a","tertiary-fixed":"#ffddb8","on-secondary-fixed":"#00174b","on-tertiary-container":"#523200","surface-container-low":"#131b2e","inverse-on-surface":"#283044","primary":"#4edea3","on-surface-variant":"#bbcabf","surface":"#0b1326","tertiary-container":"#e29100","on-secondary":"#002a78"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"2.5rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","margin":"2rem","gutter-mobile":"0.75rem"},"fontFamily":{"body-md":["Inter"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-sm":["Inter"],"body-lg":["Inter"],"code-inline":["Inter"],"display-hero":["Plus Jakarta Sans"],"label-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"label-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"]},"fontSize":{"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"code-inline":["12px",{"lineHeight":"16px","fontWeight":"500"}],"display-hero":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-hero-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.2)]"><div class="p-space-lg bg-surface-container-lowest"><div class="flex items-center gap-space-sm mb-space-xs"><span class="material-symbols-outlined text-primary">volunteer_activism</span><span class="font-headline-sm text-headline-sm text-primary tracking-tight">EduShare VN</span></div><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">CỔNG NHÀ HẢO TÂM & TÀI TRỢ</p><div class="flex items-center justify-between mt-space-sm"><span class="font-code-inline text-code-inline text-on-surface-variant/80">v2.8.4 • Minh bạch</span><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span></div></div><div class="p-space-md mx-space-md my-space-sm rounded-xl bg-surface-container-high"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Tổ chức đối tác</span><span class="material-symbols-outlined text-[16px] text-tertiary">verified</span></div><div class="font-headline-sm text-label-md text-on-surface font-semibold truncate">Nhà hảo tâm / Quỹ F.Tech</div><div class="font-code-inline text-code-inline text-primary mt-space-xs">#DONOR-VN-2026</div></div><div class="flex-1 overflow-y-auto px-space-md py-space-sm space-y-space-lg"><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">1. CHIẾN DỊCH & QUYÊN GÓP</div><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm" data-path="campaigns" href="#"><span class="material-symbols-outlined text-[20px]">explore</span><span class="font-label-md text-label-md">Khám phá chiến dịch</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="donate" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-label-md text-label-md">Đăng ký trao tặng mới</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">2. PHIẾU CỦA TÔI</div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="my-pledges" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span class="font-label-md text-label-md">Danh sách phiếu đã gửi</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="receipts" href="#"><span class="material-symbols-outlined text-[20px]">verified_user</span><span class="font-label-md text-label-md">Biên nhận điện tử</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">3. THEO DÕI & MINH BẠCH</div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="qr-tracking" href="#"><span class="material-symbols-outlined text-[20px]">qr_code_2</span><span class="font-label-md text-label-md">Mã QR thiết bị của tôi</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="social-impact" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span class="font-label-md text-label-md">Tác động xã hội của tôi</span></a></nav></div><div class="p-space-md bg-surface-container-lowest/80"><div class="flex items-center gap-space-sm px-space-sm py-space-xs"><span class="material-symbols-outlined text-tertiary text-[20px]">shield_with_heart</span><div class="flex-1 min-w-0"><div class="font-label-sm text-label-sm text-on-surface font-medium truncate">Bộ GD&ĐT Bảo Trợ</div><div class="font-body-sm text-body-sm text-on-surface-variant truncate">Dữ liệu chuỗi khối minh bạch</div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-low/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.2)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md flex-1 max-w-xl"><div class="relative w-full"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span><input class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all" placeholder="Tìm chiến dịch, mã phiếu tài trợ, số serial hoặc QR code..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container-high"><span class="material-symbols-outlined text-tertiary text-[18px]">diamond</span><span class="font-label-sm text-label-sm text-tertiary uppercase font-semibold tracking-wide">Nhà tài trợ Kim Cương - Quỹ F.Tech</span></div><a class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold hover:bg-primary-container/90 transition-all shadow-sm" data-path="donate" href="#"><span class="material-symbols-outlined text-[18px]">add</span>Tạo phiếu trao tặng</a><button aria-label="Thông báo" class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 w-full px-space-lg bg-background min-h-screen"><div class="flex flex-col w-full pb-space-xl">
+<!-- TOP METRICS & URGENT ALERT BAR -->
+<div class="w-full mb-space-lg">
+<!-- Urgent Shortage Alert Widget -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-high p-space-md shadow-md">
+<div class="absolute inset-y-0 left-0 w-1.5 bg-tertiary"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md pl-space-xs">
+<div class="p-2 rounded-lg bg-tertiary/15 text-tertiary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">crisis_alert</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase tracking-wider bg-tertiary/20 text-tertiary font-semibold">Cảnh Báo Thiếu Hụt Cấp Thiết</span>
+<span class="font-code-inline text-code-inline text-on-surface-variant">• Hạn chót phân bổ: 28/08/2026</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface max-w-4xl">
+              Điểm trường <strong class="text-tertiary font-semibold">THCS Pài Lủng</strong> và <strong class="text-tertiary font-semibold">THCS Mèo Vạc (Hà Giang)</strong> đang thiếu gấp <span class="text-primary font-semibold">65 Laptop Core i5</span> và <span class="text-primary font-semibold">400 Bộ SGK Cánh Diều</span> trước thềm khai giảng. Hãy ưu tiên tài trợ danh mục này để kịp xuất kho vận chuyển xuyên núi.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 pl-11 lg:pl-0">
+<a class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold hover:opacity-95 shadow-sm transition-all whitespace-nowrap" data-path="donate" href="#">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+            Quyên góp hạng mục thiếu hụt ngay
+          </a>
+</div>
+</div>
+</div>
+</div>
+<!-- HERO SECTION WITH REAL-WORLD IMPACT HEADER -->
+<div class="relative w-full rounded-2xl overflow-hidden bg-surface-container-low mb-space-xl shadow-lg">
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center filter brightness-[0.35] contrast-[1.1]" data-alt="Vietnamese volunteers in green polo shirts delivering cardboard boxes filled with donated laptops and books to a local village schoolmaster in front of a rural highland secondary school gate with mountains in background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCi50sqDbzQ290mfBOCnO4fNDRweZy29RzhbYDG_KE5MyWNdp5s-oPzaWYD0KEQnRKP1qVHr2rkFB5Lj5K_ZeSajWwAH-UW76cBGyvuZGhXAYizzmG-Oz-hvR2MJ-bkKu5P1oOk8Pt5U8O7g1tHPX_DxF5aLXbe5ed5iFCfJi3njbq-poOfaPepz0Q9DUoTyJESUWH31A3gcgAiiW40JyzQsPeIf1zIIQRXI7D2dOp5tN51efdVNYCc')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
+</div>
+<div class="relative z-10 p-space-lg lg:p-space-xl flex flex-col justify-between min-h-[300px]">
+<div class="max-w-2xl">
+<div class="inline-flex items-center gap-space-xs px-3 py-1 rounded-full bg-primary/20 backdrop-blur-md mb-space-sm text-primary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Hệ thống Minh bạch Tiếp sức Học đường 2026</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-space-sm tracking-tight">
+          Chung Tay Cùng EduShare Vietnam — Các Chiến Dịch Đang Triển Khai
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+          Mỗi máy tính cũ, mỗi trang sách giáo khoa trao gửi là chìa khóa mở rộng tri thức cho học sinh các điểm trường vùng cao, biên giới và hải đảo.
+        </p>
+</div>
+<!-- Realtime mini telemetry tracker -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-md pt-space-lg">
+<div class="bg-surface-container/80 backdrop-blur-md p-space-md rounded-xl">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Thiết bị trao tặng</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-primary font-bold">1,842</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">máy</span>
+</div>
+<div class="font-code-inline text-code-inline text-primary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +14% tháng này
+          </div>
+</div>
+<div class="bg-surface-container/80 backdrop-blur-md p-space-md rounded-xl">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Bộ SGK số hóa & bản in</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-tertiary font-bold">14,290</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">bộ</span>
+</div>
+<div class="font-code-inline text-code-inline text-tertiary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done_all</span> 92% đạt chuẩn BGD
+          </div>
+</div>
+<div class="bg-surface-container/80 backdrop-blur-md p-space-md rounded-xl">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Điểm trường thụ hưởng</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-secondary font-bold">48</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">trường</span>
+</div>
+<div class="font-code-inline text-code-inline text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pin_drop</span> 12 tỉnh biên giới
+          </div>
+</div>
+<div class="bg-surface-container/80 backdrop-blur-md p-space-md rounded-xl">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Tỷ lệ minh bạch kho</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">100%</span>
+<span class="font-body-sm text-body-sm text-primary">QR định danh</span>
+</div>
+<div class="font-code-inline text-code-inline text-on-surface-variant mt-1">Chuỗi khối EduLedger</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SEARCH & QUICK FILTER SECTION -->
+<div class="w-full bg-surface-container-low p-space-md rounded-xl shadow-sm mb-space-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">filter_alt</span>
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none" id="campaign-search-input" placeholder="Tìm theo tên chiến dịch, mã đợt hoặc địa bàn (Hà Giang, Sơn La, Quảng Nam, Kon Tum...)" type="text"/>
+</div>
+<!-- Quick Filter Chips -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+<button class="filter-chip active-filter px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold whitespace-nowrap shadow-sm">
+        Tất cả chiến dịch (6)
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
+        Đang cấp bách (2)
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
+        Vùng núi phía Bắc (3)
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
+        Tây Nguyên & Duyên hải (2)
+      </button>
+</div>
+</div>
+<!-- MAIN CAMPAIGN GRID -->
+<div class="flex flex-col gap-space-xl">
+<!-- CARD 1: TIÊU BIỂU & CẤP BÁCH (FEATURED MASSIVE BENTO PANEL) -->
+<div class="w-full bg-surface-container-low rounded-2xl overflow-hidden shadow-lg flex flex-col">
+<!-- Card Header Status Bar -->
+<div class="bg-surface-container-high px-space-lg py-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary/20 text-tertiary font-label-sm text-label-sm font-semibold uppercase tracking-wider flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary animate-ping"></span>
+            Đợt Tiếp Nhận Cấp Bách #ĐDOT-2026-08
+          </span>
+<span class="font-code-inline text-code-inline text-on-surface-variant">Thời hạn: 01/08/2026 — 30/11/2026</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">pin_drop</span>
+          Huyện Mèo Vạc & Đồng Văn, tỉnh Hà Giang
+        </div>
+</div>
+<!-- Bento Inner Split Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-0">
+<!-- Left Side: Visual Media & Primary Description -->
+<div class="xl:col-span-5 p-space-lg flex flex-col justify-between bg-surface-container-lowest/50">
+<div>
+<div class="relative w-full h-56 rounded-xl overflow-hidden mb-space-md shadow-md">
+<img class="w-full h-full object-cover" data-alt="A smiling female volunteer in a green EduShare uniform handing a brand new sealed cardboard box labeled Educational Laptops to an elderly Vietnamese mountain school representative in front of excited students wearing blue and white jackets" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcUSyndCqNSKhhVsmF-hHjmasxBCbNGfNMEsl41FPB9oLHftvLCpUEe64iPrrXHa5LIpLJTnOzUVT9FlLElY9cZyeQRE2Vv1IReq3EuZnRFXQgS7R4M1dmVz0WBPwefi70XL7EcaJWXYNA-QOJePeIExBEuFuHB4tbGO40NK2IBYLjI0pjUwMh40Pv_XIsa8U_boEbZFCtw-WfV7F1y5ulgaOFrUYMRSEWHWOprS1wt2373o1-wnVL"/>
+<div class="absolute top-3 left-3 px-2 py-1 rounded bg-surface-container-lowest/80 backdrop-blur text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span> Bàn giao đợt 1 thành công
+              </div>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mb-2">
+              Chiến dịch Tiếp Sức Đến Trường 2026
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md leading-relaxed">
+              Trang bị đồng bộ phòng tin học và thư viện mở cho 4 cụm trường Phổ thông Dân tộc Bán trú (PTDTBT) vùng cao Hà Giang. Mục tiêu trao tặng hoàn chỉnh thiết bị công nghệ, giáo trình học kỳ I và áo ấm cho 3,000 học sinh dân tộc thiểu số trước mùa đông.
+            </p>
+<!-- Overall Resource Target Circular-styled Counter -->
+<div class="bg-surface-container p-space-md rounded-xl mb-space-md">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Tiến độ quyên góp tổng thể</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">68%</span>
+</div>
+<div class="w-full h-2.5 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 68%;"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-code-inline text-code-inline text-on-surface-variant">
+<span>Đã nhận: <strong class="text-on-surface">2,040</strong> suất quà</span>
+<span>Mục tiêu: <strong class="text-on-surface">3,000</strong> suất quà</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Buttons -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-sm pt-space-sm">
+<a class="flex-1 inline-flex items-center justify-center gap-space-xs px-space-md py-3 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold hover:opacity-95 shadow-md transition-all" data-path="donate" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+              Trao tặng cho đợt này
+            </a>
+<button class="px-space-md py-3 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-medium transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">school</span>
+              Xem 4 điểm trường
+            </button>
+</div>
+</div>
+<!-- Right Side: Resource Target Checklist Matrix (Interactive detail bars) -->
+<div class="xl:col-span-7 p-space-lg flex flex-col justify-between bg-surface-container-low">
+<div>
+<div class="flex items-center justify-between mb-space-md pb-space-xs border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">checklist_rtl</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Hạng mục mỗi đợt đang cần</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cập nhật 15 phút trước qua IoT Smart-Hub</span>
+</div>
+<!-- Detailed Checklist List -->
+<div class="space-y-space-md">
+<!-- Item 1: Laptops -->
+<div class="p-space-md rounded-xl bg-surface-container transition-all hover:bg-surface-container-high">
+<div class="flex items-start justify-between gap-space-sm mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">laptop_mac</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+                        Máy tính / Laptop học tập
+                        <span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-tertiary/20 text-tertiary font-bold">Cấp bách</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Cấu hình khuyến nghị: Core i3/i5 hoặc tương đương, RAM 8GB, SSD 128GB+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-tertiary font-bold">Thiếu 65</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">/ Cần 200 chiếc</div>
+</div>
+</div>
+<!-- Progress Line -->
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all" style="width: 67.5%;"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-code-inline text-code-inline">
+<span class="text-primary font-medium">Đã nhận: 135 chiếc (67.5%)</span>
+<a class="text-tertiary hover:underline flex items-center gap-0.5" data-path="donate" href="#">Tài trợ hạng mục này →</a>
+</div>
+</div>
+<!-- Item 2: Textbooks -->
+<div class="p-space-md rounded-xl bg-surface-container transition-all hover:bg-surface-container-high">
+<div class="flex items-start justify-between gap-space-sm mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+                        Bộ Sách Giáo Khoa (Lớp 1 - 12)
+                        <span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-surface-bright text-on-surface font-semibold">Chương trình mới</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Bộ Cánh Diều & Kết Nối Tri Thức với cuộc sống (tái sử dụng hoặc mới 100%)</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">Thiếu 400</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">/ Cần 1.500 bộ</div>
+</div>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-secondary rounded-full transition-all" style="width: 73.3%;"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-code-inline text-code-inline">
+<span class="text-secondary font-medium">Đã nhận: 1.100 bộ (73.3%)</span>
+<a class="text-secondary hover:underline flex items-center gap-0.5" data-path="donate" href="#">Tài trợ SGK →</a>
+</div>
+</div>
+<!-- Item 3: Warm uniforms -->
+<div class="p-space-md rounded-xl bg-surface-container transition-all hover:bg-surface-container-high">
+<div class="flex items-start justify-between gap-space-sm mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-fixed-dim/10 text-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">checkroom</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Đồng phục học sinh / Áo ấm mùa đông</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Áo phao 3 lớp cản gió chống rét cho học sinh từ 6 - 15 tuổi</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">Thiếu 280</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">/ Cần 800 bộ</div>
+</div>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all" style="width: 65%;"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-code-inline text-code-inline">
+<span class="text-primary font-medium">Đã nhận: 520 bộ (65%)</span>
+<a class="text-primary hover:underline flex items-center gap-0.5" data-path="donate" href="#">Đăng ký trao tặng →</a>
+</div>
+</div>
+<!-- Item 4: Mountain Bicycles -->
+<div class="p-space-md rounded-xl bg-surface-container transition-all hover:bg-surface-container-high">
+<div class="flex items-start justify-between gap-space-sm mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">pedal_bike</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Xe đạp địa hình cho học sinh vượt dốc</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Hỗ trợ các em có nhà cách điểm trường trên 7km đường đèo</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-tertiary font-bold">Thiếu 58</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">/ Cần 100 chiếc</div>
+</div>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-tertiary rounded-full transition-all" style="width: 42%;"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-code-inline text-code-inline">
+<span class="text-tertiary font-medium">Đã nhận: 42 chiếc (42%)</span>
+<a class="text-tertiary hover:underline flex items-center gap-0.5" data-path="donate" href="#">Tài trợ xe đạp →</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Micro-transparency Guarantee Note -->
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+              Tất cả hiện vật được cấp mã QR định danh và theo dõi hành trình trực tiếp
+            </span>
+<span class="font-code-inline text-code-inline text-on-surface-variant">Chuẩn ISO 27001 / EduShare</span>
+</div>
+</div>
+</div>
+</div>
+<!-- CARDS 2 & 3: TWO-COLUMN ASYMMETRIC GRID -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<!-- CARD 2: MÁY TÍNH CŨ - TRI THỨC MỚI -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-md flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean workshop of technician volunteers inspecting refurbished enterprise laptops with modern software on testing screens before boxing them for school donation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw3mQZ9_HE8BjDgC69u3VsPTMjZO4UnTJc-lTjdQXwR8s9WBlDsQcJ0d3QGMIgDJZlhsuFE38RWcoVVKF91H-CNsb0Qk9M7pUsw2QyP-wuK0-6tzSdgiX49cNeo6FsvW0zgQjqPTz2GY1eq0E54ygZekIXD-tMbjYGjXBVjy4e3HF320lvMbxOR9Na0v0m7kWWWMUDI_DDo8mChOc4nI-sKGc25AvsUeHEwgPVrnnuUGnGd2R9pQk9"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">memory</span> Khối Doanh nghiệp IT
+            </div>
+<div class="absolute bottom-3 right-3 font-code-inline text-code-inline bg-surface-container-lowest/80 px-2 py-0.5 rounded text-on-surface">
+              Mã: #CAM-IT-REUSE-26
+            </div>
+</div>
+<div class="p-space-lg">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Điểm trường nội trú Mèo Vạc & Bắc Mê</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-primary/20 text-primary">Tiến độ 45%</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mb-space-xs">
+              Máy Tính Cũ — Tri Thức Mới
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+              Chương trình tiếp nhận thiết bị văn phòng, máy trạm và laptop đã hết khấu hao từ các tập đoàn công nghệ. Đội ngũ kỹ sư EduShare sẽ kiểm định, cài đặt hệ điều hành giáo dục và bàn giao trọn gói.
+            </p>
+<!-- Resource meter -->
+<div class="bg-surface-container p-space-md rounded-xl space-y-2 mb-space-md">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface font-medium">Chỉ tiêu máy tính xách tay</span>
+<span class="text-primary font-bold">68 / 150 laptop</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 45%;"></div>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>Còn thiếu: <strong class="text-tertiary">82 laptop</strong></span>
+<span class="text-primary font-medium">Hỗ trợ nhận tận nơi (TP.HCM & Hà Nội)</span>
+</div>
+</div>
+<!-- Specific target specs -->
+<div class="grid grid-cols-2 gap-space-sm mb-space-md font-body-sm text-body-sm">
+<div class="bg-surface-container p-space-sm rounded-lg">
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Phần mềm tích hợp</span>
+<span class="text-on-surface font-semibold">Edubuntu + Scratch 3.0</span>
+</div>
+<div class="bg-surface-container p-space-sm rounded-lg">
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Bảo hành hỗ trợ</span>
+<span class="text-on-surface font-semibold">12 tháng tại chỗ</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-lg pt-0">
+<a class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary font-label-md text-label-md font-semibold transition-all shadow-sm" data-path="donate" href="#">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+            Tài trợ thiết bị IT văn phòng
+          </a>
+</div>
+</div>
+<!-- CARD 3: TỦ SÁCH VÙNG CAO 2026 -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-md flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Children in ethnic minority clothing sitting warmly inside an open timber school library in northern Vietnam reading colorful picture books and science textbooks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3onCH9ia_xPl4FoBz15d_BiLY0VjLB6ukIovpr3QksJDXjbDwNW6OP_mcTZOQBWuoNwuhgh3OgVWAYS4bCA-6eNkPBiZoEomFqD0Toe8M1sWtl5JSXKyZyAUSRuR-SJPDixPKo5xelut5EibYY36MDpYaaz9HwYKcaXCWTs6B7CnxbCvp2XkufsfIaDEnUWhQT4kFN64A3TuxhiARYrX2b04dthIwZLCpIFr-0w6h13lMKJsVqMYS"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-surface-variant text-on-surface font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">import_contacts</span> Khối Giáo dục & Xuất bản
+            </div>
+<div class="absolute bottom-3 right-3 font-code-inline text-code-inline bg-surface-container-lowest/80 px-2 py-0.5 rounded text-on-surface">
+              Mã: #CAM-LIB-BOOK-26
+            </div>
+</div>
+<div class="p-space-lg">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">12 Xã khó khăn huyện Hoàng Su Phì</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-primary/20 text-primary">Tiến độ 82%</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mb-space-xs">
+              Tủ Sách Vùng Cao 2026
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+              Kêu gọi trao tặng sách giáo khoa, từ điển song ngữ Việt - Mông/Tày, và sách tranh khoa học tự nhiên. Hoàn thiện 25 tủ sách chuyên đề giúp các em nâng cao năng lực đọc hiểu và kỹ năng thực hành.
+            </p>
+<!-- Resource meter -->
+<div class="bg-surface-container p-space-md rounded-xl space-y-2 mb-space-md">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface font-medium">Sách giáo khoa & truyện giáo dục</span>
+<span class="text-primary font-bold">4,100 / 5,000 cuốn</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 82%;"></div>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>Còn thiếu: <strong class="text-tertiary">900 cuốn</strong></span>
+<span class="text-secondary font-medium">Đã hoàn thành 18/25 tủ sách</span>
+</div>
+</div>
+<!-- Detail Breakdown -->
+<div class="grid grid-cols-2 gap-space-sm mb-space-md font-body-sm text-body-sm">
+<div class="bg-surface-container p-space-sm rounded-lg">
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Thể loại ưu tiên</span>
+<span class="text-on-surface font-semibold">Khoa học & Kỹ năng sống</span>
+</div>
+<div class="bg-surface-container p-space-sm rounded-lg">
+<span class="text-on-surface-variant block font-label-sm text-label-sm">Điểm tiếp nhận mở</span>
+<span class="text-on-surface font-semibold">Toàn bộ bưu cục EMS đối tác</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-lg pt-0">
+<a class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary font-label-md text-label-md font-semibold transition-all shadow-sm" data-path="donate" href="#">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+            Đóng góp sách cho tủ sách vùng cao
+          </a>
+</div>
+</div>
+</div>
+<!-- GEOGRAPHIC REACH & DIRECT IMPACT LOCATIONS TABLE -->
+<div class="w-full bg-surface-container-low rounded-2xl p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+            Mạng Lưới Các Điểm Trường Thụ Hưởng Trọng Điểm
+          </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Dữ liệu tổng hợp nhu cầu thực tế theo khảo sát định kỳ tháng 08/2026
+          </p>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-inline text-code-inline text-on-surface-variant">Đồng bộ tự động với cổng Bộ GD&ĐT</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant uppercase font-label-sm text-label-sm tracking-wider">
+<th class="py-3 px-4 rounded-l-lg">Tên điểm trường</th>
+<th class="py-3 px-4">Địa bàn hành chính</th>
+<th class="py-3 px-4">Quy mô học sinh</th>
+<th class="py-3 px-4">Nhu cầu ưu tiên 1</th>
+<th class="py-3 px-4">Tình trạng tiếp nhận</th>
+<th class="py-3 px-4 rounded-r-lg text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high">
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3 px-4 font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">warning</span>
+                Trường PTDTBT THCS Xã Xuân Trường
+              </td>
+<td class="py-3 px-4 text-on-surface-variant">Bảo Lạc, Cao Bằng</td>
+<td class="py-3 px-4 text-on-surface font-code-inline">348 em</td>
+<td class="py-3 px-4 text-primary font-medium">25 Bộ máy tính & 120 bộ SGK</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-tertiary/15 text-tertiary font-semibold">Thiếu 45%</span>
+</td>
+<td class="py-3 px-4 text-right">
+<a class="font-label-sm text-label-sm text-primary hover:underline font-semibold" data-path="donate" href="#">Tài trợ ngay</a>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3 px-4 font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">warning</span>
+                Trường PTDTBT THCS Pài Lủng
+              </td>
+<td class="py-3 px-4 text-on-surface-variant">Mèo Vạc, Hà Giang</td>
+<td class="py-3 px-4 text-on-surface font-code-inline">412 em</td>
+<td class="py-3 px-4 text-primary font-medium">35 Laptop & 280 Áo ấm cản gió</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-tertiary/15 text-tertiary font-semibold">Thiếu 58%</span>
+</td>
+<td class="py-3 px-4 text-right">
+<a class="font-label-sm text-label-sm text-primary hover:underline font-semibold" data-path="donate" href="#">Tài trợ ngay</a>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3 px-4 font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+                Trường Tiểu học & THCS Mường Lạn
+              </td>
+<td class="py-3 px-4 text-on-surface-variant">Sốp Cộp, Sơn La</td>
+<td class="py-3 px-4 text-on-surface font-code-inline">520 em</td>
+<td class="py-3 px-4 text-secondary font-medium">Thư viện 1,200 đầu sách & Kệ</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-primary/15 text-primary font-semibold">Đạt 88%</span>
+</td>
+<td class="py-3 px-4 text-right">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-semibold" data-path="donate" href="#">Chi tiết</a>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3 px-4 font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+                Trường PTDTBT THCS Trà Cang
+              </td>
+<td class="py-3 px-4 text-on-surface-variant">Nam Trà My, Quảng Nam</td>
+<td class="py-3 px-4 text-on-surface font-code-inline">295 em</td>
+<td class="py-3 px-4 text-secondary font-medium">30 Xe đạp leo núi & 100 Bộ bàn ghế</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-primary/15 text-primary font-semibold">Đạt 75%</span>
+</td>
+<td class="py-3 px-4 text-right">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-semibold" data-path="donate" href="#">Chi tiết</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Filter button interactive switching
+  document.querySelectorAll('.filter-chip').forEach(button => {
+    button.addEventListener('click', function() {
+      document.querySelectorAll('.filter-chip').forEach(b => {
+        b.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-sm');
+        b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+      });
+      this.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+      this.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-sm');
+    });
+  });
+
+  // Client-side quick filter logic for demo search
+  const searchInput = document.getElementById('campaign-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const term = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
+      });
+    });
+  }
+</script></main></div></body></html>

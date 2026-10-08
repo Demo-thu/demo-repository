@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import api, { clearSession, currentUser } from "../lib/api";
+import api, { apiError, clearSession, currentUser } from "../lib/api";
 import {
-  Activity, Archive, Bell, Box, CheckCircle2, ClipboardCheck, FileText, GraduationCap,
-  HeartHandshake, LayoutDashboard, Menu, Search, Settings, ShieldCheck,
-  Truck, Users, Wrench, X, Zap,
+  Activity, Archive, Bell, Box, CheckCircle2, GraduationCap,
+  HeartHandshake, LayoutDashboard, Menu, Search, ShieldAlert, ShieldCheck,
+  Truck, X, Zap,
 } from "lucide-react";
+import AccountMenu from "./AccountMenu";
 
 const groups = [
-  ["TRUNG TÂM ĐIỀU HÀNH", [["Tổng quan", "/", LayoutDashboard], ["Chiến dịch", "/campaigns", Zap], ["Phân quyền & Kiểm toán", "/audit", ShieldCheck]]],
-  ["KHO & KỸ THUẬT", [["Kiểm định", "/inspection", Settings], ["Sửa chữa", "/repairs", Wrench], ["Tồn kho thiết bị", "/inventory", Archive]]],
-  ["CỔNG TRƯỜNG HỌC", [["Yêu cầu tài trợ", "/school-requests", GraduationCap], ["Học sinh tiếp nhận", "/students", Users], ["Biên bản bàn giao", "/proofs", ClipboardCheck]]],
-  ["NHÀ HẢO TÂM", [["Đợt quyên góp", "/donations", HeartHandshake], ["Tra cứu hành trình", "/tracking", Activity], ["QR & Biên lai số", "/receipts", FileText]]],
-  ["TÌNH NGUYỆN VIÊN", [["Đội ngũ tiếp nhận", "/volunteers", Users], ["Tuyến đường & Phân công", "/dispatch", Truck]]],
+  ["1. CHIẾN DỊCH & TÀI KHOẢN", [["Tổng quan", "/", LayoutDashboard], ["Tạo chiến dịch & hạng mục", "/campaigns", Zap], ["Tài khoản & vai trò", "/accounts", HeartHandshake]]],
+  ["2. DUYỆT YÊU CẦU CỦA TRƯỜNG", [["Duyệt / từ chối yêu cầu", "/school-requests", GraduationCap]]],
+  ["3. GHÉP TỒN KHO & PHÂN BỔ", [["Ghép tồn kho & xác nhận phương án", "/allocations", Archive]]],
+  ["4. VẬN ĐƠN & SỰ CỐ (CHỈ XEM)", [["Vận đơn", "/waybills", Truck], ["Hồ sơ sự cố", "/incidents", ShieldAlert], ["Tra cứu hành trình", "/tracking", Activity]]],
+  ["KIỂM TOÁN", [["Nhật ký kiểm toán", "/audit", ShieldCheck]]],
 ];
 
 const priorityLabel = { CRITICAL: "ƯU TIÊN 1", HIGH: "ƯU TIÊN 2", MEDIUM: "ƯU TIÊN 3", LOW: "ƯU TIÊN 4" };
@@ -25,6 +26,8 @@ export default function SystemLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [query, setQuery] = useState("");
   const [requests, setRequests] = useState([]);
+  const [viewing, setViewing] = useState(null);
+  const [, setProfileVersion] = useState(0);
   const dropdownRef = useRef(null);
   const { pathname } = useLocation();
 
@@ -58,11 +61,13 @@ export default function SystemLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showNotifications]);
 
-  function handleButtonFeedback(event) {
-    const button = event.target.closest("button");
-    if (!button || button.disabled || button.dataset.noFeedback) return;
-    const label = button.innerText.replace(/\s+/g, " ").trim();
-    if (label) setFeedback(`${label.slice(0, 58)}: đã ghi nhận thao tác.`);
+  async function viewRequest(id) {
+    try {
+      const response = await api.get(`/requisitions/${id}`);
+      setViewing(response.data);
+    } catch (error) {
+      setFeedback(apiError(error, "Không mở được đề xuất."));
+    }
   }
 
   const handleApprove = async (id, schoolName) => {
@@ -83,13 +88,33 @@ export default function SystemLayout() {
     navigate(`/tracking?q=${encodeURIComponent(term)}`);
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      /* Phiên local vẫn được xóa khi máy chủ không phản hồi. */
+    }
     clearSession();
     navigate("/login", { replace: true });
   }
 
+  async function handleReject(id, schoolName) {
+    const reason = window.prompt("Lý do từ chối (ít nhất 5 ký tự)");
+    if (!reason || reason.trim().length < 5) {
+      setFeedback("Cần lý do từ chối trước khi gửi.");
+      return;
+    }
+    try {
+      await api.patch(`/requisitions/${id}/reject`, { reason: reason.trim() });
+      setRequests((prev) => prev.filter((req) => req.id !== id));
+      setFeedback(`Đã từ chối đề xuất của ${schoolName}`);
+    } catch (error) {
+      setFeedback(apiError(error, "Không từ chối được yêu cầu"));
+    }
+  }
+
   return (
-    <div onClickCapture={handleButtonFeedback} className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
+    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
       {/* SIDEBAR NAVIGATION */}
       <aside className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-[#eff4ff] transition-transform md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 shrink-0 items-center border-b border-slate-100 bg-white px-4">
@@ -186,15 +211,18 @@ export default function SystemLayout() {
                           </div>
                           <p className="mt-1 text-[10px] text-slate-600">Yêu cầu: {req.need}</p>
                           <div className="mt-2 flex items-center justify-between border-t border-slate-200/50 pt-1.5">
-                            <span className="text-[10px] font-medium text-slate-500 cursor-pointer hover:underline">
-                              ◉ Xem hồ sơ
-                            </span>
-                            <button
-                              onClick={() => handleApprove(req.id, req.school)}
-                              className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
-                            >
-                              Duyệt nhanh
+                            <button type="button" onClick={() => viewRequest(req.id)} className="text-[10px] font-medium text-blue-700 hover:underline">
+                              ◉ Xem đề xuất
                             </button>
+                            <span className="flex gap-1">
+                              <button type="button" onClick={() => handleReject(req.id, req.school)} className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700">Từ chối</button>
+                              <button
+                                onClick={() => handleApprove(req.id, req.school)}
+                                className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
+                              >
+                                Duyệt nhanh
+                              </button>
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -204,13 +232,38 @@ export default function SystemLayout() {
               )}
             </div>
 
-            <button type="button" onClick={logout} className="text-[10px] font-semibold text-slate-500 hover:text-blue-700">{user?.fullName || "Tài khoản"} · Thoát</button>
+            <AccountMenu onLogout={logout} onSaved={() => setProfileVersion((value) => value + 1)} />
           </div>
         </header>
 
         <Outlet />
       </div>
 
+      {viewing && (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-slate-950/40 p-4">
+          <article className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase text-slate-500">{viewing.code}</p>
+                <h2 className="font-display text-xl font-semibold">{viewing.title}</h2>
+              </div>
+              <button type="button" onClick={() => setViewing(null)} className="rounded px-2 text-lg">×</button>
+            </div>
+            <dl className="mt-4 space-y-2 text-sm text-slate-700">
+              <div className="flex justify-between gap-3"><dt>Trường</dt><dd className="text-right font-medium">{viewing.school?.profile?.organizationName || viewing.school?.fullName || "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Mức khẩn</dt><dd>{priorityLabel[viewing.urgencyLevel] || viewing.urgencyLevel}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd>{viewing.reviewStatus || viewing.status}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Số thứ tự</dt><dd>{viewing.queueOrder ?? "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Giấy nhà trường</dt><dd className="max-w-[16rem] truncate text-right">{viewing.schoolConfirmationUrl || "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Giấy ủy ban</dt><dd className="max-w-[16rem] truncate text-right">{viewing.committeeConfirmationUrl || "—"}</dd></div>
+            </dl>
+            <ul className="mt-4 space-y-1 text-sm text-slate-600">
+              {(viewing.items ?? []).map((item) => <li key={item.id}>{item.quantityNeeded} · {item.category}</li>)}
+            </ul>
+            <button type="button" onClick={() => { setViewing(null); navigate("/school-requests"); }} className="mt-5 w-full rounded bg-blue-600 py-2 text-sm font-semibold text-white">Mở trang duyệt yêu cầu của trường</button>
+          </article>
+        </div>
+      )}
       {feedback && (
         <div className="fixed bottom-5 right-5 z-[100] flex max-w-sm items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white shadow-xl">
           <CheckCircle2 size={17} className="shrink-0 text-teal-300" />

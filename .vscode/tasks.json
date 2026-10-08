@@ -5,7 +5,7 @@
       "label": "EduShare API",
       "type": "npm",
       "script": "start:dev",
-      "path": "backend",
+      "path": "Admin/backend",
       "isBackground": true,
       "problemMatcher": {
         "owner": "nest",
@@ -19,7 +19,7 @@
       "presentation": { "reveal": "always", "panel": "dedicated", "group": "edushare" }
     },
     {
-      "label": "EduShare Admin",
+      "label": "EduShare Web",
       "type": "npm",
       "script": "dev",
       "path": "Admin/frontend",
@@ -37,7 +37,7 @@
     },
     {
       "label": "Chạy EduShare",
-      "dependsOn": ["EduShare API", "EduShare Admin"],
+      "dependsOn": ["EduShare API", "EduShare Web"],
       "dependsOrder": "parallel",
       "problemMatcher": []
     }

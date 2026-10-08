@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../lib/api";
+import { copyText, downloadCsv, openPrint } from "../lib/actions";
 import { ITEM_STATUS_LABEL, WAYBILL_STATUS_LABEL } from "../lib/labels";
 import {
   Box,
@@ -38,6 +39,8 @@ export default function TrackingPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [shareNote, setShareNote] = useState("");
+  const [samples, setSamples] = useState([]);
 
   async function lookup(term) {
     const code = term.trim();
@@ -72,6 +75,16 @@ export default function TrackingPage() {
     const initial = params.get("q");
     if (initial) lookup(initial);
   }, [params]);
+
+  useEffect(() => {
+    Promise.all([api.get("/items?limit=2"), api.get("/waybills?limit=1")]).then(([items, waybills]) => {
+      const codes = [
+        ...(items.data.data ?? []).map((item) => item.qrCode),
+        ...(waybills.data.data ?? []).map((waybill) => waybill.code),
+      ].filter(Boolean);
+      if (codes.length > 0) setSamples(codes);
+    }).catch(() => undefined);
+  }, []);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -115,6 +128,7 @@ export default function TrackingPage() {
             <button
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition shadow text-sm font-medium"
               type="button"
+              onClick={() => copyText(`${window.location.origin}/tracking?q=${encodeURIComponent(searchValue)}`).then(() => setShareNote("Đã sao chép liên kết tra cứu."))}
             >
               <Share2 className="w-5 h-5" />
               <span className="">Chia sẻ</span>
@@ -122,6 +136,7 @@ export default function TrackingPage() {
             <button
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition shadow text-sm font-medium"
               type="button"
+              onClick={openPrint}
             >
               <Printer className="w-5 h-5" />
               <span className="">In phiếu</span>
@@ -158,29 +173,22 @@ export default function TrackingPage() {
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
               Mã phổ biến:
             </span>
+            {(samples.length ? samples : ["WB-20240926-0001"]).map((code) => (
             <button
+              key={code}
               className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-50 text-blue-600 hover:bg-slate-100 text-xs font-semibold uppercase tracking-wider transition"
               type="button"
+              onClick={() => { setSearchValue(code); lookup(code); }}
             >
-              #QR-8821 (Laptop Hà Giang)
+              {code}
             </button>
-            <button
-              className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-semibold uppercase tracking-wider transition"
-              type="button"
-            >
-              #QR-8820 (Máy tính Sơn La)
-            </button>
-            <button
-              className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-semibold uppercase tracking-wider transition"
-              type="button"
-            >
-              #QR-8792 (Sách giáo khoa Mường Tè)
-            </button>
+            ))}
           </div>
         </form>
       </section>
       {(isSearching || error || result) && (
         <section className="mb-6 rounded-2xl bg-white p-5 shadow">
+          {shareNote && <p className="mb-2 text-sm text-teal-700">{shareNote}</p>}
           {isSearching && <p className="text-sm text-slate-500">Đang tra cứu...</p>}
           {error && <p className="text-sm text-rose-600">{error}</p>}
           {result?.kind === "item" && (
@@ -380,6 +388,7 @@ export default function TrackingPage() {
               <button
                 className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-medium flex items-center justify-center gap-2 transition"
                 type="button"
+                onClick={() => downloadCsv("bien-lai-tra-cuu.csv", ["Mã", "Kết quả"], [[searchValue || "—", result ? result.kind : "chưa tra cứu"]])}
               >
                 <Receipt className="w-5 h-5" />
                 <span className="">Tải biên lai quyên góp điện tử (PDF)</span>
