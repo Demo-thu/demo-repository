@@ -50,8 +50,8 @@ export default function AdminAllocations() {
     }
   }
 
-  const match = (row) => run(`match-${row.id}`, () => api.post(`/allocations/match/${row.id}`), `Đã ghép tồn kho cho ${row.code}. Phương án đang chờ admin xác nhận.`, "Không ghép được tồn kho.");
-  const confirm = (plan) => run(`confirm-${plan.id}`, () => api.patch(`/allocations/${plan.id}/confirm`), `Đã xác nhận phương án ${plan.requisition?.code}. Kho có thể lập vận đơn.`, "Không xác nhận được phương án.");
+  const match = (row) => run(`match-${row.id}`, () => api.post(`/allocations/match/${row.id}`), `Đã ghép tồn kho cho ${row.code}. Bấm "Xác nhận và chuyển cho kho" để kho thấy đơn.`, "Không ghép được tồn kho.");
+  const confirm = (plan) => run(`confirm-${plan.id}`, () => api.patch(`/allocations/${plan.id}/confirm`), `Đã xác nhận và chuyển ${plan.requisition?.code} cho kho lập vận đơn.`, "Không xác nhận được phương án.");
   const cancel = (plan) => {
     if (!window.confirm(`Hủy phương án ${plan.requisition?.code}? Các hiện vật sẽ trở về trạng thái sẵn sàng phân bổ.`)) return;
     run(`cancel-${plan.id}`, () => api.patch(`/allocations/${plan.id}/cancel`), `Đã hủy phương án ${plan.requisition?.code}.`, "Không hủy được phương án.");
@@ -124,11 +124,11 @@ export default function AdminAllocations() {
                 {!Object.keys(groups).length ? <p className="text-sm text-slate-500">Phương án chưa có hiện vật.</p> : null}
               </div>
               <p className="mt-3 text-xs text-slate-500">
-                {plan.adminConfirmedAt ? `Admin xác nhận lúc ${fmtDateTime(plan.adminConfirmedAt)}` : "Chưa được admin xác nhận"}
-                {plan.waybill ? ` · Vận đơn ${plan.waybill.code}` : plan.status === "CONFIRMED" ? " · Chờ kho lập vận đơn" : ""}
+                {plan.adminConfirmedAt ? `Admin xác nhận lúc ${fmtDateTime(plan.adminConfirmedAt)}` : "Chưa chuyển cho kho"}
+                {plan.waybill ? ` · Vận đơn ${plan.waybill.code}` : plan.status === "CONFIRMED" ? " · Kho đã nhận, chờ lập vận đơn" : plan.status === "PROPOSED" ? " · Kho chưa thấy đơn này" : ""}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {plan.status === "PROPOSED" ? <PrimaryButton pending={pending === `confirm-${plan.id}`} disabled={!plan.totalItems} onClick={() => confirm(plan)}><CheckCircle2 size={14} />Xác nhận phương án</PrimaryButton> : null}
+                {plan.status === "PROPOSED" ? <PrimaryButton pending={pending === `confirm-${plan.id}`} disabled={!plan.totalItems} onClick={() => confirm(plan)}><CheckCircle2 size={14} />Xác nhận và chuyển cho kho</PrimaryButton> : null}
                 {["PROPOSED", "CONFIRMED"].includes(plan.status) && !locked ? <GhostButton tone="danger" disabled={pending === `cancel-${plan.id}`} onClick={() => cancel(plan)}><XCircle size={14} />Hủy phương án</GhostButton> : null}
                 {locked ? <span className="flex items-center gap-1 text-xs text-slate-500"><Lock size={12} />Vận đơn đã rời kho, không hủy được.</span> : null}
               </div>

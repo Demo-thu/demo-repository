@@ -14,11 +14,10 @@ export default function WaybillScreen() {
 
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/allocations", { params: { limit: 100 } });
-      const rows = rowsOf(response.data).filter((row) => row.status !== "CANCELLED");
+      const response = await api.get("/allocations", { params: { readyForWaybill: true, limit: 100 } });
+      const rows = rowsOf(response.data).filter((row) => row.status === "CONFIRMED" && row.adminConfirmedAt && !row.waybill);
       setPlans(rows);
-      const ready = rows.filter((row) => row.status === "CONFIRMED" && row.adminConfirmedAt && (!row.waybill || row.waybill.status === "FAILED"));
-      setPlanId((current) => (ready.some((row) => row.id === current) ? current : ready[0]?.id || ""));
+      setPlanId((current) => (rows.some((row) => row.id === current) ? current : rows[0]?.id || ""));
     } catch (error) {
       fail(apiError(error, "Không tải được phương án phân bổ."));
     }
@@ -30,8 +29,7 @@ export default function WaybillScreen() {
     return () => window.removeEventListener("portal:refresh", load);
   }, [load]);
 
-  const isReady = (plan) => plan.status === "CONFIRMED" && plan.adminConfirmedAt && (!plan.waybill || plan.waybill.status === "FAILED");
-  const ready = plans.filter(isReady);
+  const ready = plans;
   const plan = ready.find((row) => row.id === planId);
   const school = plan?.requisition?.school;
   const byCategory = Object.entries((plan?.items || []).reduce((groups, line) => ({ ...groups, [line.resourceItem.category]: [...(groups[line.resourceItem.category] || []), line.resourceItem] }), {}));
@@ -69,11 +67,10 @@ export default function WaybillScreen() {
                     <p className="flex items-center justify-between text-xs font-semibold text-blue-700">{row.requisition.code}<CheckCircle2 size={14} className="text-emerald-600" /></p>
                     <p className="mt-1 font-semibold text-slate-800">{row.requisition.title}</p>
                     <p className="text-xs text-slate-500">{orgName(row.requisition.school)} · {row.totalItems} hiện vật</p>
-                    {row.waybill?.status === "FAILED" ? <p className="mt-1 text-xs font-semibold text-rose-600">Vận đơn trước {row.waybill.code} gặp sự cố, cần lập lại</p> : null}
                   </button>
                 ))}
               </div>
-            ) : <Empty>Chưa có phương án nào sẵn sàng. Quản trị viên cần xác nhận phương án phân bổ trước.</Empty>}
+            ) : <Empty>Chưa có đơn nào được admin xác nhận và chuyển cho kho.</Empty>}
           </Card>
 
           {plan ? (

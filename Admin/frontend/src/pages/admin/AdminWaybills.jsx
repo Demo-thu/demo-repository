@@ -3,7 +3,7 @@ import { Lock } from "lucide-react";
 import api from "../../lib/api";
 import {
   CATEGORY_LABEL, Card, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, fmtDateTime, orgName,
-  rowsOf, totalOf, useWaybills, waybillItems,
+  totalOf, useWaybills, waybillItems,
 } from "../portals/kit";
 
 const WAYBILL_STATUSES = ["PENDING_PICKUP", "IN_TRANSIT", "DELIVERED", "FAILED"];
@@ -28,11 +28,11 @@ export default function AdminWaybills() {
     Promise.all([
       api.get("/waybills", { params: { limit: 1 } }),
       ...WAYBILL_STATUSES.map((status) => api.get("/waybills", { params: { limit: 1, status } })),
-      api.get("/allocations", { params: { status: "CONFIRMED", limit: 100 } }),
+      api.get("/allocations", { params: { readyForWaybill: true, limit: 1 } }),
     ]).then(([all, ...rest]) => {
       const plans = rest.pop();
       setCounts({ all: totalOf(all.data), ...Object.fromEntries(WAYBILL_STATUSES.map((status, index) => [status, totalOf(rest[index].data)])) });
-      setWaitingPlans(rowsOf(plans.data).filter((plan) => !plan.waybill).length);
+      setWaitingPlans(totalOf(plans.data));
     }).catch(() => {});
   }, [waybills]);
 

@@ -61,9 +61,17 @@ export class AllocationsService {
 
   async list(query: QueryAllocationDto) {
     const { page, limit, skip } = pageArgs(query.page, query.limit);
+    const readyForWaybill: Prisma.AllocationPlanWhereInput | undefined = query.readyForWaybill
+      ? {
+          status: 'CONFIRMED',
+          adminConfirmedAt: { not: null },
+          waybill: { is: null },
+        }
+      : undefined;
     const where: Prisma.AllocationPlanWhereInput = {
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.status && !query.readyForWaybill ? { status: query.status } : {}),
       ...(query.requisitionId ? { requisitionId: query.requisitionId } : {}),
+      ...readyForWaybill,
     };
     const [data, total] = await this.prisma.$transaction([
       this.prisma.allocationPlan.findMany({

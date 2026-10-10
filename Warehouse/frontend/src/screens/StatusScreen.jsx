@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRightLeft, CheckCircle2, Clock3, Truck, XCircle } from "lucide-react";
+import { CheckCircle2, Clock3, Truck, XCircle } from "lucide-react";
 import api, { apiError } from "@/lib/api";
 import {
-  Card, Chips, DataTable, Empty, GhostButton, KeyValue, Notice, PageHead, PrimaryButton, RequisitionJourney, SearchBox, Stat, StatusBadge,
-  downloadCsv, exportDonorWorkbook, fmtDateTime, orgName, rowsOf, useNotice,
+  Card, Chips, DataTable, Empty, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, PrimaryButton, RequisitionJourney, SearchBox, Stat, StatusBadge, Timeline,
+  downloadCsv, exportDonorWorkbook, fmtDateTime, orgName, rowsOf, totalOf, useNotice, useWaybills, waybillItems,
 } from "@/pages/portals/kit";
+
+const WAYBILL_STATUSES = ["PENDING_PICKUP", "IN_TRANSIT", "DELIVERED", "FAILED"];
 
 export default function StatusScreen() {
   const [transfers, setTransfers] = useState([]);
@@ -13,6 +15,13 @@ export default function StatusScreen() {
   const [selectedId, setSelectedId] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [pending, setPending] = useState(false);
+  const [wbFilter, setWbFilter] = useState("all");
+  const [wbSearch, setWbSearch] = useState("");
+  const [wbTerm, setWbTerm] = useState("");
+  const [wbPage, setWbPage] = useState(1);
+  const [wbCounts, setWbCounts] = useState({ all: 0, PENDING_PICKUP: 0, IN_TRANSIT: 0, DELIVERED: 0, FAILED: 0 });
+  const [wbDetail, setWbDetail] = useState(null);
+  const { waybills, meta: wbMeta, error: wbError } = useWaybills(wbFilter === "all" ? undefined : wbFilter, { page: wbPage, limit: 20, search: wbTerm });
   const { notice, ok, fail } = useNotice();
 
   const load = useCallback(async () => {
@@ -32,6 +41,21 @@ export default function StatusScreen() {
     window.addEventListener("portal:refresh", load);
     return () => window.removeEventListener("portal:refresh", load);
   }, [load]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setWbTerm(wbSearch.trim()); setWbPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [wbSearch]);
+  useEffect(() => { setWbPage(1); }, [wbFilter]);
+
+  useEffect(() => {
+    Promise.all([
+      api.get("/waybills", { params: { limit: 1 } }),
+      ...WAYBILL_STATUSES.map((status) => api.get("/waybills", { params: { limit: 1, status } })),
+    ]).then(([all, ...rest]) => {
+      setWbCounts({ all: totalOf(all.data), ...Object.fromEntries(WAYBILL_STATUSES.map((status, index) => [status, totalOf(rest[index].data)])) });
+    }).catch(() => {});
+  }, [waybills]);
 
   const visible = transfers.filter((row) => {
     if (filter !== "all" && row.status !== filter) return false;
@@ -72,6 +96,7 @@ export default function StatusScreen() {
   }
 
   const count = (status) => transfers.filter((row) => row.status === status).length;
+  const wbCount = (status) => wbCounts[status] ?? 0;
   const selected = transfers.find((row) => row.id === selectedId);
 
   const rows = visible.map((row) => ({
@@ -88,19 +113,44 @@ export default function StatusScreen() {
 
   return (
     <div>
-      <PageHead eyebrow="Kho & tồn kho" title="Theo dõi trạng thái chuyển" subtitle="Mọi lệnh điều chuyển hàng ra khỏi kho tới trường. Lệnh đã xuất chuyển sang “Đang vận chuyển” để kho và admin theo dõi đơn đang đi đến đâu." />
-      <Notice notice={notice} />
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Stat label="Tổng lệnh" value={transfers.length} icon={ArrowRightLeft} />
-        <Stat label="Chờ xuất" value={count("PENDING")} tone="amber" icon={Clock3} />
-        <Stat label="Đang vận chuyển" value={count("IN_TRANSIT")} tone="blue" icon={Truck} />
-        <Stat label="Đã hoàn tất" value={count("RECEIVED")} tone="emerald" icon={CheckCircle2} />
-        <Stat label="Đã hủy" value={count("CANCELLED")} tone="rose" icon={XCircle} />
+      <PageHead eyebrow="Kho & tồn kho" title="Theo dõi trạng thái chuyển" subtitle="Cùng tiến trình vận đơn với admin. Khi tình nguyện viên xác nhận lấy hàng, đơn chuyển sang Đang vận chuyển." />
+      <Notice notice={notice?.text ? notice : wbError ? { tone: "error", text: wbError } : null} />
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Chờ lấy hàng" value={wbCount("PENDING_PICKUP")} tone="amber" icon={Clock3} />
+        <Stat label="Đang vận chuyển" value={wbCount("IN_TRANSIT")} tone="blue" icon={Truck} />
+        <Stat label="Đã giao" value={wbCount("DELIVERED")} tone="emerald" icon={CheckCircle2} />
+        <Stat label="Sự cố" value={wbCount("FAILED")} tone="rose" icon={XCircle} />
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", transfers.length], ["PENDING", "Chờ xuất", count("PENDING")], ["IN_TRANSIT", "Đang vận chuyển", count("IN_TRANSIT")], ["RECEIVED", "Hoàn tất", count("RECEIVED")], ["CANCELLED", "Đã hủy", count("CANCELLED")]]} />
-        <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã lệnh, trường, người nhận..." />
+        <Chips value={wbFilter} onChange={setWbFilter} items={[["all", "Tất cả", wbCounts.all], ["PENDING_PICKUP", "Chờ lấy hàng", wbCount("PENDING_PICKUP")], ["IN_TRANSIT", "Đang vận chuyển", wbCount("IN_TRANSIT")], ["DELIVERED", "Đã giao", wbCount("DELIVERED")], ["FAILED", "Sự cố", wbCount("FAILED")]]} />
+        <SearchBox value={wbSearch} onChange={setWbSearch} placeholder="Tìm mã vận đơn, mã yêu cầu, trường..." />
       </div>
+      <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <DataTable
+          columns={["Mã vận đơn", "Trường nhận", "Hiện vật", "Tình nguyện viên", "Trạng thái", "Lấy hàng"]}
+          rows={waybills.map((row) => ({
+            key: row.id,
+            cells: [
+              <button type="button" className="text-left font-semibold text-blue-700 hover:underline" onClick={() => setWbDetail(row)}>{row.code}<span className="block text-[11px] font-normal text-slate-500">{row.allocationPlan?.requisition?.code}</span></button>,
+              orgName(row.allocationPlan?.requisition?.school),
+              `${waybillItems(row).length} món`,
+              (row.volunteers || []).map((person) => person.fullName).join(", ") || "Chưa phân công",
+              <StatusBadge kind="waybill" value={row.status} />,
+              fmtDateTime(row.dispatchedAt),
+            ],
+          }))}
+          empty="Chưa có vận đơn nào ở trạng thái này."
+        />
+        <Pager page={wbMeta.page || wbPage} totalPages={wbMeta.totalPages || 1} total={wbMeta.total || 0} onChange={setWbPage} />
+      </div>
+
+      <div className="mt-8">
+        <h2 className="font-display text-lg font-semibold text-slate-900">Lệnh điều chuyển nội bộ</h2>
+        <p className="mt-1 mb-4 text-sm text-slate-500">Hàng chuyển giữa kho và trường bằng lệnh điều chuyển. Đơn tình nguyện viên đã lấy hàng nằm ở danh sách phía trên.</p>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", transfers.length], ["PENDING", "Chờ xuất", count("PENDING")], ["IN_TRANSIT", "Đang điều chuyển", count("IN_TRANSIT")], ["RECEIVED", "Hoàn tất", count("RECEIVED")], ["CANCELLED", "Đã hủy", count("CANCELLED")]]} />
+          <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã lệnh, trường, người nhận..." />
+        </div>
       <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
         <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
           <DataTable columns={["Mã lệnh", "Trường nhận / người nhận", "Số món", "Tình nguyện viên", "Tạo lúc", "Trạng thái"]} rows={rows} empty="Chưa có lệnh điều chuyển nào." />
@@ -139,6 +189,27 @@ export default function StatusScreen() {
           ) : <Empty>Chọn một lệnh để xem chi tiết.</Empty>}
         </Card>
       </div>
+      </div>
+
+      {wbDetail ? (
+        <Modal wide title={`Vận đơn ${wbDetail.code}`} subtitle={`${wbDetail.allocationPlan?.requisition?.code || ""} · ${orgName(wbDetail.allocationPlan?.requisition?.school)}`} onClose={() => setWbDetail(null)} footer={<GhostButton onClick={() => setWbDetail(null)}>Đóng</GhostButton>}>
+          <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+            <Timeline steps={[
+              { title: "Kho lập vận đơn", detail: fmtDateTime(wbDetail.createdAt), done: true },
+              { title: "Tình nguyện viên xác nhận lấy hàng", detail: wbDetail.dispatchedAt ? fmtDateTime(wbDetail.dispatchedAt) : "Chưa lấy hàng", done: Boolean(wbDetail.dispatchedAt) },
+              { title: "Đang vận chuyển tới trường", detail: wbDetail.status === "FAILED" ? "Chuyến gặp sự cố" : wbDetail.status === "DELIVERED" || wbDetail.proof ? "Đã tới trường" : wbDetail.status === "IN_TRANSIT" ? "Đang trên đường" : "Chưa xuất phát", done: ["IN_TRANSIT", "DELIVERED"].includes(wbDetail.status) },
+              { title: "Trường ký nhận", detail: wbDetail.proof ? `${wbDetail.proof.recipientName} (${wbDetail.proof.recipientTitle}) · ${fmtDateTime(wbDetail.proof.signedAt)}` : "Chưa ký nhận", done: Boolean(wbDetail.proof) },
+            ]} />
+            <div>
+              <KeyValue rows={[
+                ["Trạng thái", <StatusBadge kind="waybill" value={wbDetail.status} />],
+                ["Hiện vật", `${waybillItems(wbDetail).length} món`],
+                ["Đội tình nguyện", (wbDetail.volunteers || []).map((person) => person.fullName).join(", ") || "—"],
+              ]} />
+            </div>
+          </div>
+        </Modal>
+      ) : null}
     </div>
   );
 }

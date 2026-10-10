@@ -4,9 +4,10 @@ import api, { apiError, currentUser } from "../../lib/api";
 import { ROLE_LABEL } from "../../lib/roles";
 import { Badge, Card, Chips, DataTable, Field, GhostButton, KeyValue, Modal, Notice, PageHead, PrimaryButton, SearchBox, Stat, fmtDate, inputClass, orgName, rowsOf, totalOf, useNotice, usePortalRefresh } from "../portals/kit";
 
-const blank = { fullName: "", email: "", password: "", phone: "", organizationName: "", address: "", city: "", district: "" };
+const blank = { fullName: "", email: "", password: "", phone: "", organizationName: "", address: "", city: "", district: "", role: "WAREHOUSE_STAFF" };
 
 const ROLE_OPTIONS = ["DONOR", "SCHOOL_REP", "WAREHOUSE_STAFF", "VOLUNTEER", "ADMIN"];
+const CREATE_ROLES = ["WAREHOUSE_STAFF", "VOLUNTEER", "ADMIN"];
 
 export default function AdminAccounts() {
   const me = currentUser();
@@ -47,10 +48,11 @@ export default function AdminAccounts() {
         password: form.password,
         fullName: form.fullName.trim(),
         phone: form.phone.trim() || undefined,
-        role: "DONOR",
+        role: form.role,
         profile: Object.keys(profile).length ? profile : undefined,
       });
-      ok("Đã tạo tài khoản nhà hảo tâm. Admin chỉ đổi được vai trò và xem hồ sơ, không sửa các thông tin khác.");
+      ok(`Đã tạo tài khoản ${ROLE_LABEL[form.role]}. Tài khoản dùng email và mật khẩu này để vào đúng cổng.`);
+      setRoleFilter(form.role);
       setCreating(false);
       setForm(blank);
       await load();
@@ -97,8 +99,8 @@ export default function AdminAccounts() {
       <PageHead
         eyebrow="Trung tâm điều hành · Quản lý tài khoản"
         title="Tài khoản"
-        subtitle="Admin được tạo tài khoản nhà hảo tâm, đổi vai trò của tài khoản và xem thông tin hồ sơ. Các thông tin khác do chủ tài khoản tự cập nhật."
-        actions={<PrimaryButton onClick={() => setCreating(true)}><Plus size={15} />Tạo tài khoản nhà hảo tâm</PrimaryButton>}
+        subtitle="Admin tạo tài khoản cho các cổng không tự đăng ký được: thủ kho, tình nguyện viên và quản trị. Nhà hảo tâm và nhà trường tự đăng ký."
+        actions={<PrimaryButton onClick={() => setCreating(true)}><Plus size={15} />Tạo tài khoản</PrimaryButton>}
       />
       <Notice notice={notice} />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -144,9 +146,14 @@ export default function AdminAccounts() {
       ) : null}
 
       {creating ? (
-        <Modal wide title="Tạo tài khoản nhà hảo tâm" subtitle="Vai trò khi tạo được cố định là Nhà hảo tâm." onClose={() => setCreating(false)}
+        <Modal wide title="Tạo tài khoản" subtitle="Chọn cổng mà tài khoản được vào. Kho, tình nguyện viên và quản trị chỉ do admin tạo." onClose={() => setCreating(false)}
           footer={<><GhostButton onClick={() => setCreating(false)}>Hủy</GhostButton><PrimaryButton pending={pending} disabled={!valid} onClick={create}>Tạo tài khoản</PrimaryButton></>}>
           <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Cổng truy cập">
+              <select className={inputClass} value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}>
+                {CREATE_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABEL[role]}</option>)}
+              </select>
+            </Field>
             <Field label="Họ và tên"><input className={inputClass} value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} /></Field>
             <Field label="Email đăng nhập"><input type="email" className={inputClass} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></Field>
             <Field label="Mật khẩu tạm (ít nhất 8 ký tự)"><input type="password" autoComplete="new-password" className={inputClass} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></Field>

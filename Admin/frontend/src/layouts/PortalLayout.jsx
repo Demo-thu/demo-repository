@@ -134,10 +134,21 @@ export default function PortalLayout() {
 
   // Số việc cần xử lý hiện trên menu: Kho thấy phiếu chờ xác minh, Nhà hảo tâm thấy phiếu kho đang chờ mình xác nhận.
   const refreshBadges = useCallback(() => {
-    const status = portal === "warehouse" ? "PENDING" : portal === "donor" ? "AWAITING_DONOR" : "";
-    if (!status) return;
-    api.get("/pledges", { params: { status, limit: 1 } })
-      .then((response) => setBadges({ [portal === "warehouse" ? "verify" : "mine"]: response.data?.meta?.total ?? 0 }))
+    if (portal === "warehouse") {
+      Promise.all([
+        api.get("/pledges", { params: { status: "PENDING", limit: 1 } }),
+        api.get("/allocations", { params: { readyForWaybill: true, limit: 1 } }),
+      ])
+        .then(([pledges, plans]) => setBadges({
+          verify: pledges.data?.meta?.total ?? 0,
+          waybill: plans.data?.meta?.total ?? 0,
+        }))
+        .catch(() => setBadges({}));
+      return;
+    }
+    if (portal !== "donor") return;
+    api.get("/pledges", { params: { status: "AWAITING_DONOR", limit: 1 } })
+      .then((response) => setBadges({ mine: response.data?.meta?.total ?? 0 }))
       .catch(() => setBadges({}));
   }, [portal]);
 
