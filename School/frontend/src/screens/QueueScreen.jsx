@@ -2,46 +2,64 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Clock3, ListOrdered, XCircle } from "lucide-react";
 import api, { apiError } from "@/lib/api";
 import {
-  CATEGORY_LABEL, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, PrimaryButton, SearchBox, Stat, StatusBadge,
-  URGENCY_LABEL, fmtDateTime, openDocument, rowsOf, useNotice,
+  CATEGORY_LABEL, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, PrimaryButton, SearchBox, Stat, StatusBadge,
+  URGENCY_LABEL, fmtDateTime, openDocument, rowsOf, totalOf, useNotice, usePortalRefresh,
 } from "@/pages/portals/kit";
+
+const PAGE_SIZE = 20;
 
 export default function QueueScreen({ params, openTab }) {
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [term, setTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [counts, setCounts] = useState({ all: 0, PENDING: 0, APPROVED: 0, REJECTED: 0 });
+  const [nextOrder, setNextOrder] = useState(null);
   const [detail, setDetail] = useState(null);
   const { notice, fail } = useNotice();
 
+  // Cho nguoi dung go xong roi moi goi server, va ve trang 1 khi doi bo loc/tim kiem.
+  useEffect(() => {
+    const timer = setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [filter]);
+
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/requisitions?limit=100");
-      setRows(rowsOf(response.data));
+      const params = { page, limit: PAGE_SIZE, ...(filter !== "all" ? { review: filter } : {}), ...(term ? { search: term } : {}) };
+      const [list, all, pending, approved, rejected] = await Promise.all([
+        api.get("/requisitions", { params }),
+        api.get("/requisitions", { params: { limit: 1 } }),
+        api.get("/requisitions", { params: { limit: 1, review: "PENDING" } }),
+        api.get("/requisitions", { params: { limit: 1, review: "APPROVED" } }),
+        api.get("/requisitions", { params: { limit: 1, review: "REJECTED" } }),
+      ]);
+      setRows(rowsOf(list.data));
+      setMeta(list.data?.meta || { page: 1, totalPages: 1, total: rowsOf(list.data).length });
+      setCounts({ all: totalOf(all.data), PENDING: totalOf(pending.data), APPROVED: totalOf(approved.data), REJECTED: totalOf(rejected.data) });
+      setNextOrder(rowsOf(pending.data)[0]?.queueOrder ?? null);
     } catch (error) {
       fail(apiError(error, "Không tải được hàng chờ xét duyệt."));
     }
-  }, []);
+  }, [page, filter, term]);
 
-  useEffect(() => {
-    load();
-    window.addEventListener("portal:refresh", load);
-    return () => window.removeEventListener("portal:refresh", load);
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
+  usePortalRefresh(load);
 
+  // Mo thang chi tiet tu lien ket (?requisition=...) du yeu cau nam o trang nao.
   useEffect(() => {
     const id = params.get("requisition");
-    if (id && rows.length) setDetail(rows.find((row) => row.id === id) || null);
+    if (!id) return;
+    const found = rows.find((row) => row.id === id);
+    if (found) { setDetail(found); return; }
+    api.get(`/requisitions/${id}`).then((response) => setDetail(response.data)).catch(() => setDetail(null));
   }, [params, rows]);
 
-  const count = (review) => rows.filter((row) => row.reviewStatus === review).length;
-  const pendingRows = rows.filter((row) => row.reviewStatus === "PENDING");
-  const nextOrder = pendingRows.length ? Math.min(...pendingRows.map((row) => row.queueOrder || 99999)) : null;
-
-  const visible = rows.filter((row) => {
-    if (filter !== "all" && row.reviewStatus !== filter) return false;
-    const term = search.trim().toLowerCase();
-    return !term || `${row.code} ${row.title}`.toLowerCase().includes(term);
-  });
+  const count = (review) => counts[review] ?? 0;
+  const visible = rows;
 
   const table = visible.map((row) => ({
     key: row.id,
@@ -75,12 +93,13 @@ export default function QueueScreen({ params, openTab }) {
         <Stat label="Bị từ chối" value={count("REJECTED")} tone="rose" icon={XCircle} />
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", rows.length], ["PENDING", "Chờ duyệt", count("PENDING")], ["APPROVED", "Đã duyệt", count("APPROVED")], ["REJECTED", "Từ chối", count("REJECTED")]]} />
+        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", counts.all], ["PENDING", "Chờ duyệt", count("PENDING")], ["APPROVED", "Đã duyệt", count("APPROVED")], ["REJECTED", "Từ chối", count("REJECTED")]]} />
         <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã hoặc tiêu đề..." />
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
         <DataTable columns={["Mã", "Nội dung", "Khẩn cấp", "Thứ tự", "Ngày gửi", "Trạng thái", "Thao tác"]} rows={table} empty="Chưa có yêu cầu nào." />
       </div>
+      <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
 
       {detail ? (
         <Modal wide title={`Yêu cầu ${detail.code}`} subtitle={detail.title} onClose={() => setDetail(null)}

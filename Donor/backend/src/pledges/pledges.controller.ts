@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 import { CurrentUser, Roles } from '../../../../Admin/backend/src/common/decorators';
 import { AuthenticatedUser, HttpRequestContext } from '../../../../Admin/backend/src/common/types';
 import { readClientIp } from '../../../../Admin/backend/src/common/utils';
-import { CancelPledgeDto, CreatePledgeDto, QueryDevicesDto, QueryPledgeDto, ReceivePledgeDto, UpdatePledgeDto } from './dto';
+import { CancelPledgeDto, CreatePledgeDto, CreateProposalDto, QueryDevicesDto, QueryPledgeDto, ReceivePledgeDto, RespondProposalDto, UpdatePledgeDto } from './dto';
 import { PledgesService } from './pledges.service';
 
 @Controller('pledges')
@@ -65,6 +65,44 @@ export class PledgesController {
     @Req() req: HttpRequestContext,
   ) {
     return this.pledges.verify(actor, id, readClientIp(req.headers, req.ip));
+  }
+
+  @Get(':id/review')
+  @Roles(Role.WAREHOUSE_STAFF, Role.ADMIN)
+  review(@Param('id', ParseUUIDPipe) id: string) {
+    return this.pledges.review(id);
+  }
+
+  @Post(':id/proposal')
+  @Roles(Role.WAREHOUSE_STAFF)
+  propose(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateProposalDto,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.pledges.propose(actor, id, dto, readClientIp(req.headers, req.ip));
+  }
+
+  @Patch(':id/proposal/respond')
+  @Roles(Role.DONOR)
+  respond(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RespondProposalDto,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.pledges.respond(actor, id, dto, readClientIp(req.headers, req.ip));
+  }
+
+  @Patch(':id/proposal/withdraw')
+  @Roles(Role.WAREHOUSE_STAFF)
+  withdraw(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.pledges.withdrawProposal(actor, id, readClientIp(req.headers, req.ip));
   }
 
   @Patch(':id/cancel')

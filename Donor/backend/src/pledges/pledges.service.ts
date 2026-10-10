@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PledgeStatus, Prisma, Role } from '@prisma/client';
 import { AuditService } from '../../../../Admin/backend/src/audit/audit.service';
 import { PLEDGE_TRANSITIONS, assertTransition } from '../../../../Admin/backend/src/common/domain';
@@ -6,16 +6,22 @@ import { AuthenticatedUser } from '../../../../Admin/backend/src/common/types';
 import { CATEGORY_PREFIX, definedJson, nextSerial, pageArgs, paginate, publicUserSelect, shortCode, withUniqueRetry } from '../../../../Admin/backend/src/common/utils';
 import { PrismaService } from '../../../../Admin/backend/src/prisma/prisma.service';
 import { WarehousesService } from '../../../../Warehouse/backend/src/warehouses/warehouses.service';
-import { CancelPledgeDto, CreatePledgeDto, QueryDevicesDto, QueryPledgeDto, ReceivePledgeDto, UpdatePledgeDto } from './dto';
+import { CancelPledgeDto, CreatePledgeDto, CreateProposalDto, QueryDevicesDto, QueryPledgeDto, ReceivePledgeDto, RespondProposalDto, UpdatePledgeDto } from './dto';
 
 const pledgeInclude = {
   donor: { select: publicUserSelect },
   campaign: { select: { id: true, slug: true, title: true, status: true } },
   items: { include: { _count: { select: { resourceItems: true } } } },
+  proposals: { orderBy: { createdAt: 'desc' }, take: 1 },
 } satisfies Prisma.DonationPledgeInclude;
 
+/** Số ngày một phiếu đề xuất của kho còn hiệu lực khi nhà hảo tâm chưa phản hồi. */
+export const PROPOSAL_TTL_DAYS = 7;
+
 @Injectable()
-export class PledgesService {
+export class PledgesService implements OnModuleInit, OnModuleDestroy {
+  private expiryTimer?: ReturnType<typeof setInterval>;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
@@ -70,10 +76,15 @@ export class PledgesService {
   }
 
   async list(actor: AuthenticatedUser, query: QueryPledgeDto) {
+    await this.expireStale();
     const { page, limit, skip } = pageArgs(query.page, query.limit);
     const where: Prisma.DonationPledgeWhereInput = {
       ...(actor.role === Role.DONOR ? { donorId: actor.id } : {}),
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.bucket === 'CONFIRMED'
+        ? { status: { in: ['VERIFIED', 'PARTIALLY_RECEIVED', 'COMPLETED'] } }
+        : query.status
+          ? { status: query.status }
+          : {}),
       ...(query.campaignId ? { campaignId: query.campaignId } : {}),
       ...(query.search
         ? {
@@ -81,6 +92,8 @@ export class PledgesService {
               { code: { contains: query.search, mode: 'insensitive' } },
               { notes: { contains: query.search, mode: 'insensitive' } },
               { donor: { fullName: { contains: query.search, mode: 'insensitive' } } },
+              { campaign: { title: { contains: query.search, mode: 'insensitive' } } },
+              { items: { some: { name: { contains: query.search, mode: 'insensitive' } } } },
             ],
           }
         : {}),
@@ -125,7 +138,7 @@ export class PledgesService {
       throw new NotFoundException('Không tìm thấy phiếu trao tặng');
     }
     this.assertCanRead(actor, pledge.donorId);
-    if (pledge.status === 'PENDING' || pledge.status === 'CANCELLED') {
+    if (pledge.status === 'PENDING' || pledge.status === 'AWAITING_DONOR' || pledge.status === 'CANCELLED') {
       throw new BadRequestException('Biên nhận chỉ có sau khi kho xác minh phiếu trao tặng.');
     }
     return {
@@ -180,7 +193,18 @@ export class PledgesService {
     if (!pledge) {
       throw new NotFoundException('Không tìm thấy phiếu trao tặng');
     }
+    if (pledge.status === 'AWAITING_DONOR') {
+      throw new BadRequestException('Phiếu đang chờ nhà hảo tâm xác nhận đề xuất. Hãy rút đề xuất nếu muốn xác minh lại.');
+    }
     assertTransition(pledge.status, 'VERIFIED', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+    if (pledge.status === 'PENDING') {
+      const review = await this.analyze(id);
+      if (review.needsProposal) {
+        throw new BadRequestException(
+          `${review.summary} Hãy gửi phiếu đề xuất (đổi chiến dịch hoặc lưu kho dự trữ) để nhà hảo tâm xác nhận trước khi xác minh.`,
+        );
+      }
+    }
     const updated = await this.prisma.donationPledge.update({
       where: { id },
       data: { status: 'VERIFIED' },
@@ -194,6 +218,362 @@ export class PledgesService {
       ipAddress,
     });
     return updated;
+  }
+
+  /** Đối soát phiếu với nhu cầu còn lại của chiến dịch (kho xem trước khi xác minh). */
+  async review(id: string) {
+    await this.expireStale();
+    return this.analyze(id);
+  }
+
+  /** Kho gửi phiếu đề xuất ngược lại cho nhà hảo tâm khi chiến dịch không cần (hoặc đã đủ) vật tư trong phiếu. */
+  async propose(actor: AuthenticatedUser, id: string, dto: CreateProposalDto, ipAddress: string | null) {
+    const review = await this.analyze(id);
+    if (review.pledge.status !== 'PENDING') {
+      throw new BadRequestException('Chỉ gửi đề xuất cho phiếu đang chờ xác minh.');
+    }
+    if (!review.needsProposal) {
+      throw new BadRequestException('Chiến dịch vẫn cần đủ số vật tư trong phiếu nên không cần gửi đề xuất, hãy xác minh phiếu.');
+    }
+    if (!dto.redirectCampaignId && !dto.offerStock && !dto.offerSplit) {
+      throw new BadRequestException('Chọn ít nhất một phương án đề xuất: đổi sang chiến dịch khác, chia phiếu hoặc lưu kho dự trữ.');
+    }
+    const options: Array<{ type: 'REDIRECT' | 'SPLIT' | 'STOCK'; campaignId?: string; campaignTitle?: string; lines?: unknown }> = [];
+    if (dto.offerSplit) {
+      if (!review.canSplit || !review.campaign) {
+        throw new BadRequestException('Chiến dịch hiện không còn nhu cầu cho phiếu này nên không thể chia phiếu.');
+      }
+      options.push({
+        type: 'SPLIT',
+        campaignId: review.campaign.id,
+        campaignTitle: review.campaign.title,
+        lines: review.lines.map((line) => ({ pledgeItemId: line.pledgeItemId, name: line.name, unit: line.unit, fit: line.fitQuantity, rest: line.restQuantity })),
+      });
+    }
+    if (dto.redirectCampaignId) {
+      const target = review.candidates.find((candidate) => candidate.id === dto.redirectCampaignId);
+      if (!target || !target.coversAll) {
+        throw new BadRequestException('Chiến dịch được đề xuất không còn nhu cầu đủ cho các vật tư trong phiếu.');
+      }
+      options.push({ type: 'REDIRECT', campaignId: target.id, campaignTitle: target.title });
+    }
+    if (dto.offerStock) {
+      options.push({ type: 'STOCK' });
+    }
+    const proposal = await this.prisma.$transaction(async (tx) => {
+      await tx.pledgeProposal.updateMany({ where: { pledgeId: id, status: 'PENDING' }, data: { status: 'WITHDRAWN', respondedAt: new Date() } });
+      assertTransition(review.pledge.status, 'AWAITING_DONOR', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+      await tx.donationPledge.update({ where: { id }, data: { status: 'AWAITING_DONOR' } });
+      return tx.pledgeProposal.create({
+        data: {
+          pledgeId: id,
+          createdById: actor.id,
+          reason: dto.reason?.trim() || review.summary,
+          note: dto.note?.trim() || null,
+          lines: review.lines as unknown as Prisma.InputJsonValue,
+          options: options as unknown as Prisma.InputJsonValue,
+        },
+      });
+    });
+    await this.audit.log({
+      userId: actor.id,
+      action: 'PLEDGE_PROPOSAL_SENT',
+      resource: 'DonationPledge',
+      details: { pledgeId: id, code: review.pledge.code, proposalId: proposal.id, options: options as unknown as Prisma.InputJsonValue },
+      ipAddress,
+    });
+    return this.prisma.donationPledge.findUnique({ where: { id }, include: pledgeInclude });
+  }
+
+  /** Nhà hảo tâm trả lời phiếu đề xuất: đồng ý đổi chiến dịch hoặc đồng ý lưu kho dự trữ (muốn từ chối thì hủy phiếu). */
+  async respond(actor: AuthenticatedUser, id: string, dto: RespondProposalDto, ipAddress: string | null) {
+    await this.expireStale();
+    const pledge = await this.prisma.donationPledge.findUnique({
+      where: { id },
+      include: { proposals: { where: { status: 'PENDING' }, orderBy: { createdAt: 'desc' }, take: 1 } },
+    });
+    if (!pledge) {
+      throw new NotFoundException('Không tìm thấy phiếu trao tặng');
+    }
+    this.assertCanRead(actor, pledge.donorId);
+    if (pledge.status !== 'AWAITING_DONOR' || !pledge.proposals[0]) {
+      throw new BadRequestException('Phiếu này hiện không có đề xuất nào đang chờ bạn xác nhận.');
+    }
+    const proposal = pledge.proposals[0];
+    const options = proposal.options as unknown as Array<{ type: 'REDIRECT' | 'SPLIT' | 'STOCK'; campaignId?: string }>;
+    const option = options.find((item) => item.type === dto.decision);
+    if (!option) {
+      throw new BadRequestException('Phương án này không nằm trong đề xuất của kho.');
+    }
+    if (dto.decision === 'SPLIT') {
+      return this.acceptSplit(actor, pledge.id, proposal.id, ipAddress);
+    }
+    let campaignId: string | null = null;
+    if (dto.decision === 'REDIRECT') {
+      const review = await this.analyze(id);
+      const target = review.candidates.find((candidate) => candidate.id === option.campaignId);
+      if (!target || !target.coversAll) {
+        throw new BadRequestException('Chiến dịch đề xuất vừa được lấp đầy nên không còn phù hợp. Vui lòng chờ kho gửi đề xuất mới hoặc hủy phiếu.');
+      }
+      campaignId = target.id;
+    }
+    assertTransition(pledge.status, 'VERIFIED', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+    await this.prisma.$transaction([
+      this.prisma.donationPledge.update({
+        where: { id },
+        data: dto.decision === 'REDIRECT' ? { status: 'VERIFIED', campaignId } : { status: 'VERIFIED', campaignId: null, reserveStock: true },
+      }),
+      this.prisma.pledgeProposal.update({
+        where: { id: proposal.id },
+        data: { status: 'ACCEPTED', chosenType: dto.decision, chosenCampaignId: campaignId, respondedAt: new Date() },
+      }),
+    ]);
+    await this.audit.log({
+      userId: actor.id,
+      action: 'PLEDGE_PROPOSAL_ACCEPTED',
+      resource: 'DonationPledge',
+      details: { pledgeId: id, code: pledge.code, proposalId: proposal.id, decision: dto.decision, campaignId },
+      ipAddress,
+    });
+    return this.prisma.donationPledge.findUnique({ where: { id }, include: pledgeInclude });
+  }
+
+  /** Chia phiếu: giữ phần chiến dịch còn cần ở phiếu gốc, phần dư chuyển sang phiếu mới lưu kho dự trữ. */
+  private async acceptSplit(actor: AuthenticatedUser, id: string, proposalId: string, ipAddress: string | null) {
+    const review = await this.analyze(id);
+    if (!review.canSplit || !review.campaign) {
+      throw new BadRequestException('Chiến dịch vừa thay đổi nhu cầu nên không còn chia phiếu được. Vui lòng chờ kho gửi đề xuất mới hoặc hủy phiếu.');
+    }
+    const plan = review.lines;
+    const campaignId = review.campaign.id;
+    const created = await withUniqueRetry(() =>
+      this.prisma.$transaction(async (tx) => {
+        const original = await tx.donationPledge.findUnique({ where: { id }, include: { items: true } });
+        if (!original || original.status !== 'AWAITING_DONOR') {
+          throw new BadRequestException('Phiếu này hiện không còn chờ bạn xác nhận.');
+        }
+        const code = await this.nextCode(tx, 'DN');
+        const restLines = plan.filter((line) => line.restQuantity > 0);
+        const rest = await tx.donationPledge.create({
+          data: {
+            code,
+            donorId: original.donorId,
+            campaignId: null,
+            reserveStock: true,
+            status: 'VERIFIED',
+            handoverMethod: original.handoverMethod,
+            scheduledAt: original.scheduledAt,
+            address: original.address,
+            contactName: original.contactName,
+            contactPhone: original.contactPhone,
+            notes: `Phần dư tách từ phiếu ${original.code}, lưu kho dự trữ.${original.notes ? ` ${original.notes}` : ''}`,
+            items: {
+              create: restLines.map((line) => {
+                const source = original.items.find((item) => item.id === line.pledgeItemId)!;
+                return {
+                  category: source.category,
+                  name: source.name,
+                  estimatedQuantity: line.restQuantity,
+                  declaredCondition: source.declaredCondition,
+                  photoUrls: source.photoUrls,
+                  unit: source.unit,
+                };
+              }),
+            },
+          },
+        });
+        for (const line of plan) {
+          if (line.fitQuantity > 0) {
+            await tx.donationPledgeItem.update({ where: { id: line.pledgeItemId }, data: { estimatedQuantity: line.fitQuantity } });
+          } else {
+            await tx.donationPledgeItem.delete({ where: { id: line.pledgeItemId } });
+          }
+        }
+        assertTransition(original.status, 'VERIFIED', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+        await tx.donationPledge.update({ where: { id }, data: { status: 'VERIFIED' } });
+        await tx.pledgeProposal.update({
+          where: { id: proposalId },
+          data: { status: 'ACCEPTED', chosenType: 'SPLIT', chosenCampaignId: campaignId, resultPledgeId: rest.id, respondedAt: new Date() },
+        });
+        return rest;
+      }),
+    );
+    await this.audit.log({
+      userId: actor.id,
+      action: 'PLEDGE_PROPOSAL_ACCEPTED',
+      resource: 'DonationPledge',
+      details: { pledgeId: id, code: review.pledge.code, proposalId, decision: 'SPLIT', campaignId, restPledgeId: created.id, restCode: created.code },
+      ipAddress,
+    });
+    return this.prisma.donationPledge.findUnique({ where: { id }, include: pledgeInclude });
+  }
+
+  /** Đề xuất quá hạn (mặc định 7 ngày) tự hết hiệu lực và phiếu quay về trạng thái chờ xác minh để kho xử lý lại. */
+  async expireStale(): Promise<number> {
+    const cutoff = new Date(Date.now() - PROPOSAL_TTL_DAYS * 24 * 3600 * 1000);
+    const stale = await this.prisma.pledgeProposal.findMany({
+      where: { status: 'PENDING', createdAt: { lt: cutoff } },
+      include: { pledge: { select: { id: true, code: true, status: true } } },
+    });
+    for (const proposal of stale) {
+      await this.prisma.$transaction([
+        this.prisma.pledgeProposal.update({ where: { id: proposal.id }, data: { status: 'EXPIRED', respondedAt: new Date() } }),
+        ...(proposal.pledge.status === 'AWAITING_DONOR'
+          ? [this.prisma.donationPledge.update({ where: { id: proposal.pledgeId }, data: { status: 'PENDING' } })]
+          : []),
+      ]);
+      await this.audit.log({
+        userId: null,
+        action: 'PLEDGE_PROPOSAL_EXPIRED',
+        resource: 'DonationPledge',
+        details: { pledgeId: proposal.pledgeId, code: proposal.pledge.code, proposalId: proposal.id, days: PROPOSAL_TTL_DAYS },
+        ipAddress: null,
+      });
+    }
+    return stale.length;
+  }
+
+  onModuleInit(): void {
+    const run = () => this.expireStale().catch(() => undefined);
+    void run();
+    this.expiryTimer = setInterval(run, 10 * 60 * 1000);
+    this.expiryTimer.unref();
+  }
+
+  onModuleDestroy(): void {
+    if (this.expiryTimer) clearInterval(this.expiryTimer);
+  }
+
+  /** Kho rút lại đề xuất (nhà hảo tâm chưa phản hồi) để đối soát lại phiếu. */
+  async withdrawProposal(actor: AuthenticatedUser, id: string, ipAddress: string | null) {
+    const pledge = await this.prisma.donationPledge.findUnique({ where: { id } });
+    if (!pledge) {
+      throw new NotFoundException('Không tìm thấy phiếu trao tặng');
+    }
+    assertTransition(pledge.status, 'PENDING', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+    await this.prisma.$transaction([
+      this.prisma.pledgeProposal.updateMany({ where: { pledgeId: id, status: 'PENDING' }, data: { status: 'WITHDRAWN', respondedAt: new Date() } }),
+      this.prisma.donationPledge.update({ where: { id }, data: { status: 'PENDING' } }),
+    ]);
+    await this.audit.log({
+      userId: actor.id,
+      action: 'PLEDGE_PROPOSAL_WITHDRAWN',
+      resource: 'DonationPledge',
+      details: { pledgeId: id, code: pledge.code },
+      ipAddress,
+    });
+    return this.prisma.donationPledge.findUnique({ where: { id }, include: pledgeInclude });
+  }
+
+  /**
+   * Nhu cầu còn lại của chiến dịch cho từng nhóm vật tư:
+   * mục tiêu - đã tiếp nhận - đã xác minh nhưng chưa nhập kho (không tính phiếu đang xét).
+   */
+  private async analyze(id: string) {
+    const pledge = await this.prisma.donationPledge.findUnique({
+      where: { id },
+      include: { ...pledgeInclude, proposals: { orderBy: { createdAt: 'desc' }, take: 3 } },
+    });
+    if (!pledge) {
+      throw new NotFoundException('Không tìm thấy phiếu trao tặng');
+    }
+    const campaigns = await this.prisma.campaign.findMany({
+      where: { OR: [{ status: 'ACTIVE' }, ...(pledge.campaignId ? [{ id: pledge.campaignId }] : [])] },
+      include: { targets: true },
+    });
+    const committed = await this.prisma.donationPledge.findMany({
+      where: { id: { not: id }, campaignId: { in: campaigns.map((campaign) => campaign.id) }, status: { in: ['VERIFIED', 'PARTIALLY_RECEIVED'] } },
+      select: { campaignId: true, items: { select: { category: true, estimatedQuantity: true, _count: { select: { resourceItems: true } } } } },
+    });
+    const needOf = (campaignId: string, category: string): number => {
+      const campaign = campaigns.find((row) => row.id === campaignId);
+      if (!campaign) return 0;
+      const rows = campaign.targets.filter((target) => target.category === category);
+      const target = rows.reduce((sum, row) => sum + row.targetQuantity, 0);
+      const received = rows.reduce((sum, row) => sum + row.currentReceivedQuantity, 0);
+      const incoming = committed
+        .filter((row) => row.campaignId === campaignId)
+        .flatMap((row) => row.items)
+        .filter((item) => item.category === category)
+        .reduce((sum, item) => sum + Math.max(0, item.estimatedQuantity - item._count.resourceItems), 0);
+      return Math.max(0, target - received - incoming);
+    };
+    const demand = new Map<string, number>();
+    for (const item of pledge.items) {
+      demand.set(item.category, (demand.get(item.category) ?? 0) + item.estimatedQuantity);
+    }
+    const current = pledge.campaignId ? campaigns.find((campaign) => campaign.id === pledge.campaignId) ?? null : null;
+    const acceptsDonation = current ? current.status === 'ACTIVE' || current.status === 'UPCOMING' : true;
+    const needLeft = new Map<string, number>();
+    const lines = pledge.items.map((item) => {
+      const quantity = demand.get(item.category) ?? item.estimatedQuantity;
+      const need = pledge.campaignId ? (acceptsDonation ? needOf(pledge.campaignId, item.category) : 0) : null;
+      const verdict = need === null ? 'GENERAL' : need >= quantity ? 'FIT' : need > 0 ? 'PARTIAL' : 'NONE';
+      // Phần chiến dịch còn nhận được của dòng này (các dòng cùng nhóm chia sẻ chung nhu cầu còn lại).
+      let fitQuantity = item.estimatedQuantity;
+      if (need !== null) {
+        const available = needLeft.get(item.category) ?? need;
+        fitQuantity = Math.min(item.estimatedQuantity, available);
+        needLeft.set(item.category, available - fitQuantity);
+      }
+      return {
+        pledgeItemId: item.id,
+        name: item.name,
+        category: item.category,
+        unit: item.unit,
+        quantity: item.estimatedQuantity,
+        categoryDemand: quantity,
+        need,
+        verdict,
+        fitQuantity,
+        restQuantity: item.estimatedQuantity - fitQuantity,
+      };
+    });
+    const unfit = lines.filter((line) => line.verdict === 'PARTIAL' || line.verdict === 'NONE');
+    const categoryLabel: Record<string, string> = {
+      BOOKS: 'sách vở',
+      UNIFORMS: 'đồng phục',
+      IT_DEVICES: 'thiết bị tin học',
+      STATIONERY: 'dụng cụ học tập',
+      FURNITURE: 'bàn ghế',
+      VEHICLES: 'xe đạp',
+    };
+    const needsProposal = unfit.length > 0;
+    const summary = !needsProposal
+      ? 'Chiến dịch vẫn cần đủ số vật tư trong phiếu.'
+      : !acceptsDonation
+        ? `Chiến dịch "${current?.title}" đã tạm dừng hoặc kết thúc nên không còn nhận vật tư.`
+        : `Chiến dịch "${current?.title}" ${unfit
+            .map((line) => (line.need ? `chỉ còn cần ${line.need} ${categoryLabel[line.category] ?? line.category} (phiếu gửi ${line.categoryDemand})` : `đã đủ ${categoryLabel[line.category] ?? line.category}`))
+            .filter((text, index, all) => all.indexOf(text) === index)
+            .join(', ')}.`;
+    const candidates = needsProposal
+      ? campaigns
+          .filter((campaign) => campaign.id !== pledge.campaignId && campaign.status === 'ACTIVE')
+          .map((campaign) => {
+            const detail = lines.map((line) => ({ pledgeItemId: line.pledgeItemId, category: line.category, need: needOf(campaign.id, line.category), quantity: line.categoryDemand }));
+            return {
+              id: campaign.id,
+              title: campaign.title,
+              slug: campaign.slug,
+              coversAll: detail.every((row) => row.need >= row.quantity),
+              coversSome: detail.some((row) => row.need > 0),
+              lines: detail,
+            };
+          })
+          .sort((a, b) => Number(b.coversAll) - Number(a.coversAll))
+      : [];
+    return {
+      pledge: { id: pledge.id, code: pledge.code, status: pledge.status, campaignId: pledge.campaignId, reserveStock: pledge.reserveStock },
+      campaign: current ? { id: current.id, title: current.title, status: current.status } : null,
+      lines,
+      needsProposal,
+      // Chiến dịch còn nhận được một phần: có thể chia phiếu, phần dư lưu kho dự trữ.
+      canSplit: needsProposal && acceptsDonation && lines.some((line) => line.fitQuantity > 0),
+      summary,
+      candidates,
+      proposals: pledge.proposals,
+    };
   }
 
   async devices(actor: AuthenticatedUser, query: QueryDevicesDto) {
@@ -327,12 +707,13 @@ export class PledgesService {
     }
     this.assertCanRead(actor, pledge.donorId);
     if (actor.role === Role.DONOR) {
-      if (pledge.status !== 'PENDING') {
-        throw new BadRequestException('Chỉ được hủy phiếu trao tặng khi trạng thái đang chờ xác minh (PENDING).');
+      if (pledge.status !== 'PENDING' && pledge.status !== 'AWAITING_DONOR') {
+        throw new BadRequestException('Chỉ được hủy phiếu trao tặng khi đang chờ xác minh hoặc đang chờ bạn xác nhận đề xuất của kho.');
       }
       const ageMs = Date.now() - pledge.createdAt.getTime();
       const windowMs = 72 * 60 * 60 * 1000;
-      if (ageMs > windowMs) {
+      // Phiếu kho đã gửi đề xuất: nhà hảo tâm được từ chối (hủy) bất kỳ lúc nào, không giới hạn 72 giờ.
+      if (pledge.status === 'PENDING' && ageMs > windowMs) {
         throw new BadRequestException('Chỉ được hủy phiếu trao tặng trong vòng 3 ngày (72 giờ) kể từ lúc tạo. Phiếu này đã quá thời hạn hủy.');
       }
     }
@@ -340,6 +721,7 @@ export class PledgesService {
       throw new BadRequestException('Phiếu đã phát sinh tài nguyên trong kho, không thể hủy');
     }
     assertTransition(pledge.status, 'CANCELLED', PLEDGE_TRANSITIONS, 'Phiếu trao tặng');
+    await this.prisma.pledgeProposal.updateMany({ where: { pledgeId: id, status: 'PENDING' }, data: { status: 'CANCELLED', respondedAt: new Date() } });
     const updated = await this.prisma.donationPledge.update({
       where: { id },
       data: {

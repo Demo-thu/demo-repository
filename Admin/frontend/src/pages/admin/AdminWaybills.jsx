@@ -2,29 +2,42 @@ import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import api from "../../lib/api";
 import {
-  CATEGORY_LABEL, Card, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, SearchBox, Stat, StatusBadge, fmtDateTime, orgName,
-  rowsOf, useWaybills, waybillItems,
+  CATEGORY_LABEL, Card, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, fmtDateTime, orgName,
+  rowsOf, totalOf, useWaybills, waybillItems,
 } from "../portals/kit";
 
+const WAYBILL_STATUSES = ["PENDING_PICKUP", "IN_TRANSIT", "DELIVERED", "FAILED"];
+
 export default function AdminWaybills() {
-  const { waybills, error } = useWaybills();
-  const [waitingPlans, setWaitingPlans] = useState(0);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [term, setTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [counts, setCounts] = useState({ all: 0, PENDING_PICKUP: 0, IN_TRANSIT: 0, DELIVERED: 0, FAILED: 0 });
+  const [waitingPlans, setWaitingPlans] = useState(0);
   const [detail, setDetail] = useState(null);
+  const { waybills, meta, error } = useWaybills(filter === "all" ? undefined : filter, { page, limit: 20, search: term });
 
   useEffect(() => {
-    api.get("/allocations", { params: { status: "CONFIRMED", limit: 100 } })
-      .then((response) => setWaitingPlans(rowsOf(response.data).filter((plan) => !plan.waybill).length))
-      .catch(() => setWaitingPlans(0));
-  }, [waybills.length]);
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [filter]);
 
-  const count = (status) => waybills.filter((row) => row.status === status).length;
-  const visible = waybills.filter((row) => {
-    if (filter !== "all" && row.status !== filter) return false;
-    const term = search.trim().toLowerCase();
-    return !term || `${row.code} ${orgName(row.allocationPlan?.requisition?.school)}`.toLowerCase().includes(term);
-  });
+  useEffect(() => {
+    Promise.all([
+      api.get("/waybills", { params: { limit: 1 } }),
+      ...WAYBILL_STATUSES.map((status) => api.get("/waybills", { params: { limit: 1, status } })),
+      api.get("/allocations", { params: { status: "CONFIRMED", limit: 100 } }),
+    ]).then(([all, ...rest]) => {
+      const plans = rest.pop();
+      setCounts({ all: totalOf(all.data), ...Object.fromEntries(WAYBILL_STATUSES.map((status, index) => [status, totalOf(rest[index].data)])) });
+      setWaitingPlans(rowsOf(plans.data).filter((plan) => !plan.waybill).length);
+    }).catch(() => {});
+  }, [waybills]);
+
+  const count = (status) => counts[status] ?? 0;
+  const visible = waybills;
 
   const table = visible.map((row) => ({
     key: row.id,
@@ -51,12 +64,13 @@ export default function AdminWaybills() {
         <Stat label="Sự cố" value={count("FAILED")} tone="rose" />
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", waybills.length], ["PENDING_PICKUP", "Chờ lấy hàng", count("PENDING_PICKUP")], ["IN_TRANSIT", "Đang vận chuyển", count("IN_TRANSIT")], ["DELIVERED", "Đã giao", count("DELIVERED")], ["FAILED", "Sự cố", count("FAILED")]]} />
+        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", counts.all], ["PENDING_PICKUP", "Chờ lấy hàng", count("PENDING_PICKUP")], ["IN_TRANSIT", "Đang vận chuyển", count("IN_TRANSIT")], ["DELIVERED", "Đã giao", count("DELIVERED")], ["FAILED", "Sự cố", count("FAILED")]]} />
         <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã vận đơn, trường..." />
       </div>
       <Card>
         <p className="mb-3 flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><Lock size={13} />Trang chỉ để xem. Admin không lập hay sửa vận đơn.</p>
         <DataTable columns={["Mã vận đơn", "Trường nhận", "Hiện vật", "Tình nguyện viên", "Trạng thái", "Ngày lập"]} rows={table} empty="Chưa có vận đơn nào." />
+        <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
       </Card>
 
       {detail ? (

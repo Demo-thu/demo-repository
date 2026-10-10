@@ -46,6 +46,7 @@ enum ItemStatus {
 
 enum PledgeStatus {
   PENDING
+  AWAITING_DONOR // Kho đã gửi đề xuất (đổi chiến dịch / lưu kho dự trữ), chờ nhà hảo tâm xác nhận
   VERIFIED
   PARTIALLY_RECEIVED
   COMPLETED
@@ -91,6 +92,7 @@ model User {
   status           String               @default("ACTIVE")
   refreshTokenHash String?
   profile          UserProfile?
+  passwordResetCodes  PasswordResetCode[]
   pledges             DonationPledge[]
   requisitions        SupportRequisition[]
   shifts              VolunteerShift[]
@@ -113,6 +115,7 @@ model UserProfile {
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   organizationName String?
+  organizationCode String? // Mã định danh cơ sở giáo dục (trường học) do Bộ GD&ĐT cấp
   address          String?
   city             String?
   district         String?
@@ -121,6 +124,37 @@ model UserProfile {
   updatedAt        DateTime @updatedAt
 
   @@map("user_profiles")
+}
+
+/// Mã OTP 6 chữ số gửi qua email khi quên mật khẩu (chỉ lưu bản băm, hiệu lực 5 phút, tối đa 3 lần nhập sai).
+model PasswordResetCode {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("password_reset_codes")
+}
+
+/// Hồ sơ đăng ký đang chờ xác thực email (OTP). Chỉ khi nhập đúng mã mới tạo User thật.
+model PendingRegistration {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  payload         Json
+  codeHash        String
+  expiresAt       DateTime
+  attempts        Int      @default(0)
+  sendCount       Int      @default(1)
+  windowStartedAt DateTime @default(now())
+  lastSentAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@map("pending_registrations")
 }
 
 model DonationPledge {
@@ -140,11 +174,34 @@ model DonationPledge {
   cancelReason   String?
   cancelNote     String?
   cancelledAt    DateTime?
+  reserveStock   Boolean              @default(false) // Nhà hảo tâm đồng ý để kho lưu dự trữ cho các chiến dịch sau
   items          DonationPledgeItem[]
+  proposals      PledgeProposal[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
   @@map("donation_pledges")
+}
+
+/// Phiếu đề xuất kho gửi ngược lại nhà hảo tâm khi chiến dịch không còn cần (hoặc đã đủ) vật tư được quyên góp.
+model PledgeProposal {
+  id               String         @id @default(uuid())
+  pledgeId         String
+  pledge           DonationPledge @relation(fields: [pledgeId], references: [id], onDelete: Cascade)
+  createdById      String
+  status           String         @default("PENDING") // PENDING, ACCEPTED, WITHDRAWN, CANCELLED, EXPIRED
+  reason           String
+  note             String?
+  lines            Json           // Đối soát từng dòng: nhu cầu còn lại của chiến dịch lúc kho xem phiếu
+  options          Json           // [{type: "REDIRECT", campaignId, campaignTitle}, {type: "SPLIT", ...}, {type: "STOCK"}]
+  chosenType       String?        // REDIRECT | SPLIT | STOCK
+  chosenCampaignId String?
+  resultPledgeId   String?        // Phiếu mới tạo cho phần dư khi nhà hảo tâm chọn SPLIT
+  respondedAt      DateTime?
+  createdAt        DateTime       @default(now())
+
+  @@index([pledgeId, createdAt])
+  @@map("pledge_proposals")
 }
 
 model DonationPledgeItem {
@@ -265,7 +322,7 @@ model SupportRequisition {
   studentInfo              Json?
   status                   RequisitionStatus  @default(PENDING)
   items              RequisitionItem[]
-  allocationPlan     AllocationPlan?
+  allocationPlans    AllocationPlan[]
   transfers          StockTransferOrder[]
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -290,7 +347,7 @@ model RequisitionItem {
 
 model AllocationPlan {
   id            String             @id @default(uuid())
-  requisitionId String             @unique
+  requisitionId String
   requisition   SupportRequisition @relation(fields: [requisitionId], references: [id])
   approvedById       String
   adminConfirmedAt   DateTime?
@@ -303,6 +360,7 @@ model AllocationPlan {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
+  @@index([requisitionId])
   @@map("allocation_plans")
 }
 

@@ -3,7 +3,7 @@ import { Download } from "lucide-react";
 import api, { apiError } from "@/lib/api";
 import {
   CATEGORIES, CATEGORY_LABEL, Card, Chips, DataTable, Empty, GRADE_LABEL, GhostButton, ItemJourney, Notice, PageHead,
-  SearchBox, StatusBadge, downloadCsv, rowsOf, useNotice,
+  SearchBox, StatusBadge, downloadCsv, rowsOf, totalOf, useNotice,
 } from "@/pages/portals/kit";
 
 export default function DevicesScreen({ params }) {

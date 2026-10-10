@@ -37,6 +37,8 @@ export class AuditService {
             OR: [
               { action: { contains: query.search, mode: 'insensitive' } },
               { resource: { contains: query.search, mode: 'insensitive' } },
+              { user: { fullName: { contains: query.search, mode: 'insensitive' } } },
+              { details: { path: ['note'], string_contains: query.search } },
             ],
           }
         : {}),

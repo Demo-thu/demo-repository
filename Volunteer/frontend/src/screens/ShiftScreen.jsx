@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Clock, Crosshair, LogIn, LogOut, MapPin } from "lucide-react";
 import api, { apiError } from "@/lib/api";
 import {
-  Badge, Card, Empty, Field, GhostButton, KeyValue, Notice, PageHead, PrimaryButton, Stat, StatusBadge, currentPosition, fmtDate,
-  fmtTime, inputClass, orgName, rowsOf, useNotice, useWaybills,
+  Badge, Card, Empty, Field, GhostButton, KeyValue, Notice, PageHead, Pager, PrimaryButton, Stat, StatusBadge, currentPosition, fmtDate,
+  fmtTime, inputClass, orgName, rowsOf, totalOf, useNotice, useWaybills,
 } from "@/pages/portals/kit";
 
 const TYPES = [["SORTING", "Phân loại hàng"], ["PACKING", "Đóng gói"], ["DELIVERY", "Giao hàng"]];
@@ -21,7 +21,11 @@ function elapsed(from, now) {
 
 export default function ShiftScreen({ openTab }) {
   const { waybills } = useWaybills();
-  const [shifts, setShifts] = useState([]);
+  const [weekShifts, setWeekShifts] = useState([]);
+  const [weekMeta, setWeekMeta] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [weekPage, setWeekPage] = useState(1);
+  const [active, setActive] = useState(null);
+  const [totals, setTotals] = useState({ count: 0, hours: 0 });
   const [warehouse, setWarehouse] = useState(null);
   const [form, setForm] = useState({ date: localDate(), type: "SORTING" });
   const [now, setNow] = useState(Date.now());
@@ -31,14 +35,25 @@ export default function ShiftScreen({ openTab }) {
 
   const load = useCallback(async () => {
     try {
-      const [shiftRes, warehouseRes] = await Promise.all([api.get("/volunteers/shifts", { params: { limit: 100 } }), api.get("/warehouses", { params: { limit: 50 } })]);
-      setShifts(rowsOf(shiftRes.data));
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+      const [weekRes, totalRes, openRes, warehouseRes] = await Promise.all([
+        api.get("/volunteers/shifts", { params: { from: start.toISOString(), page: weekPage, limit: 20 } }),
+        api.get("/volunteers/shifts", { params: { limit: 1 } }),
+        api.get("/volunteers/shifts", { params: { open: true, limit: 5 } }),
+        api.get("/warehouses", { params: { limit: 50 } }),
+      ]);
+      setWeekShifts(rowsOf(weekRes.data));
+      setWeekMeta(weekRes.data?.meta || { page: weekPage, totalPages: 1, total: rowsOf(weekRes.data).length });
+      setTotals({ count: totalOf(totalRes.data), hours: totalRes.data?.summary?.hoursContributed || 0 });
+      setActive(rowsOf(openRes.data)[0] || null);
       const rows = rowsOf(warehouseRes.data);
       setWarehouse(rows.find((row) => row.code === "WH-HAN") || rows[0] || null);
     } catch (error) {
       fail(apiError(error, "Không tải được ca trực."));
     }
-  }, []);
+  }, [weekPage]);
 
   useEffect(() => {
     load();
@@ -50,13 +65,8 @@ export default function ShiftScreen({ openTab }) {
     };
   }, [load]);
 
-  const active = shifts.find((row) => row.checkInAt && !row.checkOutAt);
-  const todayShift = shifts.find((row) => sameDay(row.shiftDate, now) && !row.checkInAt);
-  const weekStart = new Date(now);
-  weekStart.setHours(0, 0, 0, 0);
-  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-  const weekShifts = shifts.filter((row) => new Date(row.shiftDate) >= weekStart).sort((a, b) => new Date(a.shiftDate) - new Date(b.shiftDate));
-  const totalHours = shifts.reduce((sum, row) => sum + (row.hoursContributed || 0), 0);
+  const todayShift = weekShifts.find((row) => sameDay(row.shiftDate, now) && !row.checkInAt);
+  const totalHours = totals.hours;
   const tasks = waybills.filter((row) => ["PENDING_PICKUP", "IN_TRANSIT"].includes(row.status));
 
   async function run(kind, action) {
@@ -105,8 +115,8 @@ export default function ShiftScreen({ openTab }) {
       <Notice notice={notice} />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Giờ đóng góp" value={totalHours.toFixed(1)} tone="emerald" icon={Clock} />
-        <Stat label="Tổng số ca" value={shifts.length} />
-        <Stat label="Ca tuần này" value={weekShifts.length} tone="violet" />
+        <Stat label="Tổng số ca" value={totals.count} />
+        <Stat label="Ca tuần này" value={weekMeta.total || weekShifts.length} tone="violet" />
         <Stat label="Chuyến đang phụ trách" value={tasks.length} tone="amber" />
       </div>
 
@@ -167,6 +177,7 @@ export default function ShiftScreen({ openTab }) {
                 {row.checkOutAt ? <Badge tone="emerald">{row.hoursContributed} giờ</Badge> : row.checkInAt ? <Badge tone="blue">Đang trực</Badge> : <Badge tone="amber">Chưa điểm danh</Badge>}
               </div>
             )) : <Empty>Chưa có ca nào trong tuần.</Empty>}
+            <Pager page={weekMeta.page || weekPage} totalPages={weekMeta.totalPages || 1} total={weekMeta.total || 0} onChange={setWeekPage} />
           </Card>
         </div>
       </div>

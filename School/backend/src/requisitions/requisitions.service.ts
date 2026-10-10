@@ -10,7 +10,7 @@ import { CreateRequisitionDto, QueryRequisitionDto, RejectRequisitionDto, Requis
 const requisitionInclude = {
   school: { select: publicUserSelect },
   items: true,
-  allocationPlan: { select: { id: true, status: true, totalItems: true } },
+  allocationPlans: { select: { id: true, status: true, totalItems: true, waybill: { select: { id: true, code: true, status: true } } }, orderBy: { createdAt: 'desc' as const }, take: 1 },
 } satisfies Prisma.SupportRequisitionInclude;
 
 @Injectable()
@@ -111,9 +111,10 @@ export class RequisitionsService {
   /** Hành trình của đơn: duyệt, phương án, lệnh điều chuyển, vận đơn và ký nhận. Admin/kho xem được đơn đang đi đến đâu. */
   async journey(actor: AuthenticatedUser, id: string) {
     const requisition = await this.get(actor, id);
-    const [plan, transfers] = await Promise.all([
-      this.prisma.allocationPlan.findUnique({
+    const [plans, transfers] = await Promise.all([
+      this.prisma.allocationPlan.findMany({
         where: { requisitionId: id },
+        orderBy: { createdAt: 'asc' },
         select: {
           id: true,
           status: true,
@@ -153,13 +154,24 @@ export class RequisitionsService {
         },
       }),
     ]);
-    const waybill = plan?.waybill
-      ? { ...plan.waybill, volunteers: plan.waybill.volunteers.map((link) => link.volunteer), incidentCount: plan.waybill._count.incidents }
-      : null;
+    const plan = plans[plans.length - 1] ?? null;
+    const shape = (row: (typeof plans)[number]) =>
+      row.waybill
+        ? { ...row.waybill, volunteers: row.waybill.volunteers.map((link) => link.volunteer), incidentCount: row.waybill._count.incidents }
+        : null;
+    const waybill = plan ? shape(plan) : null;
+    const rounds = plans.map((row) => ({
+      id: row.id,
+      status: row.status,
+      totalItems: row.totalItems,
+      createdAt: row.createdAt,
+      waybill: shape(row),
+    }));
     return {
       requisition: { id: requisition.id, code: requisition.code, title: requisition.title, status: requisition.status, createdAt: requisition.createdAt, updatedAt: requisition.updatedAt },
       plan: plan ? { id: plan.id, status: plan.status, totalItems: plan.totalItems, adminConfirmedAt: plan.adminConfirmedAt, createdAt: plan.createdAt } : null,
       waybill,
+      rounds,
       transfers: transfers.map((row) => ({ ...row, volunteers: row.volunteers.map((link) => link.volunteer) })),
     };
   }
@@ -332,11 +344,12 @@ export class RequisitionsService {
     return new Map(pending.map((row, index) => [row.id, index + 1]));
   }
 
-  private present<T extends { id: string; status: string; priorityScore: number }>(
+  private present<T extends { id: string; status: string; priorityScore: number; allocationPlans?: unknown[] }>(
     actor: AuthenticatedUser,
-    row: T,
+    source: T,
     queue: Map<string, number>,
   ) {
+    const row = { ...source, allocationPlan: source.allocationPlans?.[0] ?? null };
     const queueOrder = row.status === 'PENDING' ? (queue.get(row.id) ?? null) : null;
     const reviewStatus = row.status === 'REJECTED' ? 'REJECTED' : row.status === 'PENDING' ? 'PENDING' : 'APPROVED';
     if (actor.role === Role.SCHOOL_REP) {
@@ -369,6 +382,9 @@ export class RequisitionsService {
     return {
       ...(actor.role === Role.SCHOOL_REP ? { schoolId: actor.id } : {}),
       ...(query.status ? { status: query.status } : {}),
+      ...(query.review
+        ? { AND: [{ status: query.review === 'APPROVED' ? { notIn: ['PENDING', 'REJECTED'] as Array<'PENDING' | 'REJECTED'> } : query.review }] }
+        : {}),
       ...(query.urgencyLevel ? { urgencyLevel: query.urgencyLevel } : {}),
       ...(query.search
         ? {

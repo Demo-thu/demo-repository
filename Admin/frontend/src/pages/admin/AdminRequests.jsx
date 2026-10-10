@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, FileText, XCircle } from "lucide-react";
 import api, { apiError } from "../../lib/api";
 import {
-  CATEGORY_LABEL, Badge, Card, Chips, DataTable, Field, GhostButton, KeyValue, Modal, Notice, PageHead, PrimaryButton, RequisitionJourney, SearchBox, Stat, StatusBadge,
-  URGENCY_LABEL, fmtDate, inputClass, openDocument, orgName, rowsOf, useNotice,
+  CATEGORY_LABEL, Badge, Card, Chips, DataTable, Field, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, PrimaryButton, RequisitionJourney, SearchBox, Stat, StatusBadge,
+  URGENCY_LABEL, fmtDate, inputClass, openDocument, orgName, rowsOf, totalOf, useNotice,
 } from "../portals/kit";
 
 const URGENCY_TONE = { LOW: "slate", MEDIUM: "blue", HIGH: "amber", CRITICAL: "rose" };
@@ -13,20 +13,37 @@ export default function AdminRequests() {
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("PENDING");
   const [search, setSearch] = useState("");
+  const [term, setTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [counts, setCounts] = useState({ all: 0, PENDING: 0, APPROVED: 0, ALLOCATING: 0, COMPLETED: 0, REJECTED: 0 });
   const [detail, setDetail] = useState(null);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState("");
   const { notice, ok, fail } = useNotice();
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [filter]);
+
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/requisitions", { params: { limit: 100 } });
-      setRows(rowsOf(response.data));
+      const statuses = ["PENDING", "APPROVED", "ALLOCATING", "COMPLETED", "REJECTED"];
+      const [list, all, ...parts] = await Promise.all([
+        api.get("/requisitions", { params: { page, limit: 20, status: filter === "all" ? undefined : filter, search: term || undefined } }),
+        api.get("/requisitions", { params: { limit: 1 } }),
+        ...statuses.map((status) => api.get("/requisitions", { params: { limit: 1, status } })),
+      ]);
+      setRows(rowsOf(list.data));
+      setMeta(list.data?.meta || { page, totalPages: 1, total: rowsOf(list.data).length });
+      setCounts({ all: totalOf(all.data), ...Object.fromEntries(statuses.map((status, index) => [status, totalOf(parts[index].data)])) });
     } catch (error) {
       fail(apiError(error, "Không tải được yêu cầu của trường."));
     }
-  }, []);
+  }, [page, filter, term]);
 
   useEffect(() => {
     load();
@@ -34,12 +51,8 @@ export default function AdminRequests() {
     return () => window.removeEventListener("portal:refresh", load);
   }, [load]);
 
-  const count = (status) => rows.filter((row) => row.status === status).length;
-  const visible = rows.filter((row) => {
-    if (filter !== "all" && row.status !== filter) return false;
-    const term = search.trim().toLowerCase();
-    return !term || `${row.code} ${row.title} ${orgName(row.school)}`.toLowerCase().includes(term);
-  });
+  const count = (status) => counts[status] ?? 0;
+  const visible = rows;
 
   async function approve(row) {
     setPending("approve");
@@ -97,11 +110,12 @@ export default function AdminRequests() {
         <Stat label="Từ chối" value={count("REJECTED")} tone="rose" />
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Chips value={filter} onChange={setFilter} items={[["PENDING", "Chờ xét duyệt", count("PENDING")], ["APPROVED", "Đã duyệt", count("APPROVED")], ["ALLOCATING", "Đang điều phối", count("ALLOCATING")], ["COMPLETED", "Hoàn tất", count("COMPLETED")], ["REJECTED", "Từ chối", count("REJECTED")], ["all", "Tất cả", rows.length]]} />
+        <Chips value={filter} onChange={setFilter} items={[["PENDING", "Chờ xét duyệt", count("PENDING")], ["APPROVED", "Đã duyệt", count("APPROVED")], ["ALLOCATING", "Đang điều phối", count("ALLOCATING")], ["COMPLETED", "Hoàn tất", count("COMPLETED")], ["REJECTED", "Từ chối", count("REJECTED")], ["all", "Tất cả", counts.all]]} />
         <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã yêu cầu, trường..." />
       </div>
       <Card>
         <DataTable columns={["Mã", "Trường / tiêu đề", "Mức khẩn", "Hạng mục", "Trạng thái", "Ngày gửi", ""]} rows={table} empty="Không có yêu cầu nào khớp bộ lọc." />
+        <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
       </Card>
 
       {detail ? (

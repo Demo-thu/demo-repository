@@ -12,11 +12,29 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let refreshTimer = null;
+
+/** Báo cho mọi màn hình đang mở tải lại dữ liệu (gộp nhiều thao tác liên tiếp thành một lần). */
+export function broadcastRefresh() {
+  window.clearTimeout(refreshTimer);
+  refreshTimer = window.setTimeout(() => window.dispatchEvent(new CustomEvent("portal:refresh")), 200);
+}
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = (response.config?.method || "get").toLowerCase();
+    const url = response.config?.url || "";
+    // Mọi thao tác thêm / sửa / xóa thành công đều làm mới dữ liệu trên toàn bộ màn hình đang mở.
+    if (method !== "get" && method !== "head" && !url.includes("/auth/")) {
+      broadcastRefresh();
+    }
+    return response;
+  },
   async (error) => {
     const original = error.config;
-    const isAuthCall = original?.url?.includes("/auth/login") || original?.url?.includes("/auth/refresh");
+    const isAuthCall = ["/auth/login", "/auth/refresh", "/auth/register", "/auth/forgot-password", "/auth/reset-password"].some((path) =>
+      original?.url?.includes(path),
+    );
     if (error.response?.status !== 401 || !original || original._retry || isAuthCall) {
       return Promise.reject(error);
     }

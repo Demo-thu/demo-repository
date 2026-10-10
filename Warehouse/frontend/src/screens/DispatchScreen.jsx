@@ -21,8 +21,12 @@ export default function DispatchScreen({ openTab }) {
 
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/items", { params: { status: "READY_FOR_ALLOCATION", limit: 100 } });
-      setItems(rowsOf(response.data));
+      const [ready, uninspected] = await Promise.all([
+        api.get("/items", { params: { status: "READY_FOR_ALLOCATION", limit: 100 } }),
+        api.get("/items", { params: { status: "PENDING_INTAKE", limit: 100 } }),
+      ]);
+      setItems([...rowsOf(ready.data), ...rowsOf(uninspected.data)]);
+      setPicked((current) => current.filter((id) => rowsOf(ready.data).some((item) => item.id === id)));
     } catch (error) {
       fail(apiError(error, "Không tải được hiện vật sẵn sàng."));
     }
@@ -38,7 +42,8 @@ export default function DispatchScreen({ openTab }) {
     const term = search.trim().toLowerCase();
     return !term || `${item.qrCode} ${item.name}`.toLowerCase().includes(term);
   }), [items, search]);
-  const chosen = items.filter((item) => picked.includes(item.id));
+  const selectable = visible.filter((item) => item.status === "READY_FOR_ALLOCATION");
+  const chosen = items.filter((item) => picked.includes(item.id) && item.status === "READY_FOR_ALLOCATION");
   const byCategory = chosen.reduce((groups, item) => ({ ...groups, [item.category]: (groups[item.category] || 0) + 1 }), {});
 
   const toggle = (id) => setPicked((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
@@ -132,16 +137,21 @@ export default function DispatchScreen({ openTab }) {
             {visible.length ? (
               <div className="max-h-96 space-y-1 overflow-y-auto pr-1">
                 <label className="flex items-center gap-2 rounded bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-                  <input type="checkbox" checked={visible.every((item) => picked.includes(item.id))} onChange={(event) => setPicked(event.target.checked ? [...new Set([...picked, ...visible.map((item) => item.id)])] : picked.filter((id) => !visible.some((item) => item.id === id)))} />Chọn tất cả {visible.length} món đang hiển thị
+                  <input type="checkbox" disabled={!selectable.length} checked={selectable.length > 0 && selectable.every((item) => picked.includes(item.id))} onChange={(event) => setPicked(event.target.checked ? [...new Set([...picked, ...selectable.map((item) => item.id)])] : picked.filter((id) => !selectable.some((item) => item.id === id)))} />Chọn tất cả {selectable.length} món đã kiểm định đang hiển thị
                 </label>
-                {visible.map((item) => (
-                  <label key={item.id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${picked.includes(item.id) ? "border-blue-300 bg-blue-50/50" : "border-slate-100"}`}>
-                    <input type="checkbox" checked={picked.includes(item.id)} onChange={() => toggle(item.id)} />
-                    <span className="font-mono text-xs font-semibold text-blue-700">{item.qrCode}</span>
-                    <span className="flex-1 truncate">{item.name}</span>
-                    <span className="text-xs text-slate-500">{GRADE_LABEL[item.grade]} · {item.binLocation || "chưa gắn kệ"}</span>
-                  </label>
-                ))}
+                {visible.map((item) => {
+                  const uninspected = item.status !== "READY_FOR_ALLOCATION";
+                  return (
+                    <label key={item.id} className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${uninspected ? "cursor-not-allowed border-amber-200 bg-amber-50/60 text-slate-500" : `cursor-pointer ${picked.includes(item.id) ? "border-blue-300 bg-blue-50/50" : "border-slate-100"}`}`}>
+                      <input type="checkbox" disabled={uninspected} checked={!uninspected && picked.includes(item.id)} onChange={() => toggle(item.id)} />
+                      <span className="font-mono text-xs font-semibold text-blue-700">{item.qrCode}</span>
+                      <span className="flex-1 truncate">{item.name}</span>
+                      {uninspected
+                        ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Chưa kiểm định · không được xuất kho</span>
+                        : <span className="text-xs text-slate-500">{GRADE_LABEL[item.grade]} · {item.binLocation || "chưa gắn kệ"}</span>}
+                    </label>
+                  );
+                })}
               </div>
             ) : <Empty>Không có hiện vật nào sẵn sàng. Hãy kiểm định hiện vật đạt chuẩn trước.</Empty>}
           </Card>

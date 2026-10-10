@@ -10,6 +10,9 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { HealthModule } from './health/health.module';
+import { ForgotPasswordModule } from '../../../ForgotPassword/backend/src/forgot-password/forgot-password.module';
+import { LoginModule } from '../../../Login/backend/src/login/login.module';
+import { RegisterModule } from '../../../Register/backend/src/register/register.module';
 import { PledgesModule } from '../../../Donor/backend/src/pledges/pledges.module';
 import { RequisitionsModule } from '../../../School/backend/src/requisitions/requisitions.module';
 import { InspectionsModule } from '../../../Warehouse/backend/src/inspections/inspections.module';
@@ -30,6 +33,9 @@ import { UsersModule } from './users/users.module';
     RedisModule,
     AuditModule,
     AuthModule,
+    LoginModule,
+    RegisterModule,
+    ForgotPasswordModule,
     UsersModule,
     CampaignsModule,
     WarehousesModule,

@@ -1,29 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
 import { Lock, ShieldAlert } from "lucide-react";
 import api, { apiError } from "@/lib/api";
-import { Badge, Card, Empty, Field, Notice, PageHead, PhotoPicker, PrimaryButton, StatusBadge, fmtDateTime, inputClass, orgName, rowsOf, useNotice, useWaybills } from "@/pages/portals/kit";
+import { Badge, Card, Empty, Field, Notice, PageHead, Pager, PhotoPicker, PrimaryButton, StatusBadge, fmtDateTime, inputClass, orgName, rowsOf, useNotice, usePortalRefresh, useWaybills } from "@/pages/portals/kit";
 
 const TYPES = ["Hỏng xe / tai nạn giao thông", "Thời tiết xấu, đường sạt lở", "Hàng hóa hư hỏng hoặc thiếu", "Trường không có người nhận", "Lý do khác"];
 
 export default function IncidentScreen({ params }) {
   const { waybills, reload } = useWaybills();
   const [incidents, setIncidents] = useState([]);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
   const [form, setForm] = useState({ waybillId: params.get("waybill") || "", type: TYPES[0], qr: "", reason: "", photos: [], agree: false });
   const [pending, setPending] = useState(false);
   const { notice, ok, fail } = useNotice();
 
   const loadIncidents = useCallback(async () => {
     try {
-      const response = await api.get("/waybills/incidents", { params: { limit: 50 } });
+      const response = await api.get("/waybills/incidents", { params: { page, limit: 20 } });
       setIncidents(rowsOf(response.data));
+      setMeta(response.data?.meta || { page, totalPages: 1, total: rowsOf(response.data).length });
     } catch (error) {
       fail(apiError(error, "Không tải được lịch sử sự cố."));
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     loadIncidents();
   }, [loadIncidents]);
+  usePortalRefresh(loadIncidents);
 
   const reportable = waybills.filter((row) => ["PENDING_PICKUP", "IN_TRANSIT"].includes(row.status));
   const set = (patch) => setForm((current) => ({ ...current, ...patch }));
@@ -93,6 +97,7 @@ export default function IncidentScreen({ params }) {
               ))}
             </ul>
           ) : <Empty>Bạn chưa báo sự cố nào.</Empty>}
+          <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
         </Card>
       </div>
     </div>

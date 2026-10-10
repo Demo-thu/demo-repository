@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, Printer } from "lucide-react";
 import api, { apiError } from "@/lib/api";
-import { CATEGORY_LABEL, Card, Empty, GRADE_LABEL, GhostButton, Notice, PageHead, QrImage, StatusBadge, downloadCsv, fmtDateTime, inputClass, rowsOf, useNotice } from "@/pages/portals/kit";
+import { CATEGORY_LABEL, Card, Empty, GRADE_LABEL, GhostButton, Notice, PageHead, QrImage, StatusBadge, downloadCsv, fmtDateTime, inputClass, rowsOf, useNotice, usePortalRefresh } from "@/pages/portals/kit";
 
 export default function ReceiptScreen({ params, openTab }) {
   const [pledges, setPledges] = useState([]);
@@ -9,24 +9,26 @@ export default function ReceiptScreen({ params, openTab }) {
   const [receipt, setReceipt] = useState(null);
   const { notice, fail } = useNotice();
 
-  useEffect(() => {
-    api.get("/pledges?limit=100").then((response) => {
-      const rows = rowsOf(response.data).filter((row) => !["PENDING", "CANCELLED"].includes(row.status));
-      setPledges(rows);
-      setSelected((current) => params.get("pledge") || current || rows[0]?.id || "");
-    }).catch((error) => fail(apiError(error, "Không tải được danh sách phiếu.")));
-  }, [params]);
+  const loadList = useCallback(() => api.get("/pledges?limit=100").then((response) => {
+    const rows = rowsOf(response.data).filter((row) => !["PENDING", "AWAITING_DONOR", "CANCELLED"].includes(row.status));
+    setPledges(rows);
+    setSelected((current) => params.get("pledge") || current || rows[0]?.id || "");
+  }).catch((error) => fail(apiError(error, "Không tải được danh sách phiếu."))), [params]);
 
-  useEffect(() => {
+  const loadReceipt = useCallback(() => {
     if (!selected) {
       setReceipt(null);
-      return;
+      return undefined;
     }
-    api.get(`/pledges/${selected}/receipt`).then((response) => setReceipt(response.data)).catch((error) => {
+    return api.get(`/pledges/${selected}/receipt`).then((response) => setReceipt(response.data)).catch((error) => {
       setReceipt(null);
       fail(apiError(error, "Không tải được biên nhận."));
     });
   }, [selected]);
+
+  useEffect(() => { loadList(); }, [loadList]);
+  useEffect(() => { loadReceipt(); }, [loadReceipt]);
+  usePortalRefresh(() => { loadList(); loadReceipt(); });
 
   function exportCsv() {
     const rows = receipt.lines.flatMap((line) => (line.assets.length

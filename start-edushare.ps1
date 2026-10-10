@@ -25,7 +25,14 @@ $required = @(
   "Warehouse\frontend\src\screens\StatusScreen.jsx",
   "Admin\backend\prisma\schema.prisma",
   "Donor\frontend\src\pages\DonorPage.jsx",
-  "Donor\frontend\src\pages\RegisterPage.jsx",
+  "Admin\frontend\src\layouts\auth\AuthShell.jsx",
+  "Login\frontend\src\pages\LoginPage.jsx",
+  "Login\backend\src\login\login.module.ts",
+  "Register\frontend\src\pages\RegisterPage.jsx",
+  "Register\backend\src\register\register.module.ts",
+  "ForgotPassword\frontend\src\pages\ForgotPasswordPage.jsx",
+  "ForgotPassword\backend\src\forgot-password\forgot-password.module.ts",
+  "Admin\backend\src\mail\mail.service.ts",
   "Donor\frontend\src\screens\index.js",
   "Donor\backend\src\pledges\pledges.module.ts",
   "School\frontend\src\pages\SchoolPage.jsx",
@@ -74,16 +81,24 @@ function Install-IfMissing([string]$Dir, [string[]]$Packages, [string]$Label) {
     Pop-Location
   }
 }
-Install-IfMissing $backend @("@nestjs\core", "@prisma\client", "prisma") "API (Admin\backend)"
+Install-IfMissing $backend @("@nestjs\core", "@prisma\client", "prisma", "nodemailer") "API (Admin\backend)"
 Install-IfMissing $web @("react", "vite", "exceljs", "qrcode") "web (Admin\frontend)"
 
-foreach ($portal in @("Donor", "School", "Warehouse", "Volunteer")) {
+foreach ($portal in @("Login", "Register", "ForgotPassword", "Donor", "School", "Warehouse", "Volunteer")) {
   $link = Join-Path $root "$portal\backend\node_modules"
   if (-not (Test-Path -LiteralPath $link)) {
     cmd /c "mklink /J `"$link`" `"$nodeModules`"" | Out-Null
     if (-not (Test-Path -LiteralPath $link)) {
       throw "Khong tao duoc lien ket thu vien cho $portal\backend."
     }
+  }
+}
+
+# Canh bao neu chua cau hinh email (Gmail SMTP) de gui ma OTP quen mat khau.
+$envText = Get-Content -LiteralPath (Join-Path $backend ".env") -Raw
+foreach ($key in @("SMTP_HOST", "SMTP_USER", "SMTP_PASS")) {
+  if ($envText -notmatch "(?m)^\s*$key\s*=\s*\S+") {
+    Write-Host "Canh bao: thieu $key trong Admin\backend\.env - chuc nang quen mat khau se khong gui duoc email OTP." -ForegroundColor Yellow
   }
 }
 
@@ -133,7 +148,7 @@ Remove-Cache (Join-Path $nodeModules ".cache")
 Remove-Cache (Join-Path $web "node_modules\.cache")
 Remove-Cache (Join-Path $web ".eslintcache")
 Remove-Cache (Join-Path $env:TEMP "edushare-build")
-foreach ($portal in @("Donor", "School", "Warehouse", "Volunteer")) {
+foreach ($portal in @("Login", "Register", "ForgotPassword", "Donor", "School", "Warehouse", "Volunteer")) {
   # Chi xoa dist/cache rieng cua tung cong, khong cham vao node_modules (la lien ket toi Admin\backend).
   foreach ($side in @("backend", "frontend")) {
     Remove-Cache (Join-Path $root "$portal\$side\dist")
@@ -160,7 +175,9 @@ Write-Host ""
 Write-Host "EduShare dang chay tat ca cong trong terminal nay." -ForegroundColor Cyan
 Write-Host "API            http://localhost:3000/api"
 Write-Host "Dang nhap      http://localhost:5173/login"
-Write-Host "Dang ky        http://localhost:5173/register"
+Write-Host "  Login/Register/ForgotPassword: moi chuc nang la 1 thu muc rieng (frontend + backend), dung chung cho moi cong."
+Write-Host "Dang ky        http://localhost:5173/register  (nha hao tam hoac dai dien truong hoc; phai nhap ma OTP gui qua email moi tao duoc tai khoan)"
+Write-Host "Quen mat khau  http://localhost:5173/forgot-password  (ma OTP 6 so gui qua email bang Gmail SMTP)"
 Write-Host "Admin          http://localhost:5173/"
 Write-Host "  Tao chien dich + hang muc, tao tai khoan nha hao tam, DOI VAI TRO + xem ho so moi tai khoan,"
 Write-Host "  duyet/tu choi yeu cau truong (don da duyet: bam vao de xem hanh trinh don dang di den dau),"

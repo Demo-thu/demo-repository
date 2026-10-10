@@ -19,7 +19,7 @@ export class WaybillsController {
   constructor(private readonly waybills: WaybillsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.WAREHOUSE_STAFF)
   create(@CurrentUser() actor: AuthenticatedUser, @Body() dto: CreateWaybillDto, @Req() req: HttpRequestContext) {
     return this.waybills.create(actor, dto, readClientIp(req.headers, req.ip));
   }
@@ -100,7 +100,7 @@ export class WaybillsController {
   }
 
   @Post(':id/proof')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF, Role.SCHOOL_REP)
+  @Roles(Role.SCHOOL_REP)
   prove(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -111,7 +111,7 @@ export class WaybillsController {
   }
 
   @Patch(':id/fail')
-  @Roles(Role.ADMIN, Role.WAREHOUSE_STAFF)
+  @Roles(Role.WAREHOUSE_STAFF)
   fail(@CurrentUser() actor: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string, @Req() req: HttpRequestContext) {
     return this.waybills.fail(actor, id, readClientIp(req.headers, req.ip));
   }

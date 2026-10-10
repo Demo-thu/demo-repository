@@ -143,7 +143,16 @@ export class WaybillsService {
       ...(actor.role === Role.SCHOOL_REP
         ? { allocationPlan: { requisition: { schoolId: actor.id } } }
         : {}),
-      ...(query.search ? { code: { contains: query.search, mode: 'insensitive' } } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { code: { contains: query.search, mode: 'insensitive' } },
+              { allocationPlan: { requisition: { code: { contains: query.search, mode: 'insensitive' } } } },
+              { allocationPlan: { requisition: { school: { fullName: { contains: query.search, mode: 'insensitive' } } } } },
+              { proof: { recipientName: { contains: query.search, mode: 'insensitive' } } },
+            ],
+          }
+        : {}),
     };
     const [data, total] = await this.prisma.$transaction([
       this.prisma.waybill.findMany({
@@ -405,8 +414,22 @@ export class WaybillsService {
     const { page, limit, skip } = pageArgs(query.page, query.limit);
     const where: Prisma.IncidentReportWhereInput = {
       ...(query.waybillId ? { waybillId: query.waybillId } : {}),
+      ...(query.from ? { createdAt: { gte: new Date(query.from) } } : {}),
+      ...(query.scope === 'mine' ? { reporterId: actor.id } : {}),
+      ...(query.scope === 'waybill' ? { waybillId: { not: null } } : {}),
       ...(actor.role === Role.VOLUNTEER
         ? { waybill: { volunteers: { some: { volunteerId: actor.id } } } }
+        : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { reason: { contains: query.search, mode: 'insensitive' } },
+              { incidentType: { contains: query.search, mode: 'insensitive' } },
+              { qrCode: { contains: query.search, mode: 'insensitive' } },
+              { waybill: { code: { contains: query.search, mode: 'insensitive' } } },
+              { reporter: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            ],
+          }
         : {}),
     };
     const [data, total] = await this.prisma.$transaction([

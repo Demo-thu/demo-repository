@@ -24,6 +24,9 @@
   "include": [
     "src/**/*",
     "prisma/seed.ts",
+    "../../Login/backend/src/**/*",
+    "../../Register/backend/src/**/*",
+    "../../ForgotPassword/backend/src/**/*",
     "../../Donor/backend/src/**/*",
     "../../School/backend/src/**/*",
     "../../Warehouse/backend/src/**/*",

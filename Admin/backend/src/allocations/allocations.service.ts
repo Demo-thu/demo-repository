@@ -166,7 +166,7 @@ export class AllocationsService {
   private async matchInside(tx: Prisma.TransactionClient, actorId: string, requisitionId: string) {
     const requisition = await tx.supportRequisition.findUnique({
       where: { id: requisitionId },
-      include: { items: true, allocationPlan: { include: { waybill: true } } },
+      include: { items: true, allocationPlans: { orderBy: { createdAt: 'desc' }, take: 1, include: { waybill: true } } },
     });
     if (!requisition) {
       throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ');
@@ -174,7 +174,10 @@ export class AllocationsService {
     if (requisition.status !== 'APPROVED' && requisition.status !== 'ALLOCATING') {
       throw new BadRequestException('Yêu cầu phải được duyệt trước khi phân bổ');
     }
-    const existing = requisition.allocationPlan;
+    const latest = requisition.allocationPlans[0] ?? null;
+    // Dot giao truoc da xong (da ky nhan) nhung yeu cau chua du: bat dau dot moi, giu nguyen lich su dot cu.
+    const previousRoundDone = latest?.waybill?.status === 'DELIVERED';
+    const existing = previousRoundDone ? null : latest;
     if (existing?.waybill && existing.waybill.status !== 'FAILED') {
       throw new BadRequestException('Yêu cầu đã có vận đơn, không ghép thêm');
     }

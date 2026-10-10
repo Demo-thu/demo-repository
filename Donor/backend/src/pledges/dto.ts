@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsIn,
@@ -171,4 +172,41 @@ export class QueryPledgeDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   campaignId?: string;
+
+  /** Nhóm "đã xác minh": VERIFIED, PARTIALLY_RECEIVED và COMPLETED. */
+  @IsOptional()
+  @IsIn(['CONFIRMED'])
+  bucket?: 'CONFIRMED';
+}
+
+export class CreateProposalDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+
+  /** Đề xuất nhà hảo tâm đổi sang chiến dịch này (phải còn nhu cầu cho tất cả hiện vật trong phiếu). */
+  @IsOptional()
+  @IsUUID()
+  redirectCampaignId?: string;
+
+  /** Đề xuất để kho lưu giữ hiện vật dự trữ cho các chiến dịch sau. */
+  @IsOptional()
+  @IsBoolean()
+  offerStock?: boolean;
+
+  /** Đề xuất chia phiếu: phần chiến dịch còn cần được nhận cho chiến dịch, phần dư lưu kho dự trữ. */
+  @IsOptional()
+  @IsBoolean()
+  offerSplit?: boolean;
+}
+
+export class RespondProposalDto {
+  @IsIn(['REDIRECT', 'SPLIT', 'STOCK'])
+  decision!: 'REDIRECT' | 'SPLIT' | 'STOCK';
 }

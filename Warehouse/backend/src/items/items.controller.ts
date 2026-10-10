@@ -17,6 +17,11 @@ export class ItemsController {
     return this.items.list(query);
   }
 
+  @Get('summary')
+  summary() {
+    return this.items.summary();
+  }
+
   @Get('lookup/:qrCode')
   lookup(@Param('qrCode') qrCode: string) {
     return this.items.findByQr(qrCode);

@@ -1,10 +1,11 @@
-﻿import { ItemCategory, RequisitionStatus, UrgencyLevel } from '@prisma/client';
+import { ItemCategory, RequisitionStatus, UrgencyLevel } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -172,4 +173,9 @@ export class QueryRequisitionDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(UrgencyLevel)
   urgencyLevel?: UrgencyLevel;
+
+  /** Nhom trang thai xet duyet dung cho hang cho cua truong: PENDING | APPROVED (da duyet, ke ca dang xu ly/hoan tat) | REJECTED. */
+  @IsOptional()
+  @IsIn(['PENDING', 'APPROVED', 'REJECTED'])
+  review?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }

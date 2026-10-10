@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import api, { apiError } from "../../lib/api";
 import { ROLE_LABEL } from "../../lib/roles";
-import { Card, DataTable, GhostButton, Notice, PageHead, SearchBox, downloadCsv, fmtDateTime, inputClass, rowsOf, useNotice } from "../portals/kit";
+import { Card, DataTable, GhostButton, Notice, PageHead, Pager, SearchBox, downloadCsv, fmtDateTime, inputClass, rowsOf, useNotice } from "../portals/kit";
 
 const RESOURCES = ["User", "Campaign", "DonationPledge", "SupportRequisition", "AllocationPlan", "Waybill", "IncidentReport", "ResourceItem", "StockTransferOrder", "Warehouse", "VolunteerShift"];
 
@@ -23,6 +23,10 @@ const ACTION_LABEL = {
   PLEDGE_UPDATED: "Sửa phiếu trao tặng",
   PLEDGE_VERIFIED: "Xác minh phiếu trao tặng",
   PLEDGE_CANCELLED: "Hủy phiếu trao tặng",
+  PLEDGE_PROPOSAL_SENT: "Kho gửi phiếu đề xuất cho nhà hảo tâm",
+  PLEDGE_PROPOSAL_ACCEPTED: "Nhà hảo tâm xác nhận đề xuất của kho",
+  PLEDGE_PROPOSAL_WITHDRAWN: "Kho rút phiếu đề xuất",
+  PLEDGE_PROPOSAL_EXPIRED: "Phiếu đề xuất hết hạn (7 ngày)",
   PLEDGE_RECEIVED: "Nhập kho phiếu trao tặng",
   REQUISITION_CREATED: "Trường gửi yêu cầu",
   REQUISITION_UPDATED: "Sửa yêu cầu của trường",
@@ -154,7 +158,14 @@ function describe(row) {
     case "PLEDGE_CREATED":
     case "PLEDGE_UPDATED":
     case "PLEDGE_VERIFIED":
+    case "PLEDGE_PROPOSAL_SENT":
+    case "PLEDGE_PROPOSAL_WITHDRAWN":
+    case "PLEDGE_PROPOSAL_EXPIRED":
       lines.push(`Phiếu: ${who("pledgeId") || details.code || "không rõ"}`);
+      break;
+    case "PLEDGE_PROPOSAL_ACCEPTED":
+      lines.push(`Phiếu: ${who("pledgeId") || details.code || "không rõ"}`);
+      lines.push(`Lựa chọn: ${{ REDIRECT: "đổi sang chiến dịch khác", SPLIT: `chia phiếu (phần dư thành phiếu ${details.restCode || "mới"} lưu dự trữ)`, STOCK: "để kho lưu dự trữ" }[details.decision] || details.decision}`);
       break;
     case "PLEDGE_CANCELLED":
       lines.push(`Phiếu: ${who("pledgeId") || details.code || "không rõ"}`);
@@ -221,28 +232,33 @@ function describe(row) {
 
 export default function AdminAudit() {
   const [logs, setLogs] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [term, setTerm] = useState("");
   const [resource, setResource] = useState("");
   const { notice, fail } = useNotice();
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [resource]);
+
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/audit-logs", { params: { limit: 100, search: search.trim() || undefined, resource: resource || undefined } });
+      const response = await api.get("/audit-logs", { params: { page, limit: 20, search: term || undefined, resource: resource || undefined } });
       setLogs(rowsOf(response.data));
-      setTotal(response.data.meta?.total ?? response.data.total ?? 0);
+      setMeta(response.data.meta || { page, totalPages: 1, total: rowsOf(response.data).length });
     } catch (error) {
       fail(apiError(error, "Không tải được nhật ký kiểm toán."));
     }
-  }, [search, resource]);
+  }, [page, term, resource]);
 
   useEffect(() => {
-    const timer = window.setTimeout(load, 250);
+    load();
     window.addEventListener("portal:refresh", load);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("portal:refresh", load);
-    };
+    return () => window.removeEventListener("portal:refresh", load);
   }, [load]);
 
   const rows = logs.map((row) => ({
@@ -266,8 +282,9 @@ export default function AdminAudit() {
         actions={<GhostButton disabled={!logs.length} onClick={() => downloadCsv("nhat-ky-kiem-toan.csv", ["Thời gian", "Hành động", "Đối tượng", "Người thực hiện", "Chi tiết"], logs.map((row) => [fmtDateTime(row.createdAt), ACTION_LABEL[row.action] || row.action, RESOURCE_LABEL[row.resource] || row.resource, row.user?.fullName, describe(row).join("; ")]))}><Download size={14} />Xuất CSV</GhostButton>}
       />
       <Notice notice={notice} />
-      <Card title={`Bản ghi gần nhất (${logs.length}/${total})`} actions={<div className="flex flex-wrap gap-2"><select className={`${inputClass} !w-auto !py-1.5 !text-xs`} value={resource} onChange={(event) => setResource(event.target.value)}><option value="">Tất cả đối tượng</option>{RESOURCES.map((item) => <option key={item} value={item}>{RESOURCE_LABEL[item] || item}</option>)}</select><SearchBox value={search} onChange={setSearch} placeholder="Tìm hành động..." /></div>}>
+      <Card title={`Nhật ký (${meta.total || 0})`} actions={<div className="flex flex-wrap gap-2"><select className={`${inputClass} !w-auto !py-1.5 !text-xs`} value={resource} onChange={(event) => setResource(event.target.value)}><option value="">Tất cả đối tượng</option>{RESOURCES.map((item) => <option key={item} value={item}>{RESOURCE_LABEL[item] || item}</option>)}</select><SearchBox value={search} onChange={setSearch} placeholder="Tìm hành động, người, ghi chú..." /></div>}>
         <DataTable columns={["Thời gian", "Hành động", "Đối tượng", "Người thực hiện", "Chi tiết", "IP"]} rows={rows} empty="Chưa có bản ghi nào." />
+        <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
       </Card>
     </div>
   );

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Lock, ShieldAlert } from "lucide-react";
 import api, { apiError, currentUser } from "@/lib/api";
 import {
-  Badge, Card, Chips, DataTable, Empty, Field, GhostButton, KeyValue, Modal, Notice, PageHead, PhotoPicker, PrimaryButton,
-  SearchBox, Stat, StatusBadge, fmtDateTime, inputClass, rowsOf, useNotice,
+  Badge, Card, Chips, DataTable, Empty, Field, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, PhotoPicker, PrimaryButton,
+  SearchBox, Stat, StatusBadge, fmtDateTime, inputClass, rowsOf, totalOf, useNotice,
 } from "@/pages/portals/kit";
 
 export const INCIDENT_TYPES = [
@@ -19,20 +19,39 @@ export default function IncidentScreen({ params }) {
   const [incidents, setIncidents] = useState([]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState(params.get("q") || "");
+  const [term, setTerm] = useState(params.get("q") || "");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [counts, setCounts] = useState({ all: 0, mine: 0, waybill: 0, recent: 0 });
   const [detail, setDetail] = useState(null);
   const [form, setForm] = useState({ type: INCIDENT_TYPES[0], qr: params.get("scan") || "", reason: "" });
   const [photos, setPhotos] = useState([]);
   const [pending, setPending] = useState(false);
   const { notice, ok, fail } = useNotice();
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [filter]);
+
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/waybills/incidents", { params: { limit: 100 } });
-      setIncidents(rowsOf(response.data));
+      const since = new Date(Date.now() - 30 * 86400000).toISOString();
+      const [list, all, mine, waybill, recent] = await Promise.all([
+        api.get("/waybills/incidents", { params: { page, limit: 20, search: term || undefined, scope: filter === "all" ? undefined : filter } }),
+        api.get("/waybills/incidents", { params: { limit: 1 } }),
+        api.get("/waybills/incidents", { params: { limit: 1, scope: "mine" } }),
+        api.get("/waybills/incidents", { params: { limit: 1, scope: "waybill" } }),
+        api.get("/waybills/incidents", { params: { limit: 1, from: since } }),
+      ]);
+      setIncidents(rowsOf(list.data));
+      setMeta(list.data?.meta || { page, totalPages: 1, total: rowsOf(list.data).length });
+      setCounts({ all: totalOf(all.data), mine: totalOf(mine.data), waybill: totalOf(waybill.data), recent: totalOf(recent.data) });
     } catch (error) {
       fail(apiError(error, "Không tải được hồ sơ sự cố."));
     }
-  }, []);
+  }, [page, term, filter]);
 
   useEffect(() => {
     load();
@@ -61,14 +80,7 @@ export default function IncidentScreen({ params }) {
     }
   }
 
-  const mine = incidents.filter((row) => row.reporter?.id === user?.id);
-  const monthAgo = Date.now() - 30 * 86400000;
-  const visible = incidents.filter((row) => {
-    if (filter === "mine" && row.reporter?.id !== user?.id) return false;
-    if (filter === "waybill" && !row.waybill) return false;
-    const term = search.trim().toLowerCase();
-    return !term || `${row.waybill?.code || ""} ${row.reason} ${row.incidentType || ""} ${row.qrCode || ""} ${row.reporter?.fullName || ""}`.toLowerCase().includes(term);
-  });
+  const visible = incidents;
 
   const rows = visible.map((row) => ({
     key: row.id,
@@ -87,9 +99,9 @@ export default function IncidentScreen({ params }) {
       <PageHead eyebrow="Điều phối & vận chuyển" title="Báo cáo sự cố" subtitle="Kho báo sự cố dưới tên của chính mình và xem toàn bộ hồ sơ. Báo cáo đã gửi không sửa được; không báo thay người khác (tình nguyện viên tự báo trên chuyến của họ)." />
       <Notice notice={notice} />
       <div className="mb-5 grid grid-cols-3 gap-3">
-        <Stat label="Tổng hồ sơ" value={incidents.length} icon={ShieldAlert} tone="rose" />
-        <Stat label="Do bạn báo" value={mine.length} tone="blue" />
-        <Stat label="Trong 30 ngày" value={incidents.filter((row) => new Date(row.createdAt).getTime() >= monthAgo).length} tone="amber" />
+        <Stat label="Tổng hồ sơ" value={counts.all} icon={ShieldAlert} tone="rose" />
+        <Stat label="Do bạn báo" value={counts.mine} tone="blue" />
+        <Stat label="Trong 30 ngày" value={counts.recent} tone="amber" />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
@@ -111,12 +123,13 @@ export default function IncidentScreen({ params }) {
 
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", incidents.length], ["mine", "Do tôi báo", mine.length], ["waybill", "Trên chuyến", incidents.filter((row) => row.waybill).length]]} />
+            <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", counts.all], ["mine", "Do tôi báo", counts.mine], ["waybill", "Trên chuyến", counts.waybill]]} />
             <SearchBox value={search} onChange={setSearch} placeholder="Tìm lý do, mã QR, người báo..." />
           </div>
           <Card>
             <p className="mb-3 flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><Lock size={13} />Hồ sơ đã gửi chỉ đọc, không sửa.</p>
             {incidents.length ? <DataTable columns={["Thời gian", "Loại", "Lý do", "Người báo", "Vị trí", ""]} rows={rows} empty="Không có hồ sơ nào khớp." /> : <Empty>Chưa có hồ sơ sự cố.</Empty>}
+            <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
           </Card>
         </div>
       </div>

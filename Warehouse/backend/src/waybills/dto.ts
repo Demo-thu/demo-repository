@@ -4,7 +4,9 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsDateString,
   IsEnum,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -131,4 +133,13 @@ export class QueryIncidentDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   waybillId?: string;
+
+  /** mine: do chính người đang đăng nhập báo. waybill: chỉ hồ sơ gắn với một chuyến. */
+  @IsOptional()
+  @IsIn(['mine', 'waybill'])
+  scope?: 'mine' | 'waybill';
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
 }

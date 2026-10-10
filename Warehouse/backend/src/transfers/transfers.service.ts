@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Role } from '@prisma/client';
+import { ItemCategory, Prisma, Role } from '@prisma/client';
 import { AuditService } from '../../../../Admin/backend/src/audit/audit.service';
-import { MOVABLE_ITEM_STATUSES, TRANSFER_TRANSITIONS, assertTransition } from '../../../../Admin/backend/src/common/domain';
+import { TRANSFER_TRANSITIONS, assertTransition } from '../../../../Admin/backend/src/common/domain';
 import { AuthenticatedUser } from '../../../../Admin/backend/src/common/types';
 import { nextSerial, pageArgs, paginate, publicUserSelect, shortCode, withUniqueRetry } from '../../../../Admin/backend/src/common/utils';
 import { PrismaService } from '../../../../Admin/backend/src/prisma/prisma.service';
@@ -78,10 +78,18 @@ export class TransfersService {
           if (item.warehouseId !== source.id) {
             throw new BadRequestException(`Tài nguyên ${item.qrCode} không nằm ở kho xuất`);
           }
-          if (!MOVABLE_ITEM_STATUSES.includes(item.status) || item.status === 'REFURBISHING') {
-            throw new BadRequestException(`Tài nguyên ${item.qrCode} chưa sẵn sàng điều chuyển`);
+          if (item.status === 'PENDING_INTAKE') {
+            throw new BadRequestException(`Tài nguyên ${item.qrCode} chưa kiểm định, không được xuất kho. Hãy kiểm định trước.`);
+          }
+          if (item.status !== 'READY_FOR_ALLOCATION') {
+            throw new BadRequestException(`Tài nguyên ${item.qrCode} chưa sẵn sàng điều chuyển (cần đã kiểm định đạt và sẵn sàng phân bổ)`);
           }
         }
+        // Khoa cho: hang dang san sang phan bo duoc giu lai cho lenh dieu chuyen nay, ghep phan bo se khong lay trung.
+        await tx.resourceItem.updateMany({
+          where: { id: { in: uniqueIds }, status: 'READY_FOR_ALLOCATION', allocationItem: { is: null } },
+          data: { status: 'ALLOCATED' },
+        });
         const profile = requisition.school.profile;
         const composedAddress = [profile?.address, profile?.district, profile?.city].filter(Boolean).join(', ');
         const code = await this.nextCode(tx);
@@ -164,7 +172,8 @@ export class TransfersService {
         where: {
           id: { in: itemIds },
           warehouseId: transfer.sourceWarehouseId,
-          status: { in: ['PENDING_INTAKE', 'INSPECTED', 'READY_FOR_ALLOCATION'] },
+          // Chi xuat hang da kiem dinh dat: hang da khoa cho lenh nay (ALLOCATED, khong thuoc phuong an nao) hoac con san sang.
+          status: { in: ['READY_FOR_ALLOCATION', 'ALLOCATED'] },
         },
         data: { status: 'IN_TRANSIT', binLocation: null },
       });
@@ -200,6 +209,9 @@ export class TransfersService {
         where: { id: { in: itemIds }, status: 'IN_TRANSIT' },
         data: { status: 'DELIVERED' },
       });
+      if (transfer.requisitionId) {
+        await this.applyFulfillment(tx, transfer.requisitionId, itemIds);
+      }
       return tx.stockTransferOrder.update({
         where: { id },
         data: { status: 'RECEIVED', receivedAt: new Date() },
@@ -219,10 +231,18 @@ export class TransfersService {
   async cancel(actor: AuthenticatedUser, id: string, ipAddress: string | null) {
     const transfer = await this.require(id);
     assertTransition(transfer.status as 'PENDING', 'CANCELLED', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
-    const updated = await this.prisma.stockTransferOrder.update({
-      where: { id },
-      data: { status: 'CANCELLED' },
-      include: transferInclude,
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const itemIds = await this.itemIds(id, tx);
+      // Tra lai cho da khoa de co the phan bo tiep.
+      await tx.resourceItem.updateMany({
+        where: { id: { in: itemIds }, status: 'ALLOCATED', allocationItem: { is: null } },
+        data: { status: 'READY_FOR_ALLOCATION' },
+      });
+      return tx.stockTransferOrder.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+        include: transferInclude,
+      });
     });
     await this.audit.log({
       userId: actor.id,
@@ -232,6 +252,48 @@ export class TransfersService {
       ipAddress,
     });
     return this.present(updated);
+  }
+
+  /** Cong so hang da giao vao yeu cau cua truong va chi tieu "da phan phoi" cua chien dich, giong luc van don duoc ky nhan. */
+  private async applyFulfillment(tx: Prisma.TransactionClient, requisitionId: string, itemIds: string[]): Promise<void> {
+    const delivered = await tx.resourceItem.findMany({
+      where: { id: { in: itemIds } },
+      select: { category: true, pledgeItem: { select: { pledge: { select: { campaignId: true } } } } },
+    });
+    const counts = new Map<string, number>();
+    const campaignCounts = new Map<string, number>();
+    for (const row of delivered) {
+      counts.set(row.category, (counts.get(row.category) ?? 0) + 1);
+      const campaignId = row.pledgeItem?.pledge.campaignId;
+      if (campaignId) {
+        const key = `${campaignId}:${row.category}`;
+        campaignCounts.set(key, (campaignCounts.get(key) ?? 0) + 1);
+      }
+    }
+    const lines = await tx.requisitionItem.findMany({ where: { requisitionId } });
+    for (const [category, count] of counts) {
+      let remaining = count;
+      for (const line of lines.filter((item) => item.category === category)) {
+        const add = Math.min(line.quantityNeeded - line.quantityFulfilled, remaining);
+        if (add > 0) {
+          await tx.requisitionItem.update({ where: { id: line.id }, data: { quantityFulfilled: { increment: add } } });
+          line.quantityFulfilled += add;
+          remaining -= add;
+        }
+      }
+    }
+    for (const [key, count] of campaignCounts) {
+      const splitAt = key.indexOf(':');
+      await tx.campaignTarget.updateMany({
+        where: { campaignId: key.slice(0, splitAt), category: key.slice(splitAt + 1) as ItemCategory },
+        data: { currentDistributedQuantity: { increment: count } },
+      });
+    }
+    const completed = lines.every((item) => item.quantityFulfilled >= item.quantityNeeded);
+    await tx.supportRequisition.updateMany({
+      where: { id: requisitionId, status: { in: ['APPROVED', 'ALLOCATING'] } },
+      data: { status: completed ? 'COMPLETED' : 'ALLOCATING' },
+    });
   }
 
   private async require(id: string) {

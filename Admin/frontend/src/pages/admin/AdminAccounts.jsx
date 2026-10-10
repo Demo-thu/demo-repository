@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import api, { apiError, currentUser } from "../../lib/api";
 import { ROLE_LABEL } from "../../lib/roles";
-import { Badge, Card, Chips, DataTable, Field, GhostButton, KeyValue, Modal, Notice, PageHead, PrimaryButton, SearchBox, Stat, fmtDate, inputClass, orgName, rowsOf, useNotice } from "../portals/kit";
+import { Badge, Card, Chips, DataTable, Field, GhostButton, KeyValue, Modal, Notice, PageHead, PrimaryButton, SearchBox, Stat, fmtDate, inputClass, orgName, rowsOf, totalOf, useNotice, usePortalRefresh } from "../portals/kit";
 
 const blank = { fullName: "", email: "", password: "", phone: "", organizationName: "", address: "", city: "", district: "" };
 
@@ -26,7 +26,7 @@ export default function AdminAccounts() {
     try {
       const response = await api.get("/users", { params: { role: roleFilter === "all" ? undefined : roleFilter, limit: 100, search: search.trim() || undefined } });
       setAccounts(rowsOf(response.data));
-      setTotal(response.data.total ?? rowsOf(response.data).length);
+      setTotal(totalOf(response.data));
     } catch (error) {
       fail(apiError(error, "Không tải được danh sách tài khoản."));
     }
@@ -36,6 +36,7 @@ export default function AdminAccounts() {
     const timer = window.setTimeout(load, 250);
     return () => window.clearTimeout(timer);
   }, [load]);
+  usePortalRefresh(load);
 
   async function create() {
     setPending(true);

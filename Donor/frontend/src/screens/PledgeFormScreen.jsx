@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, Plus, Truck, Trash2 } from "lucide-react";
 import api, { apiError, currentUser } from "@/lib/api";
 import {
   CATEGORIES, CATEGORY_LABEL, CATEGORY_UNIT, Card, Field, GhostButton, Notice, PageHead, PhotoPicker, PrimaryButton, SubmitBar,
-  inputClass, rowsOf, useNotice,
+  inputClass, rowsOf, useNotice, usePortalRefresh,
 } from "@/pages/portals/kit";
 
 const CONDITIONS = ["Mới 100%", "Đã dùng - hoạt động tốt", "Cần sửa chữa nhẹ"];
@@ -29,9 +29,9 @@ export default function PledgeFormScreen({ params, openTab }) {
   const [savedAt, setSavedAt] = useState("");
   const { notice, ok, fail } = useNotice();
 
-  useEffect(() => {
-    api.get("/campaigns/active").then((response) => setCampaigns(rowsOf(response.data))).catch(() => setCampaigns([]));
-  }, []);
+  const loadCampaigns = useCallback(() => api.get("/campaigns/active").then((response) => setCampaigns(rowsOf(response.data))).catch(() => setCampaigns([])), []);
+  useEffect(() => { loadCampaigns(); }, [loadCampaigns]);
+  usePortalRefresh(loadCampaigns);
 
   useEffect(() => {
     const campaign = params.get("campaign");

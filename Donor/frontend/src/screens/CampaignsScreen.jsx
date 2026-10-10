@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Gift, Megaphone, Package, TriangleAlert } from "lucide-react";
 import api, { apiError } from "@/lib/api";
-import { CATEGORY_LABEL, Card, Chips, Empty, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat, fmtDate, percent, rowsOf, useNotice } from "@/pages/portals/kit";
+import { CATEGORY_LABEL, Card, Chips, Empty, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat, fmtDate, percent, rowsOf, useNotice, usePortalRefresh } from "@/pages/portals/kit";
 
 export default function CampaignsScreen({ openTab }) {
   const [campaigns, setCampaigns] = useState([]);
@@ -10,12 +10,13 @@ export default function CampaignsScreen({ openTab }) {
   const [search, setSearch] = useState("");
   const { notice, fail } = useNotice();
 
-  useEffect(() => {
-    api.get("/campaigns/active")
-      .then((response) => setCampaigns(rowsOf(response.data)))
-      .catch((error) => fail(apiError(error, "Không tải được danh sách chiến dịch.")))
-      .finally(() => setLoading(false));
-  }, []);
+  const load = useCallback(() => api.get("/campaigns/active")
+    .then((response) => setCampaigns(rowsOf(response.data)))
+    .catch((error) => fail(apiError(error, "Không tải được danh sách chiến dịch.")))
+    .finally(() => setLoading(false)), []);
+
+  useEffect(() => { load(); }, [load]);
+  usePortalRefresh(load);
 
   const totals = useMemo(() => {
     const received = campaigns.reduce((sum, row) => sum + (row.summary?.received || 0), 0);

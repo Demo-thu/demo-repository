@@ -1,24 +1,32 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
+import api from "@/lib/api";
 import {
-  DataTable, Empty, GhostButton, KeyValue, Modal, Notice, PageHead, SearchBox, Stat, StatusBadge, downloadCsv, fmtDateTime,
+  DataTable, Empty, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, downloadCsv, fmtDateTime,
   useWaybills, waybillItems,
 } from "@/pages/portals/kit";
 
 export default function HistoryScreen({ params, openTab }) {
-  const { waybills, error } = useWaybills("DELIVERED");
   const [search, setSearch] = useState("");
+  const [term, setTerm] = useState("");
+  const [page, setPage] = useState(1);
   const [detail, setDetail] = useState(null);
+  const { waybills, meta, error } = useWaybills("DELIVERED", { page, limit: 20, search: term });
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     const id = params.get("waybill");
-    if (id && waybills.length) setDetail(waybills.find((row) => row.id === id) || null);
+    if (!id) return;
+    const found = waybills.find((row) => row.id === id);
+    if (found) { setDetail(found); return; }
+    api.get(`/waybills/${id}`).then((response) => setDetail(response.data)).catch(() => setDetail(null));
   }, [params, waybills]);
 
-  const visible = waybills.filter((row) => {
-    const term = search.trim().toLowerCase();
-    return !term || `${row.code} ${row.allocationPlan?.requisition?.code} ${row.proof?.recipientName}`.toLowerCase().includes(term);
-  });
+  const visible = waybills;
   const totalItems = waybills.reduce((sum, row) => sum + waybillItems(row).length, 0);
 
   function exportCsv() {
@@ -47,14 +55,15 @@ export default function HistoryScreen({ params, openTab }) {
         actions={<GhostButton onClick={exportCsv} disabled={!visible.length}><Download size={14} />Xuất CSV</GhostButton>} />
       <Notice notice={error ? { tone: "error", text: error } : null} />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <Stat label="Chuyến đã giao" value={waybills.length} tone="emerald" />
-        <Stat label="Tổng số món" value={totalItems} />
-        <Stat label="Biên bản có báo cáo TNV" value={waybills.filter((row) => row.proof?.volunteerReportedAt).length} tone="violet" />
+        <Stat label="Chuyến đã giao" value={meta.total || 0} tone="emerald" />
+        <Stat label="Số món trang này" value={totalItems} />
+        <Stat label="Báo cáo TNV trang này" value={waybills.filter((row) => row.proof?.volunteerReportedAt).length} tone="violet" />
       </div>
       <div className="mb-4"><SearchBox value={search} onChange={setSearch} placeholder="Tìm vận đơn, yêu cầu, người nhận..." /></div>
       <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
         <DataTable columns={["Vận đơn", "Yêu cầu", "Số món", "Người ký nhận", "Thời điểm giao", "Báo cáo TNV", "Lưu trữ"]} rows={rows} empty="Chưa có chuyến hàng nào được bàn giao." />
       </div>
+      <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
 
       {detail?.proof ? (
         <Modal wide title={`Biên bản PoD · ${detail.code}`} subtitle={detail.allocationPlan?.requisition?.title} onClose={() => setDetail(null)}

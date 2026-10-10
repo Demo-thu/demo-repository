@@ -63,8 +63,9 @@ export class VolunteersService {
             },
           }
         : {}),
+      ...(query.open ? { checkInAt: { not: null }, checkOutAt: null } : {}),
     };
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total, hours] = await this.prisma.$transaction([
       this.prisma.volunteerShift.findMany({
         where,
         include: {
@@ -76,8 +77,9 @@ export class VolunteersService {
         take: limit,
       }),
       this.prisma.volunteerShift.count({ where }),
+      this.prisma.volunteerShift.aggregate({ where, _sum: { hoursContributed: true } }),
     ]);
-    return paginate(data, total, page, limit);
+    return { ...paginate(data, total, page, limit), summary: { hoursContributed: hours._sum.hoursContributed ?? 0 } };
   }
 
   async checkIn(actor: AuthenticatedUser, id: string, ipAddress: string | null) {

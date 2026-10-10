@@ -1,31 +1,46 @@
 import { useEffect, useState } from "react";
 import { PackageCheck, ShieldAlert, Truck } from "lucide-react";
+import api from "@/lib/api";
 import {
-  CATEGORY_LABEL, Card, Chips, Empty, GhostButton, Notice, PageHead, PrimaryButton, SearchBox, StatusBadge, fmtDateTime, orgName, useWaybills, waybillItems,
+  CATEGORY_LABEL, Card, Chips, Empty, GhostButton, Notice, PageHead, Pager, PrimaryButton, SearchBox, StatusBadge, fmtDateTime, orgName, totalOf, useWaybills, waybillItems,
 } from "@/pages/portals/kit";
 
+const WAYBILL_STATUSES = ["PENDING_PICKUP", "IN_TRANSIT", "FAILED", "DELIVERED"];
+
 export default function WaybillsScreen({ params, openTab }) {
-  const { waybills, error } = useWaybills();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState(params.get("q") || "");
+  const [term, setTerm] = useState(params.get("q") || "");
+  const [page, setPage] = useState(1);
+  const [counts, setCounts] = useState({ all: 0, PENDING_PICKUP: 0, IN_TRANSIT: 0, FAILED: 0, DELIVERED: 0 });
+  const { waybills, meta, error } = useWaybills(filter === "all" ? undefined : filter, { page, limit: 20, search: term });
 
   useEffect(() => {
     if (params.get("q")) setSearch(params.get("q"));
   }, [params]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setTerm(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [filter]);
+  useEffect(() => {
+    Promise.all([
+      api.get("/waybills", { params: { limit: 1 } }),
+      ...WAYBILL_STATUSES.map((status) => api.get("/waybills", { params: { limit: 1, status } })),
+    ]).then(([all, ...parts]) => {
+      setCounts({ all: totalOf(all.data), ...Object.fromEntries(WAYBILL_STATUSES.map((status, index) => [status, totalOf(parts[index].data)])) });
+    }).catch(() => {});
+  }, [waybills]);
 
-  const count = (status) => waybills.filter((row) => row.status === status).length;
-  const visible = waybills.filter((row) => {
-    if (filter !== "all" && row.status !== filter) return false;
-    const term = search.trim().toLowerCase();
-    return !term || `${row.code} ${orgName(row.allocationPlan?.requisition?.school)}`.toLowerCase().includes(term);
-  });
+  const count = (status) => counts[status] ?? 0;
+  const visible = waybills;
 
   return (
     <div>
       <PageHead eyebrow="Cổng tình nguyện viên" title="Vận đơn được gán" subtitle="Danh sách chuyến của riêng bạn. Từ đây chuyển sang xác nhận lấy hàng, báo sự cố hoặc báo cáo sau khi trường đã ký." />
       <Notice notice={error ? { tone: "error", text: error } : null} />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", waybills.length], ["PENDING_PICKUP", "Chờ lấy hàng", count("PENDING_PICKUP")], ["IN_TRANSIT", "Đang vận chuyển", count("IN_TRANSIT")], ["FAILED", "Sự cố", count("FAILED")], ["DELIVERED", "Đã hoàn thành", count("DELIVERED")]]} />
+        <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", counts.all], ["PENDING_PICKUP", "Chờ lấy hàng", count("PENDING_PICKUP")], ["IN_TRANSIT", "Đang vận chuyển", count("IN_TRANSIT")], ["FAILED", "Sự cố", count("FAILED")], ["DELIVERED", "Đã hoàn thành", count("DELIVERED")]]} />
         <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã vận đơn, trường..." />
       </div>
 
@@ -59,6 +74,7 @@ export default function WaybillsScreen({ params, openTab }) {
           );
         })}
       </div>
+      <Pager page={meta.page || page} totalPages={meta.totalPages || 1} total={meta.total || 0} onChange={setPage} />
     </div>
   );
 }

@@ -107,6 +107,7 @@ export default function PortalLayout() {
   const [query, setQuery] = useState(params.get("q") || "");
   const [facility, setFacility] = useState(null);
   const [activeShift, setActiveShift] = useState(null);
+  const [badges, setBadges] = useState({});
   const [, setProfileVersion] = useState(0);
   const groups = NAV[portal] || [];
   const tab = params.get("tab") || groups[0]?.[1]?.[0]?.[1];
@@ -130,6 +131,34 @@ export default function PortalLayout() {
       setActiveShift(rows.find((row) => row.checkInAt && !row.checkOutAt) || null);
     }).catch(() => setActiveShift(null));
   }, [portal]);
+
+  // Số việc cần xử lý hiện trên menu: Kho thấy phiếu chờ xác minh, Nhà hảo tâm thấy phiếu kho đang chờ mình xác nhận.
+  const refreshBadges = useCallback(() => {
+    const status = portal === "warehouse" ? "PENDING" : portal === "donor" ? "AWAITING_DONOR" : "";
+    if (!status) return;
+    api.get("/pledges", { params: { status, limit: 1 } })
+      .then((response) => setBadges({ [portal === "warehouse" ? "verify" : "mine"]: response.data?.meta?.total ?? 0 }))
+      .catch(() => setBadges({}));
+  }, [portal]);
+
+  useEffect(() => {
+    refreshBadges();
+    window.addEventListener("portal:refresh", refreshBadges);
+    return () => window.removeEventListener("portal:refresh", refreshBadges);
+  }, [refreshBadges]);
+
+  // Đồng bộ dữ liệu giữa các cổng: tự làm mới mỗi 30 giây và ngay khi người dùng quay lại tab.
+  useEffect(() => {
+    const ping = () => {
+      if (document.visibilityState === "visible") window.dispatchEvent(new CustomEvent("portal:refresh"));
+    };
+    const timer = window.setInterval(ping, 30000);
+    document.addEventListener("visibilitychange", ping);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", ping);
+    };
+  }, []);
 
   useEffect(() => {
     refreshShift();
@@ -210,6 +239,7 @@ export default function PortalLayout() {
               {items.map(([label, key, Icon]) => (
                 <button key={key} type="button" onClick={() => openTab(key)} className={`mb-0.5 flex w-full items-center gap-3 rounded px-2 py-2 text-left text-xs ${tab === key ? "bg-blue-600 text-white shadow-sm" : "text-slate-600 hover:bg-blue-100"}`}>
                   <Icon size={16} />{label}
+                  {badges[key] ? <span className={`ml-auto grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${tab === key ? "bg-white text-blue-700" : "bg-rose-500 text-white"}`}>{badges[key]}</span> : null}
                 </button>
               ))}
             </section>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { usePortalRefresh } from "./portals/kit";
 import { downloadCsv } from "../lib/actions";
 import { WAYBILL_STATUS_LABEL, formatNumber, initials } from "../lib/labels";
 import {
@@ -85,6 +86,7 @@ export default function DashboardPage() {
   useEffect(() => {
     loadDashboard();
   }, []);
+  usePortalRefresh(loadDashboard);
 
   const visibleShipments = shipments.filter((row) => {
     const place = `${row.school} ${row.location}`.toLowerCase();

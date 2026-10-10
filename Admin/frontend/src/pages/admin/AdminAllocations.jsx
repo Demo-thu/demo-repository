@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Link2, Lock, XCircle } from "lucide-react";
 import api, { apiError } from "../../lib/api";
 import {
-  CATEGORIES, CATEGORY_LABEL, Card, Chips, Empty, GhostButton, Notice, PageHead, PrimaryButton, Stat, StatusBadge, fmtDateTime, orgName, rowsOf, useNotice,
+  CATEGORIES, CATEGORY_LABEL, Card, Chips, Empty, GhostButton, Notice, PageHead, PrimaryButton, Stat, StatusBadge, fmtDateTime, orgName, rowsOf, totalOf, useNotice,
 } from "../portals/kit";
 
 export default function AdminAllocations() {
@@ -15,13 +15,16 @@ export default function AdminAllocations() {
 
   const load = useCallback(async () => {
     try {
-      const [stockRes, approvedRes, planRes] = await Promise.all([
+      const [stockRes, approvedRes, partialRes, planRes] = await Promise.all([
         Promise.all(CATEGORIES.map(([key]) => api.get("/items", { params: { status: "READY_FOR_ALLOCATION", category: key, limit: 1 } }))),
         api.get("/requisitions", { params: { status: "APPROVED", limit: 100 } }),
+        api.get("/requisitions", { params: { status: "ALLOCATING", limit: 100 } }),
         api.get("/allocations", { params: { limit: 100 } }),
       ]);
-      setStock(Object.fromEntries(CATEGORIES.map(([key], index) => [key, stockRes[index].data.total ?? 0])));
-      setApproved(rowsOf(approvedRes.data));
+      setStock(Object.fromEntries(CATEGORIES.map(([key], index) => [key, totalOf(stockRes[index].data)])));
+      // Yeu cau da giao mot dot (da ky nhan) nhung chua du: cho ghep them dot tiep theo.
+      const nextRound = rowsOf(partialRes.data).filter((row) => row.allocationPlan?.waybill?.status === "DELIVERED");
+      setApproved([...rowsOf(approvedRes.data), ...nextRound]);
       setPlans(rowsOf(planRes.data));
     } catch (error) {
       fail(apiError(error, "Không tải được dữ liệu phân bổ."));
@@ -84,6 +87,7 @@ export default function AdminAllocations() {
                 <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm">
                   <div>
                     <b className="text-blue-700">{row.code}</b> · {orgName(row.school)}
+                    {row.status === "ALLOCATING" ? <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Giao đợt tiếp theo</span> : null}
                     <span className="block text-xs text-slate-500">{(row.items || []).map((item) => `${item.quantityNeeded - item.quantityFulfilled} ${CATEGORY_LABEL[item.category]}`).join(" · ")}</span>
                   </div>
                   <PrimaryButton pending={pending === `match-${row.id}`} onClick={() => match(row)}><Link2 size={14} />Ghép tồn kho</PrimaryButton>

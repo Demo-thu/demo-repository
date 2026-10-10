@@ -13,6 +13,7 @@ export const itemInclude = {
           id: true,
           code: true,
           campaignId: true,
+          reserveStock: true,
           donor: { select: { id: true, fullName: true, email: true, phone: true, profile: { select: { organizationName: true } } } },
         },
       },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import api, { apiError, clearSession, currentUser } from "../lib/api";
 import {
@@ -7,6 +7,7 @@ import {
   Truck, X, Zap,
 } from "lucide-react";
 import AccountMenu from "./AccountMenu";
+import { usePortalRefresh } from "../pages/portals/kit";
 
 const groups = [
   ["1. CHIẾN DỊCH & TÀI KHOẢN", [["Tổng quan", "/", LayoutDashboard], ["Tạo chiến dịch & hạng mục", "/campaigns", Zap], ["Tài khoản & vai trò", "/accounts", HeartHandshake]]],
@@ -37,7 +38,7 @@ export default function SystemLayout() {
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
-  useEffect(() => {
+  const loadUrgent = useCallback(() => {
     api.get("/requisitions/urgent").then((response) => {
       setRequests((response.data.data ?? []).map((item) => ({
         id: item.id,
@@ -46,6 +47,24 @@ export default function SystemLayout() {
         priority: priorityLabel[item.urgencyLevel] || item.urgencyLevel,
       })));
     }).catch(() => setRequests([]));
+  }, []);
+
+  useEffect(() => {
+    loadUrgent();
+  }, [loadUrgent]);
+  usePortalRefresh(loadUrgent);
+
+  // Đồng bộ dữ liệu giữa các cổng: tự làm mới mỗi 30 giây và ngay khi quay lại tab.
+  useEffect(() => {
+    const ping = () => {
+      if (document.visibilityState === "visible") window.dispatchEvent(new CustomEvent("portal:refresh"));
+    };
+    const timer = window.setInterval(ping, 30000);
+    document.addEventListener("visibilitychange", ping);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", ping);
+    };
   }, []);
 
   // Tự động đóng dropdown thông báo khi click ra ngoài

@@ -1,8 +1,9 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import SystemLayout from "./layouts/SystemLayout";
 import PortalLayout from "./layouts/PortalLayout";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "@donor/pages/RegisterPage";
+import LoginPage from "@login/pages/LoginPage";
+import RegisterPage from "@register/pages/RegisterPage";
+import ForgotPasswordPage from "@forgot/pages/ForgotPasswordPage";
 import DonorPage from "@donor/pages/DonorPage";
 import SchoolPage from "@school/pages/SchoolPage";
 import WarehousePage from "@warehouse/pages/WarehousePage";
@@ -38,6 +39,7 @@ export default function App() {
       <Routes>
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route element={<RequireSession />}>
           <Route element={<PortalLayout />}>
             <Route path="donor" element={<DonorPage />} />

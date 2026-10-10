@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { PaginationQueryDto } from '../../../../Admin/backend/src/common/dto';
 
 export class CreateShiftDto {
@@ -39,4 +39,10 @@ export class QueryShiftDto extends PaginationQueryDto {
   @Type(() => String)
   @IsDateString()
   to?: string;
+
+  /** true: chỉ ca đã điểm danh vào và chưa kết ca. */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  open?: boolean;
 }

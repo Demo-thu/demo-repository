@@ -11,6 +11,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      "@login": path.resolve(import.meta.dirname, "../../Login/frontend/src"),
+      "@register": path.resolve(import.meta.dirname, "../../Register/frontend/src"),
+      "@forgot": path.resolve(import.meta.dirname, "../../ForgotPassword/frontend/src"),
       "@donor": path.resolve(import.meta.dirname, "../../Donor/frontend/src"),
       "@school": path.resolve(import.meta.dirname, "../../School/frontend/src"),
       "@warehouse": path.resolve(import.meta.dirname, "../../Warehouse/frontend/src"),

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ItemStatus, Prisma } from '@prisma/client';
 import * as QRCode from 'qrcode';
 import { AuditService } from '../../../../Admin/backend/src/audit/audit.service';
 import { ITEM_TRANSITIONS, MOVABLE_ITEM_STATUSES, assertTransition } from '../../../../Admin/backend/src/common/domain';
@@ -9,6 +9,9 @@ import { PrismaService } from '../../../../Admin/backend/src/prisma/prisma.servi
 import { WarehousesService } from '../warehouses/warehouses.service';
 import { QueryItemDto, UpdateItemDto } from './dto';
 import { itemInclude } from './item-include';
+
+/** Hiện vật đang nằm trong kho (còn chiếm sức chứa): chưa xuất đi, chưa giao, chưa tái chế. */
+export const IN_STOCK_STATUSES: ItemStatus[] = ['PENDING_INTAKE', 'INSPECTED', 'REFURBISHING', 'READY_FOR_ALLOCATION', 'ALLOCATED'];
 
 @Injectable()
 export class ItemsService {
@@ -21,7 +24,8 @@ export class ItemsService {
   async list(query: QueryItemDto) {
     const { page, limit, skip } = pageArgs(query.page, query.limit);
     const where: Prisma.ResourceItemWhereInput = {
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.status ? { status: query.status } : query.inStock ? { status: { in: IN_STOCK_STATUSES } } : {}),
+      ...(query.reserve ? { pledgeItem: { pledge: { reserveStock: true } } } : {}),
       ...(query.category ? { category: query.category } : {}),
       ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
       ...(query.qrCode ? { qrCode: { equals: query.qrCode, mode: 'insensitive' } } : {}),
@@ -46,6 +50,45 @@ export class ItemsService {
       this.prisma.resourceItem.count({ where }),
     ]);
     return paginate(data, total, page, limit);
+  }
+
+  /** Số liệu tồn kho tính trực tiếp từ database ở mọi lần gọi (không lưu cache), dùng cho màn Danh sách tồn kho. */
+  async summary() {
+    const [byStatus, byCategory, reserveByCategory] = await Promise.all([
+      this.prisma.resourceItem.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.resourceItem.groupBy({ by: ['category', 'status'], where: { status: { in: IN_STOCK_STATUSES } }, _count: { _all: true } }),
+      this.prisma.resourceItem.groupBy({
+        by: ['category', 'status'],
+        where: { status: { in: IN_STOCK_STATUSES }, pledgeItem: { pledge: { reserveStock: true } } },
+        _count: { _all: true },
+      }),
+    ]);
+    const statusCount = (status: ItemStatus) => byStatus.find((row) => row.status === status)?._count._all ?? 0;
+    const status = Object.fromEntries((Object.keys(ITEM_TRANSITIONS) as ItemStatus[]).map((key) => [key, statusCount(key)])) as Record<ItemStatus, number>;
+    const total = byStatus.reduce((sum, row) => sum + row._count._all, 0);
+    const inStock = IN_STOCK_STATUSES.reduce((sum, key) => sum + status[key], 0);
+    const categories = new Map<string, { category: string; inStock: number; ready: number; reserve: number; reserveReady: number }>();
+    const row = (category: string) => {
+      const current = categories.get(category) ?? { category, inStock: 0, ready: 0, reserve: 0, reserveReady: 0 };
+      categories.set(category, current);
+      return current;
+    };
+    for (const group of byCategory) {
+      row(group.category).inStock += group._count._all;
+      if (group.status === 'READY_FOR_ALLOCATION') row(group.category).ready += group._count._all;
+    }
+    for (const group of reserveByCategory) {
+      row(group.category).reserve += group._count._all;
+      if (group.status === 'READY_FOR_ALLOCATION') row(group.category).reserveReady += group._count._all;
+    }
+    const all = [...categories.values()];
+    return {
+      total,
+      inStock,
+      status,
+      reserve: { total: all.reduce((sum, item) => sum + item.reserve, 0), ready: all.reduce((sum, item) => sum + item.reserveReady, 0) },
+      byCategory: all,
+    };
   }
 
   async get(id: string) {

@@ -51,7 +51,8 @@ export const URGENCY_LABEL = { LOW: "Thấp", MEDIUM: "Trung bình", HIGH: "Cao"
 
 const STATUS_META = {
   pledge: {
-    PENDING: ["Chờ tiếp nhận", "amber"],
+    PENDING: ["Chờ xác minh", "amber"],
+    AWAITING_DONOR: ["Chờ nhà hảo tâm xác nhận", "rose"],
     VERIFIED: ["Đã xác minh", "blue"],
     PARTIALLY_RECEIVED: ["Nhận một phần", "violet"],
     COMPLETED: ["Hoàn tất", "emerald"],
@@ -112,6 +113,12 @@ export function statusMeta(kind, value) {
 /* ------------------------------------------------------------------ */
 /* Hàm tiện ích                                                         */
 /* ------------------------------------------------------------------ */
+
+/** Tổng số bản ghi của API phân trang: `{ data, meta: { total } }`. */
+export function totalOf(payload) {
+  if (typeof payload?.meta?.total === "number") return payload.meta.total;
+  return rowsOf(payload).length;
+}
 
 export function rowsOf(payload) {
   if (Array.isArray(payload)) return payload;
@@ -274,27 +281,32 @@ export function waybillItems(waybill) {
   return (waybill?.allocationPlan?.items || []).map((line) => line.resourceItem).filter(Boolean);
 }
 
-export function useWaybills(status) {
+export function useWaybills(status, options = {}) {
+  const page = options.page || 1;
+  const limit = options.limit || 100;
+  const search = options.search || "";
   const [waybills, setWaybills] = useState([]);
+  const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0 });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const reload = useCallback(async () => {
     try {
-      const response = await api.get("/waybills", { params: { limit: 100, status: status || undefined } });
+      const response = await api.get("/waybills", { params: { page, limit, status: status || undefined, search: search || undefined } });
       setWaybills(rowsOf(response.data));
+      setMeta(response.data?.meta || { page, totalPages: 1, total: rowsOf(response.data).length });
       setError("");
     } catch (failure) {
       setError(apiError(failure, "Không tải được vận đơn."));
     } finally {
       setLoading(false);
     }
-  }, [status]);
+  }, [status, page, limit, search]);
   useEffect(() => {
     reload();
     window.addEventListener("portal:refresh", reload);
     return () => window.removeEventListener("portal:refresh", reload);
   }, [reload]);
-  return { waybills, error, loading, reload };
+  return { waybills, meta, error, loading, reload };
 }
 
 export function useAutoRefresh(callback, ms) {
@@ -304,6 +316,20 @@ export function useAutoRefresh(callback, ms) {
     const timer = window.setInterval(() => saved.current(), ms);
     return () => window.clearInterval(timer);
   }, [ms]);
+}
+
+/**
+ * Tự tải lại dữ liệu khi có sự kiện `portal:refresh`
+ * (sau mỗi thao tác ghi dữ liệu thành công, khi quay lại tab trình duyệt, định kỳ 30 giây hoặc khi bấm nút làm mới).
+ */
+export function usePortalRefresh(callback) {
+  const saved = useRef(callback);
+  saved.current = callback;
+  useEffect(() => {
+    const handler = () => saved.current();
+    window.addEventListener("portal:refresh", handler);
+    return () => window.removeEventListener("portal:refresh", handler);
+  }, []);
 }
 
 /* ------------------------------------------------------------------ */
@@ -434,6 +460,20 @@ export function GhostButton({ children, tone = "slate", className = "", ...props
     <button type="button" {...props} className={`inline-flex items-center justify-center gap-2 rounded-lg border bg-white px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${color} ${className}`}>
       {children}
     </button>
+  );
+}
+
+/** Thanh phan trang dung chung: hien "Trang x/y", tong so ban ghi va nut Truoc/Sau. */
+export function Pager({ page, totalPages, total, onChange }) {
+  if (!total) return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+      <span>Tổng <b>{total}</b> mục · Trang <b>{page}</b>/{Math.max(1, totalPages)}</span>
+      <div className="flex gap-2">
+        <GhostButton disabled={page <= 1} onClick={() => onChange(page - 1)}>← Trước</GhostButton>
+        <GhostButton disabled={page >= totalPages} onClick={() => onChange(page + 1)}>Sau →</GhostButton>
+      </div>
+    </div>
   );
 }
 

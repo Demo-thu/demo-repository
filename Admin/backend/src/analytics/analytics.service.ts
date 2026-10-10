@@ -70,7 +70,8 @@ export class AnalyticsService {
             urgencyLevel: true,
             priorityScore: true,
             items: true,
-            allocationPlan: {
+            allocationPlans: {
+              orderBy: { createdAt: 'asc' },
               select: {
                 waybill: { select: { status: true, deliveredAt: true, code: true } },
                 items: { select: { resourceItem: { select: { status: true } } } },
@@ -84,7 +85,7 @@ export class AnalyticsService {
     return {
       data: schools.map((school) => {
         const delivered = school.requisitions.reduce((sum, requisition) => {
-          const items = requisition.allocationPlan?.items ?? [];
+          const items = requisition.allocationPlans.flatMap((plan) => plan.items);
           return sum + items.filter((item) => item.resourceItem.status === 'DELIVERED').length;
         }, 0);
         return {

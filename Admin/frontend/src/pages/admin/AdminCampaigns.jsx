@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import api, { apiError } from "../../lib/api";
 import {
   CATEGORIES, CATEGORY_LABEL, Card, Chips, Empty, Field, GhostButton, Modal, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat,
-  StatusBadge, fmtDate, inputClass, rowsOf, useNotice,
+  StatusBadge, fmtDate, inputClass, rowsOf, useNotice, usePortalRefresh,
 } from "../portals/kit";
 
 const STATUSES = [["ACTIVE", "Đang diễn ra"], ["UPCOMING", "Sắp mở"], ["PAUSED", "Tạm dừng"], ["COMPLETED", "Đã hoàn thành"]];
@@ -36,6 +36,7 @@ export default function AdminCampaigns() {
   useEffect(() => {
     load();
   }, [load]);
+  usePortalRefresh(load);
 
   const visible = campaigns.filter((row) => (filter === "all" || row.status === filter) && (!search.trim() || `${row.title} ${row.slug}`.toLowerCase().includes(search.trim().toLowerCase())));
   const target = campaigns.reduce((sum, row) => sum + (row.summary?.targetQuantity || 0), 0);
