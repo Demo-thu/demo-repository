@@ -1,16 +1,36 @@
-# React + Vite
+# EduShare Vietnam
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Monorepo gồm hai ứng dụng:
 
-Currently, two official plugins are available:
+- `edushare-backend` — API NestJS, Prisma, PostgreSQL (cổng 3000, tiền tố `/api`)
+- `edushare-frontend` — React + Tailwind (cổng 5173), gồm Admin, nhà hảo tâm, trường học, kho và tình nguyện viên
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Thư mục `Dữ liệu` nằm ngoài hai ứng dụng và không thuộc hệ thống đang chạy.
 
-## React Compiler
+## Chạy toàn bộ hệ thống
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Nhấp đúp `start-edushare.bat` ở thư mục gốc. File này gọi `start-edushare.ps1`: cài thư viện còn thiếu, đồng bộ cơ sở dữ liệu, rồi mở API và trang web.
 
-## Expanding the Oxlint configuration
+- Đăng nhập: http://localhost:5173/login
+- API: http://localhost:3000/api
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Tài khoản mẫu: `admin@edushare.vn`, `donor@edushare.vn`, `school@edushare.vn`, `warehouse@edushare.vn`, `volunteer@edushare.vn`. Mật khẩu: `EduShare@2024`.
+
+Cấu hình API nằm trong `edushare-backend/.env` (sao chép từ `.env.example` nếu chưa có). PostgreSQL và Redis có thể chạy bằng Docker:
+
+```bash
+docker compose up -d
+```
+
+Máy đang dùng PostgreSQL cục bộ thì không cần Docker.
+
+## Run the whole system
+
+Double-click `start-edushare.bat` at the repository root. It runs `start-edushare.ps1`, which installs missing packages, syncs the database, and starts the API and the web app.
+
+- Login: http://localhost:5173/login
+- API: http://localhost:3000/api
+
+Demo accounts use the `@edushare.vn` addresses above. Password: `EduShare@2024`.
+
+API settings live in `edushare-backend/.env`. `docker compose up -d` starts PostgreSQL and Redis when you do not already have them locally.

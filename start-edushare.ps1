@@ -1,53 +1,52 @@
 # Mot lenh chay ca he thong trong terminal hien tai.
-# API o Admin\backend nap backend cua Admin, Nha hao tam, Truong, Kho va Tinh nguyen vien.
-# Trang web o Admin\frontend nap giao dien va form cua tat ca cac cong.
+# Monorepo: API o edushare-backend, giao dien o edushare-frontend.
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$backend = Join-Path $root "Admin\backend"
-$web = Join-Path $root "Admin\frontend"
-$nodeModules = Join-Path $backend "node_modules"
+$backend = Join-Path $root "edushare-backend"
+$web = Join-Path $root "edushare-frontend"
 
 $required = @(
-  "Admin\backend\package.json",
-  "Admin\backend\.env",
-  "Admin\backend\src\main.ts",
-  "Admin\backend\src\app.module.ts",
-  "Admin\frontend\package.json",
-  "Admin\frontend\src\App.jsx",
-  "Admin\frontend\src\layouts\PortalLayout.jsx",
-  "Admin\frontend\src\layouts\SystemLayout.jsx",
-  "Admin\frontend\src\layouts\AccountMenu.jsx",
-  "Admin\frontend\src\pages\admin\AdminAccounts.jsx",
-  "Admin\frontend\src\pages\portals\kit.jsx",
-  "Warehouse\frontend\src\screens\ScanModal.jsx",
-  "Warehouse\frontend\src\screens\IncidentScreen.jsx",
-  "Warehouse\frontend\src\screens\DispatchScreen.jsx",
-  "Warehouse\frontend\src\screens\StatusScreen.jsx",
-  "Admin\backend\prisma\schema.prisma",
-  "Donor\frontend\src\pages\DonorPage.jsx",
-  "Admin\frontend\src\layouts\auth\AuthShell.jsx",
-  "Login\frontend\src\pages\LoginPage.jsx",
-  "Login\backend\src\login\login.module.ts",
-  "Register\frontend\src\pages\RegisterPage.jsx",
-  "Register\backend\src\register\register.module.ts",
-  "ForgotPassword\frontend\src\pages\ForgotPasswordPage.jsx",
-  "ForgotPassword\backend\src\forgot-password\forgot-password.module.ts",
-  "Admin\backend\src\mail\mail.service.ts",
-  "Donor\frontend\src\screens\index.js",
-  "Donor\backend\src\pledges\pledges.module.ts",
-  "School\frontend\src\pages\SchoolPage.jsx",
-  "School\frontend\src\screens\index.js",
-  "School\backend\src\requisitions\requisitions.module.ts",
-  "Warehouse\frontend\src\pages\WarehousePage.jsx",
-  "Warehouse\frontend\src\screens\index.js",
-  "Warehouse\backend\src\items\items.module.ts",
-  "Warehouse\backend\src\inspections\inspections.module.ts",
-  "Warehouse\backend\src\transfers\transfers.module.ts",
-  "Warehouse\backend\src\warehouses\warehouses.module.ts",
-  "Warehouse\backend\src\waybills\waybills.module.ts",
-  "Volunteer\frontend\src\pages\VolunteerPage.jsx",
-  "Volunteer\frontend\src\screens\index.js",
-  "Volunteer\backend\src\volunteers\volunteers.module.ts"
+  "edushare-backend\package.json",
+  "edushare-backend\.env",
+  "edushare-backend\src\main.ts",
+  "edushare-backend\src\app.module.ts",
+  "edushare-backend\prisma\schema.prisma",
+  "edushare-backend\src\mail\mail.service.ts",
+  "edushare-backend\src\login\login.module.ts",
+  "edushare-backend\src\register\register.module.ts",
+  "edushare-backend\src\forgot-password\forgot-password.module.ts",
+  "edushare-backend\src\pledges\pledges.module.ts",
+  "edushare-backend\src\requisitions\requisitions.module.ts",
+  "edushare-backend\src\items\items.module.ts",
+  "edushare-backend\src\inspections\inspections.module.ts",
+  "edushare-backend\src\transfers\transfers.module.ts",
+  "edushare-backend\src\warehouses\warehouses.module.ts",
+  "edushare-backend\src\waybills\waybills.module.ts",
+  "edushare-backend\src\volunteers\volunteers.module.ts",
+  "edushare-frontend\package.json",
+  "edushare-frontend\src\App.jsx",
+  "edushare-frontend\src\services\api.js",
+  "edushare-frontend\src\layouts\PortalLayout.jsx",
+  "edushare-frontend\src\layouts\SystemLayout.jsx",
+  "edushare-frontend\src\layouts\AccountMenu.jsx",
+  "edushare-frontend\src\layouts\auth\AuthShell.jsx",
+  "edushare-frontend\src\pages\admin\AdminAccounts.jsx",
+  "edushare-frontend\src\pages\portals\kit.jsx",
+  "edushare-frontend\src\pages\login\pages\LoginPage.jsx",
+  "edushare-frontend\src\pages\register\pages\RegisterPage.jsx",
+  "edushare-frontend\src\pages\forgot\pages\ForgotPasswordPage.jsx",
+  "edushare-frontend\src\pages\donor\pages\DonorPage.jsx",
+  "edushare-frontend\src\pages\donor\screens\index.js",
+  "edushare-frontend\src\pages\school\pages\SchoolPage.jsx",
+  "edushare-frontend\src\pages\school\screens\index.js",
+  "edushare-frontend\src\pages\warehouse\pages\WarehousePage.jsx",
+  "edushare-frontend\src\pages\warehouse\screens\index.js",
+  "edushare-frontend\src\pages\warehouse\screens\ScanModal.jsx",
+  "edushare-frontend\src\pages\warehouse\screens\IncidentScreen.jsx",
+  "edushare-frontend\src\pages\warehouse\screens\DispatchScreen.jsx",
+  "edushare-frontend\src\pages\warehouse\screens\StatusScreen.jsx",
+  "edushare-frontend\src\pages\volunteer\pages\VolunteerPage.jsx",
+  "edushare-frontend\src\pages\volunteer\screens\index.js"
 )
 
 foreach ($relative in $required) {
@@ -81,24 +80,14 @@ function Install-IfMissing([string]$Dir, [string[]]$Packages, [string]$Label) {
     Pop-Location
   }
 }
-Install-IfMissing $backend @("@nestjs\core", "@prisma\client", "prisma", "nodemailer") "API (Admin\backend)"
-Install-IfMissing $web @("react", "vite", "exceljs", "qrcode") "web (Admin\frontend)"
-
-foreach ($portal in @("Login", "Register", "ForgotPassword", "Donor", "School", "Warehouse", "Volunteer")) {
-  $link = Join-Path $root "$portal\backend\node_modules"
-  if (-not (Test-Path -LiteralPath $link)) {
-    cmd /c "mklink /J `"$link`" `"$nodeModules`"" | Out-Null
-    if (-not (Test-Path -LiteralPath $link)) {
-      throw "Khong tao duoc lien ket thu vien cho $portal\backend."
-    }
-  }
-}
+Install-IfMissing $backend @("@nestjs\core", "@prisma\client", "prisma", "nodemailer") "API (edushare-backend)"
+Install-IfMissing $web @("react", "vite", "exceljs", "qrcode") "web (edushare-frontend)"
 
 # Canh bao neu chua cau hinh email (Gmail SMTP) de gui ma OTP quen mat khau.
 $envText = Get-Content -LiteralPath (Join-Path $backend ".env") -Raw
 foreach ($key in @("SMTP_HOST", "SMTP_USER", "SMTP_PASS")) {
   if ($envText -notmatch "(?m)^\s*$key\s*=\s*\S+") {
-    Write-Host "Canh bao: thieu $key trong Admin\backend\.env - chuc nang quen mat khau se khong gui duoc email OTP." -ForegroundColor Yellow
+    Write-Host "Canh bao: thieu $key trong edushare-backend\.env - chuc nang quen mat khau se khong gui duoc email OTP." -ForegroundColor Yellow
   }
 }
 
@@ -144,17 +133,10 @@ Remove-Cache (Join-Path $backend "dist")
 Get-ChildItem -LiteralPath $backend -Filter "*.tsbuildinfo" -File -ErrorAction SilentlyContinue | ForEach-Object { Remove-Cache $_.FullName }
 Remove-Cache (Join-Path $web "node_modules\.vite")
 Remove-Cache (Join-Path $web "dist")
-Remove-Cache (Join-Path $nodeModules ".cache")
+Remove-Cache (Join-Path $backend "node_modules\.cache")
 Remove-Cache (Join-Path $web "node_modules\.cache")
 Remove-Cache (Join-Path $web ".eslintcache")
 Remove-Cache (Join-Path $env:TEMP "edushare-build")
-foreach ($portal in @("Login", "Register", "ForgotPassword", "Donor", "School", "Warehouse", "Volunteer")) {
-  # Chi xoa dist/cache rieng cua tung cong, khong cham vao node_modules (la lien ket toi Admin\backend).
-  foreach ($side in @("backend", "frontend")) {
-    Remove-Cache (Join-Path $root "$portal\$side\dist")
-    Remove-Cache (Join-Path $root "$portal\$side\.vite")
-  }
-}
 
 # Dong bo co so du lieu va Prisma Client voi schema hien tai (cot moi, bang moi).
 Write-Host "Dang dong bo co so du lieu va Prisma Client..." -ForegroundColor Yellow
@@ -163,7 +145,7 @@ $previousPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 try {
   & npx prisma db push --skip-generate 2>&1 | ForEach-Object { Write-Host "[Prisma] $_" -ForegroundColor DarkGray }
-  if ($LASTEXITCODE -ne 0) { throw "prisma db push that bai. Hay kiem tra PostgreSQL va DATABASE_URL trong Admin\backend\.env." }
+  if ($LASTEXITCODE -ne 0) { throw "prisma db push that bai. Hay kiem tra PostgreSQL va DATABASE_URL trong edushare-backend\.env." }
   & npx prisma generate 2>&1 | ForEach-Object { Write-Host "[Prisma] $_" -ForegroundColor DarkGray }
   if ($LASTEXITCODE -ne 0) { throw "prisma generate that bai." }
 } finally {
@@ -175,7 +157,7 @@ Write-Host ""
 Write-Host "EduShare dang chay tat ca cong trong terminal nay." -ForegroundColor Cyan
 Write-Host "API            http://localhost:3000/api"
 Write-Host "Dang nhap      http://localhost:5173/login"
-Write-Host "  Login/Register/ForgotPassword: moi chuc nang la 1 thu muc rieng (frontend + backend), dung chung cho moi cong."
+Write-Host "  Monorepo: edushare-backend (API) + edushare-frontend (tat ca cong)."
 Write-Host "Dang ky        http://localhost:5173/register  (nha hao tam hoac dai dien truong hoc; phai nhap ma OTP gui qua email moi tao duoc tai khoan)"
 Write-Host "Quen mat khau  http://localhost:5173/forgot-password  (ma OTP 6 so gui qua email bang Gmail SMTP)"
 Write-Host "Admin          http://localhost:5173/"
