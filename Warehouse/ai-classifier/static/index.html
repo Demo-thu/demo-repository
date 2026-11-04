@@ -1,0 +1,49 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduShare – AI phân loại kho (bản xem thử)</title>
+<style>
+:root{--bg:#f8fafc;--fg:#0f172a;--mut:#64748b;--card:#fff;--bd:#e2e8f0}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--mut:#94a3b8;--card:#1e293b;--bd:#334155}}
+body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+main{max-width:1000px;margin:0 auto;padding:24px 16px}
+h1{font-size:20px;margin:0 0 12px}
+textarea{width:100%;min-height:120px;box-sizing:border-box;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
+button{margin:10px 8px 0 0;padding:9px 16px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:inherit;cursor:pointer}
+button.g{background:var(--card);color:var(--fg);border:1px solid var(--bd)}
+.wrap{overflow-x:auto;margin-top:16px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:0;border:1px solid var(--bd);border-radius:8px;background:var(--card);min-width:760px}
+.col{border-right:1px solid var(--bd);min-height:160px}.col:last-child{border-right:0}
+.col h2{margin:0;padding:10px;font-size:14px;border-bottom:1px solid var(--bd)}
+.col ul{list-style:none;margin:0;padding:6px 10px}.col li{padding:5px 0;border-bottom:1px dashed var(--bd)}.col li:last-child{border:0}
+</style></head><body><main>
+<h1>AI phân loại tài nguyên – Kho <small style="font-weight:400;color:var(--mut)">(bản 4 cột v2)</small></h1>
+<textarea id="t" placeholder="Mỗi dòng một tên hiện vật…">Bút bi xanh hộp 20 cây
+SGK Toán 7
+vo o ly 96 trang
+Laptop Dell Latitude 5520
+Máy chiếu Epson
+Cặp sách học sinh
+Bàn học 2 chỗ ngồi</textarea>
+<button id="go">Phân loại</button><button class="g" id="clr">Xóa</button>
+<div class="wrap"><div class="board" id="b" hidden></div></div>
+<script>
+const $=s=>document.querySelector(s);
+const COLS=[["stationery","Dụng cụ học tập"],["books","Sách vở"],["electronics","Đồ dùng điện tử"],["other","Khác"]];
+$("#clr").onclick=()=>{$("#t").value="";$("#b").hidden=true};
+$("#go").onclick=async()=>{
+  const names=$("#t").value.split("\n").map(x=>x.trim()).filter(Boolean);
+  const res=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({names})});
+  const rows=await res.json(); const b=$("#b"); b.innerHTML="";
+  for(const [key,title] of COLS){
+    const col=document.createElement("div");col.className="col";
+    const h=document.createElement("h2");h.textContent=title;col.append(h);
+    const ul=document.createElement("ul");
+    for(const r of rows){
+      const k=(r.needs_review||r.label==="other")?"other":r.label;   // không chắc -> cột Khác
+      if(k!==key) continue;
+      const li=document.createElement("li");li.textContent=r.name;ul.append(li);
+    }
+    col.append(ul);b.append(col);
+  }
+  b.hidden=false;
+};
+</script></main></body></html>

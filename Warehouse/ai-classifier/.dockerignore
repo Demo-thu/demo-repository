@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/
+train.py
+build_project_data.py
+*.md

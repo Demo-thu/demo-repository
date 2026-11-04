@@ -1,0 +1,10 @@
+# Chạy riêng phần AI:  docker compose up -d --build
+# Cổng chỉ mở cho chính máy này (127.0.0.1) vì AI không có đăng nhập; backend gọi qua AI_CLASSIFIER_URL.
+services:
+  ai-classifier:
+    build: .
+    container_name: edushare-ai-classifier
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    read_only: true

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline-variant": "#3c4a42", "background": "#0b1326", "secondary-fixed": "#dbe1ff", "primary-fixed": "#6ffbbe", "on-tertiary": "#472a00", "on-tertiary-fixed-variant": "#653e00", "error-container": "#93000a", "on-error-container": "#ffdad6", "surface-container-highest": "#2d3449", "on-tertiary-fixed": "#2a1700", "error": "#ffb4ab", "on-secondary-fixed-variant": "#003ea8", "on-background": "#dae2fd", "surface-variant": "#2d3449", "on-secondary-container": "#cdd7ff", "on-error": "#690005", "primary": "#4edea3", "primary-container": "#10b981", "surface-bright": "#31394d", "on-secondary": "#002a78", "on-surface-variant": "#bbcabf", "tertiary": "#ffb95f", "on-primary": "#003824", "outline": "#86948a", "tertiary-fixed-dim": "#ffb95f", "secondary-fixed-dim": "#b4c5ff", "surface": "#0b1326", "on-secondary-fixed": "#00174b", "inverse-on-surface": "#283044", "surface-tint": "#4edea3", "inverse-surface": "#dae2fd", "inverse-primary": "#006c49", "surface-container-high": "#222a3d", "surface-container": "#171f33", "on-primary-fixed-variant": "#005236", "on-primary-container": "#00422b", "surface-dim": "#0b1326", "on-tertiary-container": "#523200", "tertiary-fixed": "#ffddb8", "tertiary-container": "#e29100", "surface-container-lowest": "#060e20", "secondary": "#b4c5ff", "primary-fixed-dim": "#4edea3", "secondary-container": "#0053db", "on-surface": "#dae2fd", "on-primary-fixed": "#002113", "surface-container-low": "#131b2e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "margin": "2rem", "gutter": "1.5rem", "space-xl": "2.5rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem", "space-md": "1rem" }, "fontFamily": { "code-inline": [ "Inter" ], "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "body-md": [ "Inter" ], "body-sm": [ "Inter" ], "headline-md": [ "Plus Jakarta Sans" ], "display-hero-mobile": [ "Plus Jakarta Sans" ], "display-hero": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "headline-lg": [ "Plus Jakarta Sans" ], "label-md": [ "Inter" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ] }, "fontSize": { "code-inline": [ "12px", { "lineHeight": "16px", "fontWeight": "500" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "body-sm": [ "12px", { "lineHeight": "18px", "fontWeight": "400" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "display-hero-mobile": [ "30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" } ], "display-hero": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "label-md": [ "13px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" } ], "headline-lg-mobile": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-80 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col h-full overflow-y-auto"><div class="p-space-lg bg-surface-container-lowest"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[24px]">school</span></div><div><span class="font-headline-sm text-headline-sm text-on-surface block tracking-tight">EduShare VN</span><span class="font-label-sm text-label-sm uppercase text-primary tracking-wider">Cổng Thụ Hưởng</span></div></div><div class="mt-space-md p-space-sm bg-surface-container rounded-lg"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Điểm trường hoạt động</span><span class="font-code-inline text-code-inline text-secondary bg-surface-container-highest px-space-xs rounded">#SCH-HG-021</span></div><p class="font-body-md text-body-md font-semibold text-on-surface mt-space-xs truncate">THCS Mèo Vạc (Hà Giang)</p><div class="mt-space-xs flex items-center gap-space-xs"><span class="font-label-sm text-label-sm text-primary bg-primary/10 px-space-xs py-0.5 rounded-full">Điểm trường biên giới</span></div></div></div><nav class="flex-1 px-space-md py-space-sm space-y-space-md" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg"><div class="space-y-space-xs"><span class="px-space-sm font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider block">1. Yêu Cầu Hỗ Trợ</span><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="tao-yeu-cau-moi" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">post_add</span>Tạo yêu cầu mới</span></a><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="hang-cho-xet-duyet" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">pending_actions</span>Hàng chờ xét duyệt</span><span class="font-label-sm text-label-sm px-space-xs rounded-full bg-tertiary-container text-on-tertiary-container">2 Chờ</span></a></div><div class="space-y-space-xs"><span class="px-space-sm font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider block">2. Phân Bổ &amp; Mã QR</span><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="tai-nguyen-phan-bo" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">inventory_2</span>Tài nguyên phân bổ</span><span class="font-label-sm text-label-sm px-space-xs rounded-full bg-surface-container-highest text-on-surface-variant">50 món</span></a><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="truy-vet-vong-doi-qr" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>Truy vết vòng đời QR</span></a></div><div class="space-y-space-xs"><span class="px-space-sm font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider block">3. Vận Chuyển &amp; Ký Nhận</span><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="theo-doi-van-don" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">local_shipping</span>Theo dõi vận đơn</span><span class="font-label-sm text-label-sm px-space-xs rounded-full bg-secondary-container text-on-secondary-container">Xe đang đến</span></a><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ky-bien-ban-pod" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">draw</span>Ký biên bản PoD</span></a></div><div class="space-y-space-xs"><span class="px-space-sm font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider block">4. Lịch Sử &amp; Lưu Trữ</span><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="lich-su-giao-hang" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">history</span>Lịch sử giao hàng</span></a><a class="flex items-center justify-between px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ho-so-smartca" href="#"><span class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">verified_user</span>Hồ sơ SmartCA</span><span class="font-label-sm text-label-sm px-space-xs rounded-full bg-primary/20 text-primary">Hợp lệ</span></a></div></nav><div class="p-space-md bg-surface-container-lowest"><p class="font-body-sm text-body-sm text-on-surface-variant">EduShare VN v2.8.4</p><span class="font-label-sm text-label-sm text-primary flex items-center gap-space-xs mt-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Xác thực SmartCA cấp độ 2</span></div></div></aside><div class="pl-80"><header class="fixed top-0 left-80 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex-1 max-w-xl"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[20px]">search</span><input class="w-full bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-9 pr-space-md py-space-xs rounded-lg placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Tra cứu mã yêu cầu, tài nguyên, mã QR, vận đơn..." type="search"/></div></div><div class="flex items-center gap-space-lg"><button class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 bg-tertiary-container text-on-tertiary-container font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold">3</span></button><div class="flex items-center gap-space-sm pl-space-md"><div class="text-right"><p class="font-body-sm text-body-sm font-semibold text-on-surface">Thầy Nguyễn Văn Thắng</p><p class="font-label-sm text-label-sm text-on-surface-variant">Hiệu trưởng (Trường THCS Mèo Vạc - #SCH-HG-021)</p></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface px-gutter min-h-screen"><div class="flex flex-col w-full pb-space-xl">
+<!-- Top Breadcrumb & Metadata Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="hover:text-on-surface cursor-pointer transition-colors">4. Lịch Sử &amp; Lưu Trữ</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Lịch sử giao hàng</span>
+</div>
+<div class="flex items-center gap-space-sm bg-surface-container-high px-space-md py-1 rounded-full shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Cơ sở dữ liệu lưu trữ vĩnh viễn (WORM-Compliant)</span>
+<span class="font-code-inline text-code-inline text-primary bg-primary/10 px-space-xs py-0.5 rounded">VNPT-SmartCA Tier 2</span>
+</div>
+</div>
+<!-- Header & Filter Workspace -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm mb-space-lg relative overflow-hidden">
+<div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg relative z-10">
+<div class="max-w-3xl">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm mb-space-xs">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+          Hồ sơ bàn giao &amp; Nghiệm thu trường THCS Mèo Vạc (#SCH-HG-021)
+        </div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+          Lịch Sử Giao Hàng &amp; Lưu Trữ Biên Bản Nghiệm Thu
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-xs">
+          Kho lưu trữ vĩnh viễn các biên bản bàn giao thiết bị giáo dục, hồ sơ pháp lý số đã ký SmartCA và thư viện ảnh minh chứng qua các năm học.
+        </p>
+</div>
+<!-- Quick Metrics Counters -->
+<div class="flex items-center gap-space-md self-start lg:self-auto bg-surface-container-lowest p-space-sm rounded-xl">
+<div class="px-space-md py-space-xs">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tổng đợt nhận</p>
+<p class="font-headline-md text-headline-md font-bold text-primary">03</p>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="px-space-md py-space-xs">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Thiết bị quy chuẩn</p>
+<p class="font-headline-md text-headline-md font-bold text-secondary">317 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">món</span></p>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="px-space-md py-space-xs">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Toàn vẹn số</p>
+<p class="font-headline-md text-headline-md font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">verified</span>100%
+          </p>
+</div>
+</div>
+</div>
+<!-- Filter Toolbar -->
+<div class="mt-space-lg pt-space-md grid grid-cols-1 md:grid-cols-12 gap-space-sm bg-surface-container rounded-lg p-space-sm">
+<div class="md:col-span-3">
+<label class="block font-label-sm text-label-sm uppercase text-on-surface-variant mb-1">Năm học tài khóa</label>
+<div class="relative">
+<select class="w-full bg-surface text-on-surface font-body-sm text-body-sm px-space-sm py-2 rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer" id="filter-academic-year">
+<option value="all">Tất cả năm học</option>
+<option selected="" value="2026-2027">Năm học 2026 - 2027 (Hiện tại)</option>
+<option value="2025-2026">Năm học 2025 - 2026</option>
+<option value="2024-2025">Năm học 2024 - 2025</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-2.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-4">
+<label class="block font-label-sm text-label-sm uppercase text-on-surface-variant mb-1">Chiến dịch tài trợ</label>
+<div class="relative">
+<select class="w-full bg-surface text-on-surface font-body-sm text-body-sm px-space-sm py-2 rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer" id="filter-campaign">
+<option selected="" value="all">Tất cả chiến dịch</option>
+<option value="phong-tin-hoc">Phòng tin học cho em</option>
+<option value="tiep-suc">Tiếp sức đến trường 2026</option>
+<option value="dong-am">Đông ấm vùng cao</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-2.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-5">
+<label class="block font-label-sm text-label-sm uppercase text-on-surface-variant mb-1">Tìm kiếm mã vận đơn / mã biên bản</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface text-on-surface font-body-sm text-body-sm pl-9 pr-space-md py-2 rounded-lg placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary" id="filter-search" placeholder="Nhập mã #BB-2026..., ThinkPad, Galaxy Tab..." type="text"/>
+<button class="hidden absolute right-space-xs p-1 text-on-surface-variant hover:text-on-surface" id="clear-search-btn">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content Mosaic: Cards Stack + Interactive Inspector -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Timeline & Deliveries Cards (7 Cols on large displays) -->
+<div class="lg:col-span-7 space-y-space-md">
+<!-- Card 1: ĐỢT 3 (Latest) -->
+<article class="delivery-card active-card bg-surface-container-low rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden group" data-card-id="dot-3">
+<div class="flex items-start justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded-full bg-primary-container text-on-primary-container font-semibold uppercase tracking-wider">
+                Đợt 3 • Mới nhất
+              </span>
+<span class="font-code-inline text-code-inline text-secondary bg-surface-container-high px-space-xs py-0.5 rounded font-mono">
+                #BB-20261002-0089
+              </span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">verified</span>SmartCA Hợp Lệ
+              </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1 group-hover:text-primary transition-colors">
+              50 Thiết Bị Tin Học Phục Vụ Phòng Máy Chuẩn GDPT
+            </h2>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tháng 04/2026</span>
+<span class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary mt-1">
+<span class="material-symbols-outlined text-[20px]">laptop_mac</span>
+</span>
+</div>
+</div>
+<div class="mt-space-md bg-surface-container rounded-lg p-space-sm grid grid-cols-1 sm:grid-cols-2 gap-space-sm text-body-sm font-body-sm">
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Ký nhận biên bản</span>
+<p class="font-semibold text-on-surface mt-0.5">Thầy Nguyễn Văn Thắng <span class="text-on-surface-variant font-normal">(Hiệu trưởng)</span></p>
+<p class="font-code-inline text-code-inline text-on-surface-variant mt-0.5">15:42:19 - 15/04/2026</p>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Thiết bị kiểm định</span>
+<p class="text-on-surface mt-0.5 font-medium">35 ThinkPad T480 + 15 Galaxy Tab A8</p>
+<p class="text-primary font-label-sm text-label-sm mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">check_circle</span> 100% hoạt động tốt
+            </p>
+</div>
+</div>
+<!-- Ledger & Location Snapshot -->
+<div class="mt-space-sm flex flex-wrap items-center justify-between gap-space-xs font-code-inline text-code-inline text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">location_on</span>
+<span>GPS 23.1648° N, 105.4125° E (Sân trường THCS Mèo Vạc)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span class="font-mono text-[11px] text-primary/90">Ledger: 9e0a81...4d9c</span>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="flex -space-x-1.5 overflow-hidden">
+<span class="inline-block w-6 h-6 rounded-full bg-surface-bright ring-2 ring-surface text-center font-label-sm text-[10px] text-on-surface leading-6">3</span>
+<span class="inline-block w-6 h-6 rounded-full bg-secondary-container ring-2 ring-surface text-center font-label-sm text-[10px] text-on-secondary-container leading-6">ảnh</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Đính kèm hiện trường</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright font-label-md text-label-md transition-colors flex items-center gap-1" onclick="inspectDelivery('dot-3')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+              Xem Biên Bản PoD Lưu Trữ
+            </button>
+<a class="px-space-sm py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:opacity-95 font-label-md text-label-md font-semibold transition-opacity flex items-center gap-1" href="#download-pdf-dot3">
+<span class="material-symbols-outlined text-[16px]">download</span>
+              Tải PDF Ký Số (2.8MB)
+            </a>
+</div>
+</div>
+</article>
+<!-- Card 2: ĐỢT 2 (Tháng 08/2025) -->
+<article class="delivery-card bg-surface-container-low rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden group" data-card-id="dot-2">
+<div class="flex items-start justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-semibold uppercase tracking-wider">
+                Đợt 2 • Năm học 2025 - 2026
+              </span>
+<span class="font-code-inline text-code-inline text-secondary bg-surface-container-high px-space-xs py-0.5 rounded font-mono">
+                #BB-20250820-0045
+              </span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">verified</span>Đã ký số SmartCA
+              </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1 group-hover:text-primary transition-colors">
+              200 Bộ Đồng Phục Mùa Đông &amp; 50 Balo Học Sinh
+            </h2>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tháng 08/2025</span>
+<span class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-tertiary mt-1">
+<span class="material-symbols-outlined text-[20px]">checkroom</span>
+</span>
+</div>
+</div>
+<div class="mt-space-md bg-surface-container rounded-lg p-space-sm grid grid-cols-1 sm:grid-cols-2 gap-space-sm text-body-sm font-body-sm">
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Ký nhận biên bản</span>
+<p class="font-semibold text-on-surface mt-0.5">Cô Trần Thị Lan <span class="text-on-surface-variant font-normal">(Phó Hiệu trưởng)</span></p>
+<p class="font-code-inline text-code-inline text-on-surface-variant mt-0.5">09:15:30 - 20/08/2025</p>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Hiện vật bàn giao</span>
+<p class="text-on-surface mt-0.5 font-medium">200 Áo khoác gió 3 lớp + 50 Balo chống gù</p>
+<p class="text-primary font-label-sm text-label-sm mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">check_circle</span> Đã phân phát cho học sinh nội trú
+            </p>
+</div>
+</div>
+<!-- Meta -->
+<div class="mt-space-sm flex flex-wrap items-center justify-between gap-space-xs font-code-inline text-code-inline text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">campaign</span>
+<span>Chiến dịch: Đông ấm vùng cao 2025</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Ledger: b3f17c...982a</span>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">photo_library</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 Ảnh trao quà thực tế</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright font-label-md text-label-md transition-colors flex items-center gap-1" onclick="inspectDelivery('dot-2')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+              Xem Biên Bản PoD Lưu Trữ
+            </button>
+<a class="px-space-sm py-1.5 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright font-label-md text-label-md transition-colors flex items-center gap-1" href="#download-pdf-dot2">
+<span class="material-symbols-outlined text-[16px]">download</span>
+              Tải File PDF Ký Số (1.9MB)
+            </a>
+</div>
+</div>
+</article>
+<!-- Card 3: ĐỢT 1 (Tháng 01/2025) -->
+<article class="delivery-card bg-surface-container-low rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden group" data-card-id="dot-1">
+<div class="flex items-start justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-semibold uppercase tracking-wider">
+                Đợt 1 • Năm học 2024 - 2025
+              </span>
+<span class="font-code-inline text-code-inline text-secondary bg-surface-container-high px-space-xs py-0.5 rounded font-mono">
+                #BB-20250110-0018
+              </span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">verified</span>Hoàn tất lưu trữ CSDL Quốc gia
+              </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1 group-hover:text-primary transition-colors">
+              15 Bộ Máy Tính Bàn Văn Phòng &amp; Máy In Đa Năng
+            </h2>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tháng 01/2025</span>
+<span class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-secondary mt-1">
+<span class="material-symbols-outlined text-[20px]">desktop_windows</span>
+</span>
+</div>
+</div>
+<div class="mt-space-md bg-surface-container rounded-lg p-space-sm grid grid-cols-1 sm:grid-cols-2 gap-space-sm text-body-sm font-body-sm">
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Ký nhận biên bản</span>
+<p class="font-semibold text-on-surface mt-0.5">Thầy Nguyễn Văn Thắng <span class="text-on-surface-variant font-normal">(Hiệu trưởng)</span></p>
+<p class="font-code-inline text-code-inline text-on-surface-variant mt-0.5">14:00:22 - 10/01/2025</p>
+</div>
+<div>
+<span class="text-on-surface-variant block font-label-sm text-label-sm uppercase">Thiết bị ban giám hiệu</span>
+<p class="text-on-surface mt-0.5 font-medium">15 PC Dell OptiPlex + 02 Máy in Canon LBP2900</p>
+<p class="text-primary font-label-sm text-label-sm mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">check_circle</span> Đã định danh tài sản công
+            </p>
+</div>
+</div>
+<!-- Meta -->
+<div class="mt-space-sm flex flex-wrap items-center justify-between gap-space-xs font-code-inline text-code-inline text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">verified_user</span>
+<span>Chữ ký số SmartCA: Khóa công khai hợp lệ Vụ CSVC</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Ledger: 4a28ee...61bb</span>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">folder_zip</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Bộ hồ sơ số kèm biên bản bàn giao</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright font-label-md text-label-md transition-colors flex items-center gap-1" onclick="inspectDelivery('dot-1')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+              Xem Biên Bản PoD Lưu Trữ
+            </button>
+<a class="px-space-sm py-1.5 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright font-label-md text-label-md transition-colors flex items-center gap-1" href="#download-pdf-dot1">
+<span class="material-symbols-outlined text-[16px]">download</span>
+              Tải File PDF Ký Số (3.2MB)
+            </a>
+</div>
+</div>
+</article>
+</div>
+<!-- Inspector / Archive Viewer Embedded Panel (5 Cols on large displays) -->
+<div class="lg:col-span-5 sticky top-20 space-y-space-md">
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-xl relative overflow-hidden transition-all" id="inspector-container">
+<!-- Visual Accent Glow -->
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Header of Document Viewer -->
+<div class="flex items-start justify-between gap-space-sm mb-space-md pb-space-sm border-b border-surface-container-highest">
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-label-sm text-label-sm uppercase px-space-xs py-0.5 rounded bg-primary/20 text-primary font-bold">
+                Bản sao lưu pháp lý (READ-ONLY)
+              </span>
+<span class="font-code-inline text-code-inline text-on-surface-variant">ISO 27001</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface" id="inspector-title">
+              Chi Tiết Biên Bản Nghiệm Thu Đợt 3
+            </h3>
+<p class="font-code-inline text-code-inline text-secondary font-mono" id="inspector-code">#BB-20261002-0089</p>
+</div>
+<!-- Digital Verification Stamp with dynamic QR Graphic -->
+<div class="flex flex-col items-center bg-surface-container p-space-xs rounded-lg shrink-0">
+<svg class="w-14 h-14 text-on-surface" fill="currentColor" viewbox="0 0 100 100">
+<!-- Inline SVG QR Code Pattern -->
+<rect fill="currentColor" height="30" rx="2" width="30" x="0" y="0"></rect>
+<rect fill="#0b1326" height="20" width="20" x="5" y="5"></rect>
+<rect fill="currentColor" height="12" width="12" x="9" y="9"></rect>
+<rect fill="currentColor" height="30" rx="2" width="30" x="70" y="0"></rect>
+<rect fill="#0b1326" height="20" width="20" x="75" y="5"></rect>
+<rect fill="currentColor" height="12" width="12" x="79" y="9"></rect>
+<rect fill="currentColor" height="30" rx="2" width="30" x="0" y="70"></rect>
+<rect fill="#0b1326" height="20" width="20" x="5" y="75"></rect>
+<rect fill="currentColor" height="12" width="12" x="9" y="79"></rect>
+<!-- QR Data matrix dots -->
+<rect fill="currentColor" height="6" width="6" x="36" y="8"></rect>
+<rect fill="currentColor" height="6" width="8" x="48" y="8"></rect>
+<rect fill="currentColor" height="6" width="12" x="36" y="20"></rect>
+<rect fill="currentColor" height="6" width="6" x="54" y="20"></rect>
+<rect fill="currentColor" height="14" width="6" x="8" y="36"></rect>
+<rect fill="currentColor" height="6" width="10" x="20" y="36"></rect>
+<rect fill="#4edea3" height="10" width="10" x="36" y="36"></rect>
+<rect fill="currentColor" height="6" width="14" x="52" y="36"></rect>
+<rect fill="currentColor" height="8" width="8" x="72" y="36"></rect>
+<rect fill="currentColor" height="14" width="8" x="86" y="36"></rect>
+<rect fill="currentColor" height="12" width="6" x="36" y="52"></rect>
+<rect fill="currentColor" height="8" width="12" x="48" y="52"></rect>
+<rect fill="currentColor" height="14" width="8" x="66" y="52"></rect>
+<rect fill="currentColor" height="12" width="8" x="36" y="70"></rect>
+<rect fill="currentColor" height="6" width="14" x="50" y="70"></rect>
+<rect fill="currentColor" height="10" width="10" x="70" y="72"></rect>
+<rect fill="currentColor" height="12" width="8" x="48" y="82"></rect>
+<rect fill="currentColor" height="6" width="14" x="62" y="88"></rect>
+<rect fill="#4edea3" height="12" width="12" x="82" y="82"></rect>
+</svg>
+<span class="font-label-sm text-[9px] uppercase tracking-wider text-primary mt-1">Quét xác minh</span>
+</div>
+</div>
+<!-- Dual Electronic Signatures Display -->
+<div class="space-y-space-sm mb-space-md">
+<p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant flex items-center justify-between">
+<span>Chứng thực chữ ký đôi điện tử</span>
+<span class="text-primary flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[13px]">format_image_left</span>
+              Đầy đủ 2 bên
+            </span>
+</p>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Bên giao signature -->
+<div class="bg-surface-container p-space-sm rounded-lg flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -right-3 -bottom-3 opacity-10 text-on-surface pointer-events-none">
+<span class="material-symbols-outlined text-[72px]">handshake</span>
+</div>
+<div>
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant block">Đại diện Bên giao</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface mt-0.5">TNV. Nguyễn Văn Nam</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Điều phối Quỹ EduShare VN</p>
+</div>
+<div class="mt-space-sm pt-space-xs border-t border-surface-container-highest flex items-center justify-between">
+<span class="font-code-inline text-[10px] text-primary bg-primary/10 px-1 py-0.5 rounded">SmartCA • Valid</span>
+<span class="font-code-inline text-[10px] text-on-surface-variant">15/04/26 15:38</span>
+</div>
+</div>
+<!-- Bên nhận signature with Red Seal badge -->
+<div class="bg-surface-container p-space-sm rounded-lg flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-surface-container via-surface-container to-primary/5">
+<div class="absolute -right-2 -bottom-2 opacity-15 text-primary pointer-events-none">
+<span class="material-symbols-outlined text-[64px]">verified</span>
+</div>
+<div>
+<span class="font-label-sm text-[10px] uppercase text-primary block font-semibold">Đại diện Bên nhận (Đã đóng dấu)</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface mt-0.5">Thầy Nguyễn Văn Thắng</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Hiệu trưởng THCS Mèo Vạc</p>
+</div>
+<div class="mt-space-sm pt-space-xs border-t border-surface-container-highest flex items-center justify-between">
+<span class="font-code-inline text-[10px] text-primary bg-primary/15 px-1 py-0.5 rounded font-bold">Dấu đỏ số #VN021</span>
+<span class="font-code-inline text-[10px] text-on-surface-variant">15/04/26 15:42</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Real Delivery Photo Gallery (3 Photos) -->
+<div class="space-y-space-xs mb-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+              Thư viện ảnh minh chứng nghiệm thu (03 Ảnh)
+            </span>
+<span class="font-label-sm text-label-sm text-primary cursor-pointer hover:underline">Phóng to toàn màn hình</span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs">
+<!-- Photo 1: School Gate & Logistics -->
+<div class="group relative rounded-lg overflow-hidden h-24 bg-surface-container cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A clean photograph of THCS Meo Vac school gate in Ha Giang mountains with mist, local school banner, and a delivery logistics van arriving with computer boxes under cool morning daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7jEc2viAhHdxr8tqievVBR8S0vd76nA2jtlnFI-w8KOtVkeIEuWmwaNqypHkt85pNMx763DPe0LNuZye5MKJ6eIRzeqgLTVWmZ_4AhYgLql4v5X_FfVh7g5hhzn_mEmfiC-Q3Ng8wqVT0_Dqm74S_W3jl_uQInMrn61K0BDNBwJvyKkERdKDsHKazHGHv_F0D1C_Kg8rjB3PZlIAn4TYuNG291wCzE2MtvG-ue9x_qDwTQUfFZ70d"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent flex items-end p-1.5">
+<span class="font-label-sm text-[10px] text-on-surface font-medium truncate">1. Cổng trường &amp; Bàn giao</span>
+</div>
+</div>
+<!-- Photo 2: Computer Lab Unboxing -->
+<div class="group relative rounded-lg overflow-hidden h-24 bg-surface-container cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Vietnamese teachers and secondary school students unpacking Lenovo ThinkPad laptops inside an organized mountain classroom with green chalkboard and wooden desks under soft fluorescent lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALxBRG170kAf4vKxFlSg_xPMqa0gmX0GRCNl2HqYP-qqnCtWElIx5lYM3MSIG-gNwdqweiRq6q9PEbUXweQi4ZXgvbNElYeHe5o9Q00q3DPjvMlk-fXfys26lBITiFXI_WAq9p2n0Z6zzqQ9rWwADVpW9zTqXQuIPTTpDEV_D0767bmeB_qVr8nq10YvZGYKL4CZMrWpyuQ_XKJK0LQv8Uu5aB0iuXYr-UWe2C6JPvyeRAuuiSw8nS"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent flex items-end p-1.5">
+<span class="font-label-sm text-[10px] text-on-surface font-medium truncate">2. Mở hộp Lenovo T480</span>
+</div>
+</div>
+<!-- Photo 3: Principal & Volunteer signing receipt -->
+<div class="group relative rounded-lg overflow-hidden h-24 bg-surface-container cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A respectful Vietnamese school principal with eyeglasses and a young female volunteer verifying tablet screens and signing delivery receipts on a digital tablet at THCS Meo Vac school." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB060uPZ3m1nmyGTh_7sCBaHvSUoKi3VKUK3yon19d1sKmdeolbU58IR3nRZMuHRdm-zdo9KWtGSFEPVN6xsoXv83LMkfu9kDG8XwY6-ki_TDcM9NeTr6SHdVHJuSrV1qeoHcCHWUzZ2eIr9WE6BsZxs456VSQU-TPdzitfV-OlQiVctokePoUhJf7qAk4bkRL5Bw8tFznXK5ylJXuXg0WXMWWKvm8-e9Vb0JYylrqcI9cI05W04xbA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent flex items-end p-1.5">
+<span class="font-label-sm text-[10px] text-on-surface font-medium truncate">3. Ký số SmartCA tại chỗ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Serial / QR Codes Verification Mini-Table -->
+<div class="space-y-space-xs mb-space-lg">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+              Trích xuất danh mục Serial &amp; QR Code (50/50 Hợp quy)
+            </span>
+<span class="font-code-inline text-code-inline text-secondary">Trang 1/5</span>
+</div>
+<div class="overflow-x-auto rounded-lg bg-surface-container-lowest">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface-container font-label-sm text-label-sm text-on-surface-variant uppercase">
+<tr>
+<th class="py-1.5 px-space-sm font-semibold">Tên thiết bị</th>
+<th class="py-1.5 px-space-sm font-semibold">Mã Serial / QR</th>
+<th class="py-1.5 px-space-sm font-semibold text-right">Trạng thái</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-highest text-on-surface font-code-inline text-[12px]">
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-1.5 px-space-sm font-body-sm text-body-sm font-medium">Lenovo ThinkPad T480 #01</td>
+<td class="py-1.5 px-space-sm text-secondary font-mono">SN: PF-198K01 • QR-EDU-8801</td>
+<td class="py-1.5 px-space-sm text-right text-primary font-semibold">Đã kích hoạt</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-1.5 px-space-sm font-body-sm text-body-sm font-medium">Lenovo ThinkPad T480 #02</td>
+<td class="py-1.5 px-space-sm text-secondary font-mono">SN: PF-198K02 • QR-EDU-8802</td>
+<td class="py-1.5 px-space-sm text-right text-primary font-semibold">Đã kích hoạt</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-1.5 px-space-sm font-body-sm text-body-sm font-medium">Lenovo ThinkPad T480 #03</td>
+<td class="py-1.5 px-space-sm text-secondary font-mono">SN: PF-198K03 • QR-EDU-8803</td>
+<td class="py-1.5 px-space-sm text-right text-primary font-semibold">Đã kích hoạt</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-1.5 px-space-sm font-body-sm text-body-sm font-medium">Samsung Tab A8 #01</td>
+<td class="py-1.5 px-space-sm text-secondary font-mono">SN: R52N403A • QR-EDU-8836</td>
+<td class="py-1.5 px-space-sm text-right text-primary font-semibold">Đã kích hoạt</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Primary Action Download Bundle -->
+<div class="pt-space-xs space-y-space-xs">
+<button class="w-full py-2.5 px-space-md rounded-lg bg-primary-container text-on-primary-container hover:opacity-95 transition-opacity font-headline-sm text-body-md font-bold flex items-center justify-center gap-space-sm shadow-md" id="download-full-bundle">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+            Tải Trọn Bộ Hồ Sơ PDF Có Ký Số Đóng Dấu
+          </button>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm px-1">
+<span>Tệp mã hóa SHA-256 • Kèm chữ ký thời gian TSA</span>
+<span class="text-primary cursor-pointer hover:underline flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">history_edu</span>Xem nhật ký ký
+            </span>
+</div>
+</div>
+</div>
+<!-- Compliance & National Education Cloud Note -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm text-on-surface-variant space-y-2">
+<div class="flex items-center gap-space-xs text-primary font-semibold font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">cloud_sync</span>
+          Đồng bộ với Hệ Thống Cơ Sở Dữ Liệu Giáo Dục Quốc Gia
+        </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Mọi dữ liệu bàn giao đều được đồng bộ tự động lên CSDL ngành của Bộ Giáo dục &amp; Đào tạo (MOET). Mã định danh tài sản của nhà trường được bảo toàn và phân loại tự động vào danh mục khấu hao công.
+        </p>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Interactive delivery inspector data store
+  const deliveriesData = {
+    'dot-3': {
+      title: 'Chi Tiết Biên Bản Nghiệm Thu Đợt 3',
+      code: '#BB-20261002-0089',
+      receiver: 'Thầy Nguyễn Văn Thắng (Hiệu trưởng)',
+      receiverTime: '15/04/26 15:42',
+      receiverNote: 'Dấu đỏ số #VN021',
+      sender: 'TNV. Nguyễn Văn Nam',
+      senderTime: '15/04/26 15:38',
+      summary: '35 ThinkPad T480 + 15 Galaxy Tab A8',
+      serials: [
+        { name: 'Lenovo ThinkPad T480 #01', sn: 'SN: PF-198K01 • QR-EDU-8801', status: 'Đã kích hoạt' },
+        { name: 'Lenovo ThinkPad T480 #02', sn: 'SN: PF-198K02 • QR-EDU-8802', status: 'Đã kích hoạt' },
+        { name: 'Lenovo ThinkPad T480 #03', sn: 'SN: PF-198K03 • QR-EDU-8803', status: 'Đã kích hoạt' },
+        { name: 'Samsung Tab A8 #01', sn: 'SN: R52N403A • QR-EDU-8836', status: 'Đã kích hoạt' }
+      ]
+    },
+    'dot-2': {
+      title: 'Chi Tiết Biên Bản Bàn Giao Đợt 2',
+      code: '#BB-20250820-0045',
+      receiver: 'Cô Trần Thị Lan (Phó Hiệu trưởng)',
+      receiverTime: '20/08/25 09:15',
+      receiverNote: 'Xác thực SmartCA Trường',
+      sender: 'Đoàn Thanh Niên Tỉnh Đoàn',
+      senderTime: '20/08/25 09:05',
+      summary: '200 Bộ Đồng Phục + 50 Balo Chống Gù',
+      serials: [
+        { name: 'Áo khoác gió 3 lớp size S/M (100 bộ)', sn: 'LOT: HG25-WIN-01', status: 'Đã cấp phát' },
+        { name: 'Áo khoác gió 3 lớp size L (100 bộ)', sn: 'LOT: HG25-WIN-02', status: 'Đã cấp phát' },
+        { name: 'Balo chống gù tiểu học & THCS (50 bộ)', sn: 'LOT: BP-MEOVAC-50', status: 'Đã vào kho' },
+        { name: 'Mũ ấm len mùa đông (200 chiếc)', sn: 'LOT: CAP-WINTER-200', status: 'Đã cấp phát' }
+      ]
+    },
+    'dot-1': {
+      title: 'Chi Tiết Biên Bản Bàn Giao Đợt 1',
+      code: '#BB-20250110-0018',
+      receiver: 'Thầy Nguyễn Văn Thắng (Hiệu trưởng)',
+      receiverTime: '10/01/25 14:00',
+      receiverNote: 'Chữ ký số CSDL QG',
+      sender: 'Sở GD&ĐT Tỉnh Hà Giang',
+      senderTime: '10/01/25 13:45',
+      summary: '15 PC Dell OptiPlex + 02 Máy in Canon LBP2900',
+      serials: [
+        { name: 'Dell OptiPlex 7070 SFF #01', sn: 'SN: 8K9L22 • QR-EDU-1101', status: 'Đã định danh' },
+        { name: 'Dell OptiPlex 7070 SFF #02', sn: 'SN: 8K9L23 • QR-EDU-1102', status: 'Đã định danh' },
+        { name: 'Máy in Canon Laser LBP2900 #01', sn: 'SN: CN-66712 • QR-EDU-1116', status: 'Đang hoạt động' },
+        { name: 'Máy in Canon Laser LBP2900 #02', sn: 'SN: CN-66713 • QR-EDU-1117', status: 'Đang hoạt động' }
+      ]
+    }
+  };
+
+  // Inspect selection handler
+  function inspectDelivery(cardId) {
+    const cardData = deliveriesData[cardId];
+    if (!cardData) return;
+
+    // Update active style on cards
+    document.querySelectorAll('.delivery-card').forEach(el => {
+      if (el.dataset.cardId === cardId) {
+        el.classList.add('bg-surface-container', 'shadow-md');
+        el.classList.remove('bg-surface-container-low');
+      } else {
+        el.classList.remove('bg-surface-container', 'shadow-md');
+        el.classList.add('bg-surface-container-low');
+      }
+    });
+
+    // Update inspector view
+    const titleEl = document.getElementById('inspector-title');
+    const codeEl = document.getElementById('inspector-code');
+    if (titleEl) titleEl.innerText = cardData.title;
+    if (codeEl) codeEl.innerText = cardData.code;
+
+    // Animate inspector slightly to indicate fresh load
+    const container = document.getElementById('inspector-container');
+    if (container) {
+      container.classList.add('scale-[0.99]');
+      setTimeout(() => {
+        container.classList.remove('scale-[0.99]');
+      }, 150);
+    }
+  }
+
+  // Filter interaction
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('filter-search');
+    const clearBtn = document.getElementById('clear-search-btn');
+
+    if (searchInput && clearBtn) {
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase().trim();
+        clearBtn.classList.toggle('hidden', val.length === 0);
+
+        document.querySelectorAll('.delivery-card').forEach(card => {
+          const text = card.innerText.toLowerCase();
+          if (text.includes(val)) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.classList.add('hidden');
+        document.querySelectorAll('.delivery-card').forEach(card => {
+          card.style.display = 'block';
+        });
+      });
+    }
+
+    // Full Bundle Download Mock Toast Notification
+    const downloadBtn = document.getElementById('download-full-bundle');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        const originalContent = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> Đang đóng gói file PDF ký số SmartCA...';
+        downloadBtn.disabled = true;
+
+        setTimeout(() => {
+          downloadBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span> Đã tải xuống thành công (#BB-20261002-0089.pdf)';
+          downloadBtn.classList.remove('bg-primary-container', 'text-on-primary-container');
+          downloadBtn.classList.add('bg-primary', 'text-on-primary');
+
+          setTimeout(() => {
+            downloadBtn.innerHTML = originalContent;
+            downloadBtn.classList.add('bg-primary-container', 'text-on-primary-container');
+            downloadBtn.classList.remove('bg-primary', 'text-on-primary');
+            downloadBtn.disabled = false;
+          }, 2500);
+        }, 1200);
+      });
+    }
+  });
+</script></main></div></body></html>

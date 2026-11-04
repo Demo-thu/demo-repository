@@ -1,0 +1,25 @@
+name,label_in_project,label_used,source
+SGK Toán 1,BOOKS,books,project_seed_ts
+SGK Toán 2,BOOKS,books,project_seed_ts
+SGK Tiếng Việt 1,BOOKS,books,project_seed_ts
+SGK Tiếng Việt 2,BOOKS,books,project_seed_ts
+SGK Tiếng Anh 3,BOOKS,books,project_seed_ts
+SGK Khoa học 4,BOOKS,books,project_seed_ts
+SGK Lịch sử và Địa lý 5,BOOKS,books,project_seed_ts
+SGK Đạo đức 1,BOOKS,books,project_seed_ts
+Vở ô ly 80 trang,STATIONERY,books,project_seed_ts
+Vở kẻ ngang 96 trang,STATIONERY,books,project_seed_ts
+Vở tập viết lớp 1,STATIONERY,books,project_seed_ts
+Bút bi xanh,STATIONERY,stationery,project_seed_ts
+Bút bi đỏ,STATIONERY,stationery,project_seed_ts
+Bút chì 2B,STATIONERY,stationery,project_seed_ts
+Bút máy học sinh,STATIONERY,stationery,project_seed_ts
+Bút lông màu 12 cây,STATIONERY,stationery,project_seed_ts
+Thước kẻ 20cm,STATIONERY,stationery,project_seed_ts
+Compa học sinh,STATIONERY,stationery,project_seed_ts
+Tẩy trắng,STATIONERY,stationery,project_seed_ts
+Gọt bút chì,STATIONERY,stationery,project_seed_ts
+Hộp bút,STATIONERY,stationery,project_seed_ts
+Cặp sách học sinh,STATIONERY,stationery,project_seed_ts
+Laptop Dell Latitude 5520,IT_DEVICES,electronics,project_db_dump
+PC HP ProDesk 400,IT_DEVICES,electronics,project_db_dump

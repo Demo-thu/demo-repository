@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-high":"#222a3d","surface-tint":"#4edea3","on-tertiary-fixed":"#2a1700","on-primary":"#003824","surface-container-lowest":"#060e20","inverse-surface":"#dae2fd","secondary-container":"#0053db","on-tertiary-fixed-variant":"#653e00","inverse-primary":"#006c49","surface-variant":"#2d3449","on-primary-fixed-variant":"#005236","primary-fixed":"#6ffbbe","tertiary":"#ffb95f","surface-container":"#171f33","secondary-fixed":"#dbe1ff","on-error-container":"#ffdad6","outline-variant":"#3c4a42","on-secondary-container":"#cdd7ff","on-error":"#690005","outline":"#86948a","on-tertiary":"#472a00","surface-bright":"#31394d","on-secondary-fixed-variant":"#003ea8","on-primary-fixed":"#002113","background":"#0b1326","surface-dim":"#0b1326","secondary":"#b4c5ff","surface-container-highest":"#2d3449","primary-container":"#10b981","on-surface":"#dae2fd","error":"#ffb4ab","on-background":"#dae2fd","on-primary-container":"#00422b","primary-fixed-dim":"#4edea3","secondary-fixed-dim":"#b4c5ff","tertiary-fixed-dim":"#ffb95f","error-container":"#93000a","tertiary-fixed":"#ffddb8","on-secondary-fixed":"#00174b","on-tertiary-container":"#523200","surface-container-low":"#131b2e","inverse-on-surface":"#283044","primary":"#4edea3","on-surface-variant":"#bbcabf","surface":"#0b1326","tertiary-container":"#e29100","on-secondary":"#002a78"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"2.5rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","margin":"2rem","gutter-mobile":"0.75rem"},"fontFamily":{"body-md":["Inter"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-sm":["Inter"],"body-lg":["Inter"],"code-inline":["Inter"],"display-hero":["Plus Jakarta Sans"],"label-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"label-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"]},"fontSize":{"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"code-inline":["12px",{"lineHeight":"16px","fontWeight":"500"}],"display-hero":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-hero-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.2)]"><div class="p-space-lg bg-surface-container-lowest"><div class="flex items-center gap-space-sm mb-space-xs"><span class="material-symbols-outlined text-primary">volunteer_activism</span><span class="font-headline-sm text-headline-sm text-primary tracking-tight">EduShare VN</span></div><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">CỔNG NHÀ HẢO TÂM & TÀI TRỢ</p><div class="flex items-center justify-between mt-space-sm"><span class="font-code-inline text-code-inline text-on-surface-variant/80">v2.8.4 • Minh bạch</span><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span></div></div><div class="p-space-md mx-space-md my-space-sm rounded-xl bg-surface-container-high"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Tổ chức đối tác</span><span class="material-symbols-outlined text-[16px] text-tertiary">verified</span></div><div class="font-headline-sm text-label-md text-on-surface font-semibold truncate">Nhà hảo tâm / Quỹ F.Tech</div><div class="font-code-inline text-code-inline text-primary mt-space-xs">#DONOR-VN-2026</div></div><div class="flex-1 overflow-y-auto px-space-md py-space-sm space-y-space-lg"><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">1. CHIẾN DỊCH & QUYÊN GÓP</div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="campaigns" href="#"><span class="material-symbols-outlined text-[20px]">explore</span><span class="font-label-md text-label-md">Khám phá chiến dịch</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="donate" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-label-md text-label-md">Đăng ký trao tặng mới</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">2. PHIẾU CỦA TÔI</div><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm" data-path="my-pledges" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span class="font-label-md text-label-md">Danh sách phiếu đã gửi</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="receipts" href="#"><span class="material-symbols-outlined text-[20px]">verified_user</span><span class="font-label-md text-label-md">Biên nhận điện tử</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><div class="px-space-md py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">3. THEO DÕI & MINH BẠCH</div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="qr-tracking" href="#"><span class="material-symbols-outlined text-[20px]">qr_code_2</span><span class="font-label-md text-label-md">Mã QR thiết bị của tôi</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="social-impact" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span class="font-label-md text-label-md">Tác động xã hội của tôi</span></a></nav></div><div class="p-space-md bg-surface-container-lowest/80"><div class="flex items-center gap-space-sm px-space-sm py-space-xs"><span class="material-symbols-outlined text-tertiary text-[20px]">shield_with_heart</span><div class="flex-1 min-w-0"><div class="font-label-sm text-label-sm text-on-surface font-medium truncate">Bộ GD&ĐT Bảo Trợ</div><div class="font-body-sm text-body-sm text-on-surface-variant truncate">Dữ liệu chuỗi khối minh bạch</div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-low/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.2)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md flex-1 max-w-xl"><div class="relative w-full"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span><input class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all" placeholder="Tìm chiến dịch, mã phiếu tài trợ, số serial hoặc QR code..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container-high"><span class="material-symbols-outlined text-tertiary text-[18px]">diamond</span><span class="font-label-sm text-label-sm text-tertiary uppercase font-semibold tracking-wide">Nhà tài trợ Kim Cương - Quỹ F.Tech</span></div><a class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold hover:bg-primary-container/90 transition-all shadow-sm" data-path="donate" href="#"><span class="material-symbols-outlined text-[18px]">add</span>Tạo phiếu trao tặng</a><button aria-label="Thông báo" class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 w-full px-space-lg bg-background min-h-screen"><div class="flex flex-col w-full pb-space-xl">
+<!-- Top Protocol Alert: Immutability & 72-Hour Rule Banner -->
+<div class="mb-space-lg relative overflow-hidden rounded-xl bg-surface-container-high p-space-md shadow-md">
+<div class="absolute -right-8 -top-8 w-40 h-40 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md relative z-10">
+<div class="flex items-start gap-space-sm">
+<div class="p-2 rounded-lg bg-surface-container-lowest text-primary mt-0.5 flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Quy Chế Tính Bất Biến & Ràng Buộc Hủy Kép 72 Giờ</h2>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm uppercase tracking-wider">Hợp đồng điện tử</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs max-w-3xl leading-relaxed">
+            Để bảo toàn tính minh bạch và điều phối nguồn lực tiếp nhận, <strong class="text-on-surface">phiếu sau khi lập tuyệt đối không thể chỉnh sửa nội dung</strong>. Người hảo tâm chỉ được phép tự hủy phiếu khi thỏa mãn đồng thời cả 2 điều kiện: <span class="text-tertiary font-medium">Trạng thái vẫn Chờ tiếp nhận</span> và <span class="text-tertiary font-medium">Chưa quá 72 giờ kể từ lúc khởi tạo</span>.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-md self-start md:self-auto flex-shrink-0 bg-surface-container-lowest px-space-md py-space-sm rounded-lg">
+<div class="text-right">
+<div class="font-label-sm text-label-sm uppercase text-on-surface-variant">Tổng phiếu ghi nhận</div>
+<div class="font-headline-sm text-headline-sm text-primary font-semibold">05 Phiếu</div>
+</div>
+<div class="w-px h-8 bg-surface-variant"></div>
+<div class="text-right">
+<div class="font-label-sm text-label-sm uppercase text-on-surface-variant">Thiết bị trao tặng</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">102 Món</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Tabs & Real-time Search Toolbar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-lg">
+<!-- Filter Tabs -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs lg:pb-0 scrollbar-none" id="statusFilterBar">
+<button class="filter-tab active flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-sm whitespace-nowrap">
+<span>Tất cả phiếu</span>
+<span class="px-1.5 py-0.5 rounded-full bg-on-primary-container/20 font-code-inline text-code-inline">5</span>
+</button>
+<button class="filter-tab flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all whitespace-nowrap">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>Chờ tiếp nhận</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-code-inline text-code-inline">2</span>
+</button>
+<button class="filter-tab flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all whitespace-nowrap">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Đã xác minh</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-code-inline text-code-inline">2</span>
+</button>
+<button class="filter-tab flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all whitespace-nowrap">
+<span class="w-2 h-2 rounded-full bg-on-surface-variant"></span>
+<span>Đã hủy</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-code-inline text-code-inline">1</span>
+</button>
+</div>
+<!-- Search & Filters -->
+<div class="flex items-center gap-space-sm flex-1 lg:max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-10 pl-9 pr-4 rounded-lg bg-surface-container text-body-sm font-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all" id="tableSearchInput" placeholder="Lọc mã phiếu, chiến dịch, thiết bị..." type="text"/>
+</div>
+<button class="h-10 px-space-md flex items-center gap-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="hidden sm:inline">Quý 3 & 4/2026</span>
+</button>
+</div>
+</div>
+<!-- Pledge Data Table Section -->
+<div class="w-full bg-surface-container-low rounded-xl overflow-hidden shadow-lg relative">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse" id="pledgesTable">
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-md px-space-md">Mã phiếu</th>
+<th class="py-space-md px-space-md">Ngày tạo & Đợt chiến dịch</th>
+<th class="py-space-md px-space-md">Tóm tắt hiện vật</th>
+<th class="py-space-md px-space-md">Trạng thái phiếu</th>
+<th class="py-space-md px-space-md text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-sm text-body-sm">
+<!-- ROW 1: ELIGIBLE FOR CANCELLATION (SATISFIES DUAL CONSTRAINT) -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs font-code-inline text-code-inline text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">receipt</span>
+                DN-20261002-0128
+              </div>
+<div class="mt-1 flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tạo được 2 giờ</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-body-md text-body-md font-medium text-on-surface">Hôm nay, 10:15</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary">campaign</span>
+                Tiếp sức đến trường 2026
+              </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant/80 mt-1">Điểm nhận: Quận Bình Thạnh, TP.HCM</div>
+</td>
+<td class="py-space-md px-space-md align-top max-w-xs">
+<div class="font-body-md text-body-md text-on-surface font-medium">02 Laptop Dell Latitude, 10 Bộ SGK Cánh Diều</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                TNV Nguyễn Hoàng Minh phụ trách lấy hàng
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Chờ tiếp nhận
+              </div>
+<div class="text-[11px] text-tertiary font-code-inline mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">hourglass_top</span>
+                Đang chờ TNV qua lấy
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex flex-col items-end gap-1.5">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-all">
+                    Xem chi tiết
+                  </button>
+<!-- ACTIVE CANCEL BUTTON (WITH 70H COUNTDOWN) -->
+<button class="px-space-sm py-1.5 rounded-lg bg-error-container/30 hover:bg-error-container text-error hover:text-on-error font-label-md text-label-md font-semibold transition-all flex items-center gap-1 shadow-sm" onclick="openCancellationModal('DN-20261002-0128', 'Hôm nay, 10:15', '02 Laptop Dell Latitude, 10 Bộ SGK Cánh Diều')" title="Phiếu còn trong thời hạn 72 giờ và chưa được xác minh">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+                    HỦY PHIẾU
+                  </button>
+</div>
+<div class="font-code-inline text-[11px] text-tertiary flex items-center gap-1 bg-surface-container-highest px-2 py-0.5 rounded">
+<span>⏳ Còn 70 giờ để hủy</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- ROW 2: LOCKED FROM CANCELLATION (EXCEEDED 72 HOURS, CREATED 7 DAYS AGO) -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs font-code-inline text-code-inline text-on-surface font-semibold">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">receipt</span>
+                DN-20260925-0094
+              </div>
+<div class="mt-1 font-label-sm text-label-sm text-error/80 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock_clock</span>
+                Đã quá hạn 72h (+168h)
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-body-md text-body-md font-medium text-on-surface">25/09/2026 - 14:20</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary">campaign</span>
+                Máy tính cũ tri thức mới
+              </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant/80 mt-1">Điểm nhận: Trụ sở Thành Đoàn Đà Nẵng</div>
+</td>
+<td class="py-space-md px-space-md align-top max-w-xs">
+<div class="font-body-md text-body-md text-on-surface font-medium">05 Màn hình vi tính Samsung 24-inch</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Vẫn đang chờ điều phối chuyển kho cấp 2</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Chờ tiếp nhận
+              </div>
+<div class="text-[11px] text-on-surface-variant font-code-inline mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                Vẫn chờ bàn giao
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex flex-col items-end gap-1.5">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-all">
+                    Xem chi tiết
+                  </button>
+<!-- DISABLED CANCELLATION BUTTON -->
+<div class="relative group/tooltip inline-block">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-lowest text-on-surface-variant/40 font-label-md text-label-md cursor-not-allowed flex items-center gap-1 opacity-60" disabled="">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+                      Hủy phiếu
+                    </button>
+<!-- Tooltip explain rule -->
+<div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block z-30 w-64 p-space-sm rounded-lg bg-surface-container-lowest text-on-surface shadow-xl text-left pointer-events-none">
+<div class="flex items-center gap-1 text-error text-[12px] font-semibold mb-0.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                        Khóa hủy phiếu tự động
+                      </div>
+<p class="text-[11px] text-on-surface-variant leading-tight">
+                        Không thể hủy vì đã vượt quá thời hạn 72 giờ cho phép theo quy định. Vui lòng liên hệ hotline tổng đài nếu muốn thoái quyền tài trợ.
+                      </p>
+</div>
+</div>
+</div>
+<span class="text-[11px] font-code-inline text-on-surface-variant/70">Đã khóa quy trình</span>
+</div>
+</td>
+</tr>
+<!-- ROW 3: LOCKED BECAUSE VERIFIED & STORED IN INVENTORY -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs font-code-inline text-code-inline text-on-surface font-semibold">
+<span class="material-symbols-outlined text-[16px] text-primary">task_alt</span>
+                DN-20260918-0062
+              </div>
+<div class="mt-1 font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">format_image_left</span>
+                Xác thực chuỗi khối
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-body-md text-body-md font-medium text-on-surface">18/09/2026 - 09:00</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-primary">campaign</span>
+                Phổ cập Tin học vùng biên
+              </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant/80 mt-1">Kho tổng EduShare Hà Nội</div>
+</td>
+<td class="py-space-md px-space-md align-top max-w-xs">
+<div class="font-body-md text-body-md text-on-surface font-medium">35 Laptop Lenovo ThinkPad T480</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Đã test kỹ thuật 100%, pin tốt > 85%</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Đã xác minh / Đã nhập kho
+              </div>
+<div class="text-[11px] text-on-surface-variant font-code-inline mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warehouse</span>
+                Mã lô kho: KHO-HN-2026-B4
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex flex-col items-end gap-1.5">
+<a class="px-space-md py-1.5 rounded-lg bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container text-on-surface font-label-md text-label-md font-medium transition-all flex items-center gap-1" data-path="receipts" href="#">
+<span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+                  Xem Biên Nhận Điện Tử
+                </a>
+<span class="text-[11px] font-code-inline text-on-surface-variant/60">Không cho phép hủy</span>
+</div>
+</td>
+</tr>
+<!-- ROW 4: ALLOCATED TO SCHOOL DESTINATION -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs font-code-inline text-code-inline text-on-surface font-semibold">
+<span class="material-symbols-outlined text-[16px] text-secondary">share_location</span>
+                DN-20260910-0035
+              </div>
+<div class="mt-1 font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">school</span>
+                Đã bàn giao học đường
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-body-md text-body-md font-medium text-on-surface">10/09/2026 - 16:45</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-secondary">campaign</span>
+                Ánh sáng tri thức Hà Giang
+              </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant/80 mt-1">Điểm trường THCS Sủng Máng</div>
+</td>
+<td class="py-space-md px-space-md align-top max-w-xs">
+<div class="font-body-md text-body-md text-on-surface font-medium">50 Máy tính bảng Galaxy Tab A8</div>
+<div class="font-label-sm text-label-sm text-secondary mt-1">Đã gắn nhãn tài trợ Quỹ F.Tech</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Đã phân bổ về trường THCS Mèo Vạc
+              </div>
+<div class="text-[11px] text-on-surface-variant font-code-inline mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Hiệu trưởng đã ký nhận
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex flex-col items-end gap-1.5">
+<a class="px-space-md py-1.5 rounded-lg bg-surface-container-high hover:bg-secondary-container hover:text-on-secondary-container text-on-surface font-label-md text-label-md font-medium transition-all flex items-center gap-1" data-path="qr-tracking" href="#">
+<span class="material-symbols-outlined text-[16px] text-secondary">qr_code_2</span>
+                  Theo Dõi Mã QR
+                </a>
+<span class="text-[11px] font-code-inline text-on-surface-variant/60">Tài sản cố định trường học</span>
+</div>
+</td>
+</tr>
+<!-- ROW 5: CANCELLED PLEDGE -->
+<tr class="bg-surface-container-low opacity-75 hover:opacity-100 transition-opacity group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs font-code-inline text-code-inline text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+                DN-20260902-0019
+              </div>
+<div class="mt-1 font-label-sm text-label-sm text-on-surface-variant/70">Đã hủy lúc 02/09/2026 15:10</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-body-md text-body-md font-medium text-on-surface-variant">02/09/2026 - 11:30</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/70 flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">campaign</span>
+                Đồng hành năm học mới
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top max-w-xs">
+<div class="font-body-md text-body-md text-on-surface-variant line-through">08 Bàn phím cơ & Chuột không dây</div>
+<div class="font-label-sm text-label-sm text-error/80 mt-1">Lý do: Thay đổi phương án trao tặng sang tiền mặt</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
+                Đã hủy bởi người dùng
+              </div>
+<div class="text-[11px] text-on-surface-variant/70 font-code-inline mt-1.5">
+                Đã giải phóng lịch hẹn
+              </div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface-variant font-label-md text-label-md transition-all">
+                Xem lịch sử nhật ký
+              </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Data Table Footer / Pagination stats -->
+<div class="p-space-md bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+        Hiển thị <span class="font-medium text-on-surface">5</span> trên tổng số <span class="font-medium text-on-surface">5</span> phiếu trao tặng đã tạo
+      </div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="inline-block w-2 h-2 rounded-full bg-primary"></span>
+        Hệ thống tự động đồng bộ trạng thái kho vận chuyển mỗi 60 giây
+      </div>
+</div>
+</div>
+<!-- Interactive Cancellation Audit Trail & Rule Explainer Grid -->
+<div class="mt-space-xl grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Card 1: 72H Window Rule Breakdown -->
+<div class="rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-tertiary flex items-center justify-center mb-space-md">
+<span class="material-symbols-outlined text-[24px]">timer</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Cửa sổ 72 Giờ Vàng</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Khoảng đệm 72 giờ cho phép bạn rút lại cam kết nếu có sự cố phát sinh ngoài ý muốn trước khi tình nguyện viên xuất phát nhận thiết bị.
+        </p>
+</div>
+<div class="mt-space-md pt-space-md bg-surface-container-lowest/50 -mx-space-lg -mb-space-lg p-space-md rounded-b-xl">
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span>Thời gian còn lại cho #DN-0128</span>
+<span class="text-tertiary font-semibold">70h : 45m</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 97.2%"></div>
+</div>
+</div>
+</div>
+<!-- Card 2: Immutability Enforced -->
+<div class="rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center mb-space-md">
+<span class="material-symbols-outlined text-[24px]">lock_reset</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Không Thể Sửa Đổi Dữ Liệu</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Số lượng, chủng loại, tình trạng máy tính và tài liệu khi đã ký duyệt điện tử sẽ được băm hash lưu trữ. Nếu muốn đổi quà tặng, vui lòng hủy phiếu hợp lệ và tạo mới.
+        </p>
+</div>
+<div class="mt-space-md pt-space-md flex items-center gap-space-xs text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+        Bảo toàn toàn vẹn dữ liệu SHA-256
+      </div>
+</div>
+<!-- Card 3: Direct Volunteer Hotlines -->
+<div class="rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-secondary flex items-center justify-center mb-space-md">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Cần Hỗ Trợ Đột Xuất?</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Nếu phiếu đã quá 72 giờ nhưng người nhận chưa thể tiếp nhận hoặc phát sinh biến động địa điểm, trung tâm điều phối sẵn sàng can thiệp thủ công.
+        </p>
+</div>
+<div class="mt-space-md pt-space-md flex items-center justify-between">
+<span class="font-code-inline text-code-inline text-on-surface font-semibold">Hotline: 1800 6826</span>
+<span class="px-2 py-1 rounded bg-secondary-container/30 text-secondary text-label-sm font-semibold">24/7 Miễn phí</span>
+</div>
+</div>
+</div>
+<!-- MODAL DIALOG: XÁC NHẬN HỦY PHIẾU TRAO TẶNG (Active Showcase for DN-20261002-0128) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-space-md bg-surface-container-lowest/80 backdrop-blur-md transition-all" id="cancellationModal">
+<div class="relative w-full max-w-lg rounded-xl bg-surface-container-low shadow-2xl p-space-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+<!-- Top Warning Accent Bar -->
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-error"></div>
+<!-- Modal Header -->
+<div class="flex items-start justify-between gap-space-md mt-space-xs mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-error-container/30 text-error flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">warning</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface" id="modalPledgeTitle">
+              Xác Nhận Hủy Phiếu Trao Tặng #DN-20261002-0128
+            </h3>
+<span class="font-label-sm text-label-sm text-error uppercase tracking-wider font-semibold">
+              Ràng buộc hủy kép hợp lệ: Còn 70 giờ
+            </span>
+</div>
+</div>
+<button class="p-1 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" onclick="closeCancellationModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Warning Callout Box -->
+<div class="p-space-md rounded-lg bg-surface-container-high mb-space-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Phiếu này được tạo cách đây <strong class="text-on-surface">2 giờ</strong> (nằm trong khung thời hạn 72 giờ hợp lệ). Việc hủy phiếu sẽ <span class="text-error font-medium">ngay lập tức giải phóng lịch hẹn điều phối</span> của tình nguyện viên và thông báo cho ban tiếp nhận chiến dịch.
+        </p>
+<div class="mt-2 text-xs font-code-inline text-on-surface-variant/80 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">inventory_2</span>
+          Thiết bị hủy đăng ký: <span class="text-on-surface font-medium" id="modalPledgeItems">02 Laptop Dell Latitude, 10 Bộ SGK Cánh Diều</span>
+</div>
+</div>
+<!-- Cancellation Form -->
+<form class="space-y-space-md" id="cancelPledgeForm" onsubmit="handleConfirmCancel(event)">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5 font-medium">
+            Lý do hủy bắt buộc <span class="text-error">*</span>
+</label>
+<div class="relative">
+<select class="w-full h-10 px-3 pr-8 rounded-lg bg-surface-container text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-error transition-all appearance-none cursor-pointer" required="">
+<option disabled="" selected="" value="">-- Chọn lý do chính --</option>
+<option value="busy">Bận đột xuất không thể bàn giao theo lịch hẹn</option>
+<option value="transferred">Đã gửi qua đơn vị tài trợ / địa phương khác</option>
+<option value="method_change">Thay đổi phương án trao tặng (chuyển sang thiết bị khác / tiền mặt)</option>
+<option value="inspection_failed">Thiết bị hỏng hóc đột xuất trước khi bàn giao</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[18px]">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5 font-medium">
+            Ghi chú chi tiết cho Ban Điều Phối <span class="text-on-surface-variant font-normal">(Tùy chọn)</span>
+</label>
+<textarea class="w-full p-3 rounded-lg bg-surface-container text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-error transition-all resize-none" placeholder="Cung cấp thêm thông tin lý do hủy để hỗ trợ thống kê công tác vận động giáo dục..." rows="3"></textarea>
+</div>
+<div class="p-space-sm rounded-lg bg-error-container/10 flex items-start gap-2">
+<input class="mt-0.5 rounded text-error focus:ring-0 cursor-pointer" id="confirmCheckbox" required="" type="checkbox"/>
+<label class="font-label-sm text-label-sm text-error/90 cursor-pointer" for="confirmCheckbox">
+            Tôi xác nhận hủy phiếu và hiểu rằng hành động này không thể hoàn tác. Mọi mã QR dự kiến sẽ bị vô hiệu hóa ngay tức thì.
+          </label>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-space-sm pt-space-sm">
+<button class="px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all" onclick="closeCancellationModal()" type="button">
+            Đóng
+          </button>
+<button class="px-space-lg py-2 rounded-lg bg-error text-on-error font-label-md text-label-md font-semibold hover:bg-error/90 transition-all flex items-center gap-1.5 shadow-lg shadow-error/20" type="submit">
+<span class="material-symbols-outlined text-[18px]">delete_forever</span>
+            Xác Nhận Hủy Phiếu
+          </button>
+</div>
+</form>
+</div>
+</div>
+<!-- Notification Toast Simulation -->
+<div class="fixed bottom-6 right-6 z-50 hidden max-w-md p-space-md rounded-xl bg-surface-container-high text-on-surface shadow-2xl flex items-center gap-space-sm animate-in slide-in-from-bottom duration-300" id="actionToast">
+<div class="w-8 h-8 rounded-full bg-error-container text-error flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">done</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold">Đã Hủy Phiếu Thành Công</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Phiếu DN-20261002-0128 đã chuyển sang trạng thái đã hủy.</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple state & interaction logic for cancellation showcase
+  function openCancellationModal(code, createdDate, items) {
+    const modal = document.getElementById('cancellationModal');
+    if (modal) {
+      document.getElementById('modalPledgeTitle').innerText = `Xác Nhận Hủy Phiếu Trao Tặng #${code}`;
+      document.getElementById('modalPledgeItems').innerText = items;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function closeCancellationModal() {
+    const modal = document.getElementById('cancellationModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  function handleConfirmCancel(e) {
+    e.preventDefault();
+    closeCancellationModal();
+    
+    // Show confirmation feedback
+    const toast = document.getElementById('actionToast');
+    if (toast) {
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+  }
+
+  // Filter tabs interactive toggling
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-sm');
+          t.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        tab.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        tab.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-sm');
+      });
+    });
+
+    // Simple table search filter
+    const searchInput = document.getElementById('tableSearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#pledgesTable tbody tr');
+        rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(query) ? '' : 'none';
+        });
+      });
+    }
+  });
+</script></main></div></body></html>

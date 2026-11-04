@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-fixed-variant":"#005236","on-error-container":"#ffdad6","error":"#ffb4ab","surface-container-highest":"#2d3449","on-primary":"#003824","on-tertiary-fixed":"#2a1700","surface-tint":"#4edea3","inverse-primary":"#006c49","tertiary-fixed":"#ffddb8","on-primary-container":"#00422b","on-surface":"#dae2fd","background":"#0b1326","on-secondary-fixed-variant":"#003ea8","surface-dim":"#0b1326","outline-variant":"#3c4a42","outline":"#86948a","tertiary":"#ffb95f","surface-bright":"#31394d","surface-container-high":"#222a3d","on-tertiary-fixed-variant":"#653e00","surface":"#0b1326","on-secondary-fixed":"#00174b","primary-fixed":"#6ffbbe","primary-fixed-dim":"#4edea3","secondary-fixed":"#dbe1ff","secondary":"#b4c5ff","on-secondary-container":"#cdd7ff","inverse-on-surface":"#283044","error-container":"#93000a","on-primary-fixed":"#002113","on-tertiary-container":"#523200","surface-variant":"#2d3449","on-surface-variant":"#bbcabf","on-secondary":"#002a78","surface-container":"#171f33","primary-container":"#10b981","on-tertiary":"#472a00","tertiary-fixed-dim":"#ffb95f","secondary-fixed-dim":"#b4c5ff","inverse-surface":"#dae2fd","surface-container-lowest":"#060e20","on-error":"#690005","on-background":"#dae2fd","primary":"#4edea3","surface-container-low":"#131b2e","secondary-container":"#0053db","tertiary-container":"#e29100"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter-mobile":"0.75rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2.5rem","margin":"2rem","space-lg":"1.5rem"},fontFamily:{"headline-lg-mobile":["Plus Jakarta Sans"],"code-inline":["Inter"],"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"body-sm":["Inter"],"display-hero-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"label-md":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Inter"],"headline-lg":["Plus Jakarta Sans"],"body-lg":["Inter"]},fontSize:{"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"code-inline":["12px",{"lineHeight":"16px","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"display-hero-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"display-hero":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.05em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-lg flex items-center justify-between bg-surface-container-low"><div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><span class="material-symbols-outlined text-[20px]">hub</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">EduShare VN</span><span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Cổng Kho Gộp</span></div></div></div><nav class="flex-1 px-space-md py-space-sm overflow-y-auto space-y-space-md" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">1. Tiếp Nhận &amp; Kiểm Định</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="xac-minh-phieu-trao-tang" href="#"><span class="material-symbols-outlined text-[18px]">verified</span><span class="font-body-md text-body-md">Xác minh phiếu trao tặng</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="kiem-dinh-1-cham-quick-qc" href="#"><span class="material-symbols-outlined text-[18px]">fact_check</span><span class="font-body-md text-body-md">Kiểm định 1 chạm (Quick QC)</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">2. Kho &amp; Tồn Kho</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="nhap-kho-da-xac-minh" href="#"><span class="material-symbols-outlined text-[18px]">inventory</span><span class="font-body-md text-body-md">Nhập kho đã xác minh</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="danh-sach-ton-kho" href="#"><span class="material-symbols-outlined text-[18px]">warehouse</span><span class="font-body-md text-body-md">Danh sách tồn kho</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="theo-doi-trang-thai-chuyen" href="#"><span class="material-symbols-outlined text-[18px]">sync_alt</span><span class="font-body-md text-body-md">Theo dõi trạng thái chuyển</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">3. Điều Phối &amp; Vận Chuyển</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="tao-lenh-dieu-chuyen" href="#"><span class="material-symbols-outlined text-[18px]">forklift</span><span class="font-body-md text-body-md">Tạo lệnh điều chuyển</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="lap-van-don" href="#"><span class="material-symbols-outlined text-[18px]">local_shipping</span><span class="font-body-md text-body-md">Lập vận đơn</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">4. Hỗ Trợ &amp; Sự Cố</div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="bao-cao-su-co" href="#"><span class="material-symbols-outlined text-[18px]">report_problem</span><span class="font-body-md text-body-md">Báo cáo sự cố</span></a></div></nav><div class="p-space-md bg-surface-container-lowest"><div class="flex items-center justify-between text-on-surface-variant"><span class="font-label-sm text-label-sm">Băng thông mạng kho: Tốt</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span></span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md min-w-0"><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">KHO TRUNG TÂM ĐÀ NẴNG</span><span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">#WH-DAD-01</span></div><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Thủ Kho Điều Phối</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><button class="flex items-center gap-space-xs px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-[0_1px_8px_rgba(0,0,0,0.04)]" type="button"><span class="material-symbols-outlined text-[18px]">qr_code_scanner</span><span>Quét mã QR kho</span></button><button class="flex items-center gap-space-xs px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-variant hover:text-on-surface transition-colors shadow-[0_1px_8px_rgba(0,0,0,0.04)]" type="button"><span class="material-symbols-outlined text-[18px]">file_upload</span><span>Xuất nhanh</span></button></div><div class="h-6 w-px bg-surface-container-highest"></div><button aria-label="Thông báo sự cố và vận chuyển" class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary"></span></button><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Lê Minh</span><span class="font-label-sm text-label-sm text-on-surface-variant">Thủ kho kiêm Điều phối viên</span></div></div></div></header><main class="relative w-full pt-16 bg-background px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-space-lg">
+<!-- Top Action & Context Header -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-lg shadow-md">
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col max-w-2xl">
+<div class="flex items-center gap-space-xs text-primary font-label-sm uppercase tracking-wider mb-1">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Luồng tiếp nhận &amp; Phê duyệt lưu kho</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface">Nhập kho đã xác minh</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Danh sách thiết bị và tài liệu đã qua quy trình kiểm định chất lượng nghiêm ngặt (Quick QC), xếp hàng chờ phân phối trực tiếp vào kệ chứa cố định tại Kho Đà Nẵng.
+          </p>
+</div>
+<!-- Metric Badges Group -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="flex items-center gap-space-sm px-4 py-2 rounded-lg bg-surface-container shadow-sm">
+<div class="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">queue</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Hàng chờ</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">32 mặt hàng</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm px-4 py-2 rounded-lg bg-surface-container shadow-sm">
+<div class="w-8 h-8 rounded-md bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">warehouse</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Kho đích</span>
+<span class="font-headline-sm text-headline-sm text-primary font-semibold">#WH-DAD-01</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Inventory Batch Breakdown Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<div class="p-space-md rounded-xl bg-surface-container-low shadow-sm flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">laptop_mac</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Laptop &amp; PC</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">14 thiết bị</span>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low shadow-sm flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined">tablet</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Máy tính bảng</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">8 thiết bị</span>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low shadow-sm flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/20 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sách giáo khoa</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">6 bộ kiện</span>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low shadow-sm flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined">devices_other</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Thiết bị mạng &amp; Ngoại vi</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">4 kiện</span>
+</div>
+</div>
+</div>
+<!-- Verified Inbound Queue Table Container -->
+<div class="rounded-xl bg-surface-container-low p-space-md shadow-md flex flex-col gap-space-md">
+<!-- Toolbar Filters -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs w-full sm:w-auto">
+<div class="relative w-full sm:w-72">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline">search</span>
+<input class="w-full h-10 pl-9 pr-3 rounded-lg bg-surface-container text-on-surface text-body-md placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="Tìm theo mã QR, số seri, người gửi..." type="text"/>
+</div>
+<button class="h-10 px-3 rounded-lg bg-surface-container text-on-surface text-label-md flex items-center gap-1 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+<span>Lọc phân loại</span>
+</button>
+</div>
+<div class="flex items-center gap-space-sm text-label-sm text-on-surface-variant self-end sm:self-auto">
+<span>Tự động gán kệ:</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-primary font-semibold">Tối ưu dung tích (Auto-Bin Engine v2.4)</span>
+</div>
+</div>
+<!-- Table Structure -->
+<div class="overflow-x-auto rounded-lg">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+<th class="py-3 px-4 w-12 text-center" scope="col">
+<input class="w-4 h-4 rounded bg-background accent-primary cursor-pointer transition-colors" id="selectAll" type="checkbox"/>
+</th>
+<th class="py-3 px-4" scope="col">Mã QR Thiết Bị</th>
+<th class="py-3 px-4" scope="col">Tên Hiện Vật &amp; Cấu Hình</th>
+<th class="py-3 px-4" scope="col">Kết Quả Kiểm Định</th>
+<th class="py-3 px-4" scope="col">Ngày Tiếp Nhận</th>
+<th class="py-3 px-4" scope="col">Đơn Vị Quyên Góp</th>
+<th class="py-3 px-4" scope="col">Vị Trí Kệ Đề Xuất (Cố Định)</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface divide-y-0" id="queueBody">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-VN-98421</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Laptop Lenovo ThinkPad T480</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Core i5-8250U / 16GB RAM / 256GB NVMe / Pin 88%</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Grade A - 95%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">apartment</span>
+<span class="font-label-md text-label-md text-on-surface">Tập đoàn F.Tech</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">shelves</span>
+<span>KỆ-IT-A01</span>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-VN-98425</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Laptop Dell Latitude 7490</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Core i5-8350U / 8GB RAM / 256GB SSD / Kèm sạc OEM</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Grade B - Sẵn sàng phân bổ</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">volunteer_activism</span>
+<span class="font-label-md text-label-md text-on-surface">Quỹ Thiện Tâm</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">shelves</span>
+<span>KỆ-IT-A01</span>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-BK-0091</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Bộ SGK Cánh Diều Lớp 7 (Trọn bộ 14 cuốn)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Bọc kiếng plastic, đầy đủ bài tập và đĩa CD nghe Anh ngữ</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Grade A - 98% Mới</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
+<span class="font-label-md text-label-md text-on-surface">Bà Mai Phương Lan</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-tertiary">auto_stories</span>
+<span>KỆ-SGK-B04</span>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-TAB-014</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Máy tính bảng Samsung Galaxy Tab A8 10.5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">WiFi 64GB Silver / Kèm củ sạc 15W / Cường lực bảo vệ</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Grade A - 92%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">apartment</span>
+<span class="font-label-md text-label-md text-on-surface">Tập đoàn F.Tech</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">devices</span>
+<span>KỆ-TAB-C02</span>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-VN-98432</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Màn hình Dell UltraSharp U2419H 24-inch</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">FHD IPS / Cáp nguồn &amp; HDMI / Không điểm chết màn hình</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Grade B - Sẵn sàng phân bổ</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">apartment</span>
+<span class="font-label-md text-label-md text-on-surface">Tập đoàn F.Tech</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">shelves</span>
+<span>KỆ-IT-A03</span>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-BK-0095</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Bộ Sách Giáo Viên Lớp 8 Kết Nối Tri Thức</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">8 tập chuyên đề / Bản in chính thức NXB Giáo Dục</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Grade A - 100% Mới</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
+<span class="font-label-md text-label-md text-on-surface">Bà Mai Phương Lan</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-tertiary">auto_stories</span>
+<span>KỆ-SGK-B04</span>
+</div>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-TAB-018</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">iPad 10.2 inch Gen 9 (64GB Wi-Fi)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Space Gray / Kèm bao da chống sốc chuyên dụng trường học</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Grade A - 96%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">volunteer_activism</span>
+<span class="font-label-md text-label-md text-on-surface">Quỹ Thiện Tâm</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">devices</span>
+<span>KỆ-TAB-C02</span>
+</div>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-surface-container-high/60 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="row-checkbox w-4 h-4 rounded bg-background accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 font-code-inline text-code-inline">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-semibold text-primary">EDU-VN-98440</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Laptop HP ProBook 440 G6</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Core i5-8265U / 8GB / 256GB SSD / Webcam &amp; Mic hoạt động tốt</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Grade B - Sẵn sàng phân bổ</span>
+</div>
+</td>
+<td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                04/10/2026 (Hôm nay)
+              </td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">apartment</span>
+<span class="font-label-md text-label-md text-on-surface">Tập đoàn F.Tech</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-code-inline text-code-inline font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary">shelves</span>
+<span>KỆ-IT-A01</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Status footer inside table card -->
+<div class="flex flex-col sm:flex-row items-center justify-between pt-space-xs gap-space-sm font-label-md text-label-md text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span>Đang hiển thị 1-8 trong tổng số 32 bản ghi kiểm định hợp lệ</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-3 py-1 rounded-lg bg-primary text-on-primary font-semibold">1</span>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">2</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">3</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">4</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bulk Action Floating Bar -->
+<div class="sticky bottom-6 mt-space-lg z-30 w-full">
+<div class="rounded-xl bg-surface-container-high/95 backdrop-blur-xl p-space-md shadow-xl flex flex-col md:flex-row items-center justify-between gap-space-md">
+<!-- Left side: counter and categorized quick pills -->
+<div class="flex flex-wrap items-center gap-space-md w-full md:w-auto">
+<div class="flex items-center gap-space-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+<span id="selectedCountBadge">Đã chọn 8 / 32 mặt hàng</span>
+</div>
+<div class="hidden xl:flex items-center gap-space-xs text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline">dns</span>
+<span>Dự kiến phân bổ:</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold">3 Máy tính (KỆ-IT)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold">2 SGK (KỆ-SGK)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold">2 Tablet (KỆ-TAB)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold">1 Ngoại vi</span>
+</div>
+</div>
+<!-- Right side: Actions -->
+<div class="flex items-center gap-space-sm w-full md:w-auto justify-end">
+<button class="px-4 py-2.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-variant font-label-md text-label-md transition-colors" id="unselectBtn" type="button">
+          Bỏ chọn
+        </button>
+<button class="flex-1 md:flex-initial flex items-center justify-center gap-space-xs px-6 py-2.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary font-label-md text-label-md font-semibold shadow-md transition-all active:scale-[0.98]" id="commitStockInBtn" type="button">
+<span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
+<span>📥 NHẬP CÁC DÒNG ĐÃ CHỌN VÀO KHO</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Toast for Execution Feedback -->
+<div class="fixed bottom-24 right-8 z-50 hidden max-w-md p-space-md rounded-xl bg-surface-container-highest text-on-surface shadow-2xl transition-all" id="toastSuccess">
+<div class="flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Lưu kho thành công!</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Đã cập nhật trạng thái lưu kho chính thức cho 8 dòng hiện vật vào Kho Trung Tâm Đà Nẵng (#WH-DAD-01).</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" id="closeToast" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  (function () {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const countBadge = document.getElementById('selectedCountBadge');
+    const unselectBtn = document.getElementById('unselectBtn');
+    const commitBtn = document.getElementById('commitStockInBtn');
+    const toast = document.getElementById('toastSuccess');
+    const closeToast = document.getElementById('closeToast');
+
+    function updateCounter() {
+      const selected = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
+      countBadge.textContent = `Đã chọn ${selected} / 32 mặt hàng`;
+      selectAllCheckbox.checked = selected === rowCheckboxes.length;
+      selectAllCheckbox.indeterminate = selected > 0 && selected < rowCheckboxes.length;
+      
+      if (selected === 0) {
+        commitBtn.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        commitBtn.classList.remove('opacity-50', 'pointer-events-none');
+      }
+    }
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function () {
+        rowCheckboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+        updateCounter();
+      });
+    }
+
+    rowCheckboxes.forEach(cb => {
+      cb.addEventListener('change', updateCounter);
+    });
+
+    if (unselectBtn) {
+      unselectBtn.addEventListener('click', function () {
+        rowCheckboxes.forEach(cb => {
+          cb.checked = false;
+        });
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        updateCounter();
+      });
+    }
+
+    if (commitBtn) {
+      commitBtn.addEventListener('click', function () {
+        if (toast) {
+          toast.classList.remove('hidden');
+          setTimeout(() => {
+            toast.classList.add('hidden');
+          }, 4500);
+        }
+      });
+    }
+
+    if (closeToast) {
+      closeToast.addEventListener('click', function () {
+        toast.classList.add('hidden');
+      });
+    }
+
+    updateCounter();
+  })();
+</script></main></div></body></html>

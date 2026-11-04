@@ -1,0 +1,123 @@
+{
+  "n_base_items": 242,
+  "n_train_rows": 1694,
+  "rows_by_source": {
+    "project_seed_ts": 22,
+    "synthetic_variant_of:project_seed_ts": 132,
+    "project_db_dump": 2,
+    "synthetic_variant_of:project_db_dump": 12,
+    "handwritten_catalog": 169,
+    "synthetic_variant_of:handwritten_catalog": 1014,
+    "handwritten_other": 49,
+    "synthetic_variant_of:handwritten_other": 294
+  },
+  "rows_by_label": {
+    "books": 462,
+    "stationery": 469,
+    "electronics": 420,
+    "other": 343
+  },
+  "grouped_cv_accuracy": 0.81,
+  "grouped_cv_per_class": {
+    "books": {
+      "precision": 0.87,
+      "recall": 0.95,
+      "f1-score": 0.91
+    },
+    "electronics": {
+      "precision": 0.89,
+      "recall": 0.85,
+      "f1-score": 0.87
+    },
+    "other": {
+      "precision": 0.65,
+      "recall": 0.55,
+      "f1-score": 0.59
+    },
+    "stationery": {
+      "precision": 0.78,
+      "recall": 0.83,
+      "f1-score": 0.81
+    }
+  },
+  "hard_test_n": 48,
+  "hard_test_accuracy": 0.958,
+  "hard_test_wrong": [
+    [
+      "Cặp sách Miti",
+      "stationery",
+      "electronics"
+    ],
+    [
+      "Từ điển Oxford",
+      "books",
+      "electronics"
+    ]
+  ],
+  "hard_test_below_threshold": 4,
+  "out_of_scope_n": 15,
+  "out_of_scope_flagged_unsure": 1.0,
+  "out_of_scope_detail": {
+    "Bàn học sinh": [
+      "other",
+      0.89
+    ],
+    "Ghế gỗ lớp học": [
+      "other",
+      0.98
+    ],
+    "Đồng phục áo trắng": [
+      "other",
+      1.0
+    ],
+    "Xe đạp cũ": [
+      "other",
+      1.0
+    ],
+    "Áo khoác mùa đông": [
+      "other",
+      0.99
+    ],
+    "Tủ đựng đồ": [
+      "other",
+      0.81
+    ],
+    "Giày thể thao": [
+      "stationery",
+      0.51
+    ],
+    "Gạo 10kg": [
+      "other",
+      0.88
+    ],
+    "Tủ sắt đựng hồ sơ": [
+      "other",
+      0.63
+    ],
+    "Quần áo trẻ em": [
+      "other",
+      1.0
+    ],
+    "Giường tầng": [
+      "other",
+      0.92
+    ],
+    "Nệm cao su": [
+      "books",
+      0.39
+    ],
+    "Xe đẩy hàng": [
+      "other",
+      0.48
+    ],
+    "Thùng nước ngọt": [
+      "other",
+      0.95
+    ],
+    "Áo thun cộng đồng": [
+      "other",
+      0.99
+    ]
+  },
+  "threshold": 0.6
+}
