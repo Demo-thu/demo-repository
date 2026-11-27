@@ -17,6 +17,10 @@ export class QueryItemDto extends PaginationQueryDto {
   warehouseId?: string;
 
   @IsOptional()
+  @IsUUID()
+  campaignId?: string;
+
+  @IsOptional()
   @IsString()
   @MaxLength(80)
   qrCode?: string;

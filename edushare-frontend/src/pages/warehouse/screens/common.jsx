@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapPin, X } from "lucide-react";
 import api from "@/lib/api";
-import { Field, GhostButton, Modal, SearchBox, inputClass, orgName, rowsOf } from "@/pages/portals/kit";
+import { Field, GhostButton, Modal, SearchBox, inputClass, orgName, rowsOf, totalOf } from "@/pages/portals/kit";
 
 /** Hệ thống chỉ có một kho xuất duy nhất: Tổng kho Miền Trung (mã WH-HAN). */
 export function useWarehouses() {
@@ -29,13 +29,32 @@ export function DestinationPicker({ value, onChange }) {
   const [rows, setRows] = useState([]);
   const [term, setTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    api.get("/requisitions", { params: { limit: 100 } })
-      .then((response) => setRows(rowsOf(response.data).filter((row) => ["APPROVED", "ALLOCATING"].includes(row.status))))
-      .catch(() => setRows([]))
+    setLoadError("");
+    const fetchAll = async (status) => {
+      const results = [];
+      let page = 1;
+      let total = 0;
+      do {
+        const response = await api.get("/requisitions", { params: { status, limit: 100, page } });
+        const pageRows = rowsOf(response.data);
+        results.push(...pageRows);
+        total = totalOf(response.data);
+        page += 1;
+        if (!pageRows.length) break;
+      } while (results.length < total);
+      return results;
+    };
+    Promise.all([fetchAll("APPROVED"), fetchAll("ALLOCATING")])
+      .then((results) => setRows(results.flat()))
+      .catch(() => {
+        setRows([]);
+        setLoadError("Không tải được yêu cầu đã duyệt. Vui lòng thử mở lại danh sách.");
+      })
       .finally(() => setLoading(false));
   }, [open]);
 
@@ -59,7 +78,8 @@ export function DestinationPicker({ value, onChange }) {
           footer={<GhostButton onClick={() => setOpen(false)}>Đóng</GhostButton>}>
           <div className="mb-3"><SearchBox value={term} onChange={setTerm} placeholder="Tìm trường, mã yêu cầu, địa chỉ..." /></div>
           {loading ? <p className="py-6 text-center text-sm text-slate-500">Đang tải...</p> : null}
-          {!loading && !visible.length ? <p className="py-6 text-center text-sm text-slate-500">Chưa có yêu cầu nào đã duyệt để giao.</p> : null}
+          {loadError ? <p role="alert" className="py-4 text-center text-sm text-rose-700">{loadError}</p> : null}
+          {!loading && !loadError && !visible.length ? <p className="py-6 text-center text-sm text-slate-500">Chưa có yêu cầu nào đã duyệt để giao.</p> : null}
           <ul className="space-y-2">
             {visible.map((row) => (
               <li key={row.id}>

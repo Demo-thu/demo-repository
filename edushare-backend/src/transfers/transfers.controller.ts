@@ -34,6 +34,12 @@ export class TransfersController {
     return this.transfers.dispatch(actor, id, readClientIp(req.headers, req.ip));
   }
 
+  @Patch(':id/approve')
+  @Roles(Role.ADMIN)
+  approveCampaignTransfer(@CurrentUser() actor: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string, @Req() req: HttpRequestContext) {
+    return this.transfers.approveCampaignTransfer(actor, id, readClientIp(req.headers, req.ip));
+  }
+
   @Patch(':id/receive')
   @Roles(Role.WAREHOUSE_STAFF)
   receive(@CurrentUser() actor: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string, @Req() req: HttpRequestContext) {

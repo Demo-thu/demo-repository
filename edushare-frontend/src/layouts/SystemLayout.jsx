@@ -7,7 +7,7 @@ import {
   Truck, X, Zap,
 } from "lucide-react";
 import AccountMenu from "./AccountMenu";
-import { usePortalRefresh } from "../pages/portals/kit";
+import { StatusBadge, usePortalRefresh } from "../pages/portals/kit";
 
 const groups = [
   ["1. CHIẾN DỊCH & TÀI KHOẢN", [["Tổng quan", "/", LayoutDashboard], ["Tạo chiến dịch & hạng mục", "/campaigns", Zap], ["Tài khoản & vai trò", "/accounts", HeartHandshake]]],
@@ -27,6 +27,7 @@ export default function SystemLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [query, setQuery] = useState("");
   const [requests, setRequests] = useState([]);
+  const [processingRequest, setProcessingRequest] = useState("");
   const [viewing, setViewing] = useState(null);
   const [, setProfileVersion] = useState(0);
   const dropdownRef = useRef(null);
@@ -38,15 +39,20 @@ export default function SystemLayout() {
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
-  const loadUrgent = useCallback(() => {
-    api.get("/requisitions/urgent").then((response) => {
-      setRequests((response.data.data ?? []).map((item) => ({
+  const loadUrgent = useCallback(async () => {
+    try {
+      const response = await api.get("/requisitions/urgent");
+      setRequests((response.data.data ?? []).filter((item) => item.status === "PENDING").map((item) => ({
         id: item.id,
         school: item.school?.profile?.organizationName || item.school?.fullName || "Trường học",
         need: item.title,
         priority: priorityLabel[item.urgencyLevel] || item.urgencyLevel,
+        status: item.status,
       })));
-    }).catch(() => setRequests([]));
+    } catch (error) {
+      setRequests([]);
+      setFeedback(apiError(error, "Không tải được thông báo yêu cầu khẩn cấp."));
+    }
   }, []);
 
   useEffect(() => {
@@ -90,13 +96,19 @@ export default function SystemLayout() {
   }
 
   const handleApprove = async (id, schoolName) => {
+    const request = requests.find((item) => item.id === id);
+    if (!request || request.status !== "PENDING" || processingRequest) return;
+    setProcessingRequest(id);
     try {
       await api.patch(`/requisitions/${id}/approve`);
       setRequests((prev) => prev.filter((req) => req.id !== id));
       setFeedback(`Đã phê duyệt khẩn cấp cho ${schoolName}`);
+      await loadUrgent();
     } catch (error) {
-      const message = error.response?.data?.message;
-      setFeedback(typeof message === "string" ? message : "Không phê duyệt được yêu cầu");
+      setFeedback(apiError(error, "Không phê duyệt được yêu cầu"));
+      await loadUrgent();
+    } finally {
+      setProcessingRequest("");
     }
   };
 
@@ -123,12 +135,19 @@ export default function SystemLayout() {
       setFeedback("Cần lý do từ chối trước khi gửi.");
       return;
     }
+    const request = requests.find((item) => item.id === id);
+    if (!request || request.status !== "PENDING" || processingRequest) return;
+    setProcessingRequest(id);
     try {
       await api.patch(`/requisitions/${id}/reject`, { reason: reason.trim() });
       setRequests((prev) => prev.filter((req) => req.id !== id));
       setFeedback(`Đã từ chối đề xuất của ${schoolName}`);
+      await loadUrgent();
     } catch (error) {
       setFeedback(apiError(error, "Không từ chối được yêu cầu"));
+      await loadUrgent();
+    } finally {
+      setProcessingRequest("");
     }
   }
 
@@ -224,9 +243,10 @@ export default function SystemLayout() {
                         <div key={req.id} className="rounded-lg border border-slate-100 bg-blue-50/60 p-2.5 text-xs">
                           <div className="flex items-start justify-between gap-2">
                             <b className="font-semibold text-slate-800 text-[11px]">{req.school}</b>
-                            <strong className="shrink-0 rounded bg-red-100 px-1.5 py-0.5 text-[8px] font-bold text-red-600">
-                              {req.priority}
-                            </strong>
+                            <span className="flex shrink-0 items-center gap-1">
+                              <StatusBadge kind="requisition" value={req.status} />
+                              <strong className="rounded bg-red-100 px-1.5 py-0.5 text-[8px] font-bold text-red-600">{req.priority}</strong>
+                            </span>
                           </div>
                           <p className="mt-1 text-[10px] text-slate-600">Yêu cầu: {req.need}</p>
                           <div className="mt-2 flex items-center justify-between border-t border-slate-200/50 pt-1.5">
@@ -234,10 +254,12 @@ export default function SystemLayout() {
                               ◉ Xem đề xuất
                             </button>
                             <span className="flex gap-1">
-                              <button type="button" onClick={() => handleReject(req.id, req.school)} className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700">Từ chối</button>
+                              <button type="button" disabled={processingRequest === req.id || Boolean(processingRequest)} onClick={() => handleReject(req.id, req.school)} className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700 disabled:opacity-50">Từ chối</button>
                               <button
+                                type="button"
+                                disabled={req.status !== "PENDING" || Boolean(processingRequest)}
                                 onClick={() => handleApprove(req.id, req.school)}
-                                className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition"
+                                className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50"
                               >
                                 Duyệt nhanh
                               </button>
@@ -271,7 +293,7 @@ export default function SystemLayout() {
             <dl className="mt-4 space-y-2 text-sm text-slate-700">
               <div className="flex justify-between gap-3"><dt>Trường</dt><dd className="text-right font-medium">{viewing.school?.profile?.organizationName || viewing.school?.fullName || "—"}</dd></div>
               <div className="flex justify-between gap-3"><dt>Mức khẩn</dt><dd>{priorityLabel[viewing.urgencyLevel] || viewing.urgencyLevel}</dd></div>
-              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd>{viewing.reviewStatus || viewing.status}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Trạng thái</dt><dd><StatusBadge kind="requisition" value={viewing.status} /></dd></div>
               <div className="flex justify-between gap-3"><dt>Số thứ tự</dt><dd>{viewing.queueOrder ?? "—"}</dd></div>
               <div className="flex justify-between gap-3"><dt>Giấy nhà trường</dt><dd className="max-w-[16rem] truncate text-right">{viewing.schoolConfirmationUrl || "—"}</dd></div>
               <div className="flex justify-between gap-3"><dt>Giấy ủy ban</dt><dd className="max-w-[16rem] truncate text-right">{viewing.committeeConfirmationUrl || "—"}</dd></div>

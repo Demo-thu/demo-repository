@@ -25,7 +25,16 @@ export class ItemsService {
     const { page, limit, skip } = pageArgs(query.page, query.limit);
     const where: Prisma.ResourceItemWhereInput = {
       ...(query.status ? { status: query.status } : query.inStock ? { status: { in: IN_STOCK_STATUSES } } : {}),
-      ...(query.reserve ? { pledgeItem: { pledge: { reserveStock: true } } } : {}),
+      ...(query.reserve || query.campaignId
+        ? {
+            pledgeItem: {
+              pledge: {
+                ...(query.reserve ? { reserveStock: true } : {}),
+                ...(query.campaignId ? { campaignId: query.campaignId } : {}),
+              },
+            },
+          }
+        : {}),
       ...(query.category ? { category: query.category } : {}),
       ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
       ...(query.qrCode ? { qrCode: { equals: query.qrCode, mode: 'insensitive' } } : {}),

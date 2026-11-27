@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
-import api from "@/lib/api";
+import api, { apiError } from "@/lib/api";
+import DeliveryEvidence from "@/pages/portals/DeliveryEvidence";
 import {
-  DataTable, Empty, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, downloadCsv, fmtDateTime,
+  DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, downloadCsv, fmtDateTime,
   useWaybills, waybillItems,
 } from "@/pages/portals/kit";
 
@@ -11,6 +12,8 @@ export default function HistoryScreen({ params, openTab }) {
   const [term, setTerm] = useState("");
   const [page, setPage] = useState(1);
   const [detail, setDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
   const { waybills, meta, error } = useWaybills("DELIVERED", { page, limit: 20, search: term });
 
   useEffect(() => {
@@ -23,8 +26,26 @@ export default function HistoryScreen({ params, openTab }) {
     if (!id) return;
     const found = waybills.find((row) => row.id === id);
     if (found) { setDetail(found); return; }
-    api.get(`/waybills/${id}`).then((response) => setDetail(response.data)).catch(() => setDetail(null));
+    setDetailLoading(true);
+    api.get(`/waybills/${id}`)
+      .then((response) => setDetail(response.data))
+      .catch((failure) => setDetailError(apiError(failure, "Không tải được biên bản bàn giao.")))
+      .finally(() => setDetailLoading(false));
   }, [params, waybills]);
+
+  async function openDetail(row) {
+    setDetail(row);
+    setDetailError("");
+    setDetailLoading(true);
+    try {
+      const response = await api.get(`/waybills/${row.id}`);
+      setDetail(response.data);
+    } catch (failure) {
+      setDetailError(apiError(failure, "Không tải được biên bản bàn giao mới nhất."));
+    } finally {
+      setDetailLoading(false);
+    }
+  }
 
   const visible = waybills;
   const totalItems = waybills.reduce((sum, row) => sum + waybillItems(row).length, 0);
@@ -45,7 +66,7 @@ export default function HistoryScreen({ params, openTab }) {
       <div><p>{row.proof?.recipientName || "—"}</p><p className="text-xs text-slate-500">{row.proof?.recipientTitle}</p></div>,
       fmtDateTime(row.deliveredAt),
       row.proof?.volunteerReportedAt ? <span className="text-xs text-emerald-700">Đã nộp</span> : <span className="text-xs text-slate-500">Chưa nộp</span>,
-      <GhostButton onClick={() => setDetail(row)}>Xem biên bản PoD</GhostButton>,
+      <GhostButton onClick={() => openDetail(row)}>Xem biên bản PoD</GhostButton>,
     ],
   }));
 
@@ -53,7 +74,7 @@ export default function HistoryScreen({ params, openTab }) {
     <div>
       <PageHead eyebrow="4. Lịch sử & lưu trữ" title="Lịch sử giao hàng" subtitle="Lưu trữ các chuyến đã bàn giao cùng biên bản PoD có chữ ký và ảnh hiện trường."
         actions={<GhostButton onClick={exportCsv} disabled={!visible.length}><Download size={14} />Xuất CSV</GhostButton>} />
-      <Notice notice={error ? { tone: "error", text: error } : null} />
+      <Notice notice={detailError ? { tone: "error", text: detailError } : error ? { tone: "error", text: error } : null} />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Stat label="Chuyến đã giao" value={meta.total || 0} tone="emerald" />
         <Stat label="Số món trang này" value={totalItems} />
@@ -68,25 +89,14 @@ export default function HistoryScreen({ params, openTab }) {
       {detail?.proof ? (
         <Modal wide title={`Biên bản PoD · ${detail.code}`} subtitle={detail.allocationPlan?.requisition?.title} onClose={() => setDetail(null)}
           footer={<><GhostButton onClick={() => window.print()}>In biên bản</GhostButton><GhostButton onClick={() => openTab("trace")}>Truy vết mã QR</GhostButton><GhostButton onClick={() => setDetail(null)}>Đóng</GhostButton></>}>
-          <div className="grid gap-5 md:grid-cols-2">
-            <div>
-              <KeyValue rows={[
-                ["Trạng thái", <StatusBadge kind="waybill" value={detail.status} />],
-                ["Người ký nhận", `${detail.proof.recipientName} (${detail.proof.recipientTitle})`],
-                ["Ký lúc", fmtDateTime(detail.proof.signedAt)],
-                ["Vị trí", detail.proof.gpsLatitude != null ? `${detail.proof.gpsLatitude.toFixed(5)}, ${detail.proof.gpsLongitude.toFixed(5)}` : "Không ghi nhận"],
-                ["Số món", waybillItems(detail).length],
-              ]} />
-              <p className="mb-1 mt-4 text-xs font-semibold text-slate-600">Chữ ký</p>
-              <img src={detail.proof.recipientSignatureUrl} alt="Chữ ký người nhận" className="h-24 rounded border border-slate-200 bg-white object-contain p-1" />
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-semibold text-slate-600">Ảnh bàn giao</p>
-              <div className="grid grid-cols-2 gap-2">
-                {detail.proof.proofPhotoUrls.map((url, index) => <img key={index} src={url} alt={`Ảnh bàn giao ${index + 1}`} className="aspect-video rounded border border-slate-200 object-cover" />)}
-              </div>
-              {detail.proof.volunteerReportNote ? <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm"><p className="text-xs font-semibold text-slate-600">Báo cáo của tình nguyện viên</p><p className="mt-1 text-slate-700">{detail.proof.volunteerReportNote}</p></div> : <Empty>Tình nguyện viên chưa nộp báo cáo.</Empty>}
-            </div>
+          <div className="space-y-5">
+            {detailLoading ? <p className="rounded-lg bg-blue-50 p-2 text-xs text-blue-700">Đang tải biên bản bàn giao mới nhất...</p> : null}
+            <KeyValue rows={[
+              ["Trạng thái", <StatusBadge kind="waybill" value={detail.status} />],
+              ["Vị trí", detail.proof.gpsLatitude != null ? `${detail.proof.gpsLatitude.toFixed(5)}, ${detail.proof.gpsLongitude.toFixed(5)}` : "Không ghi nhận"],
+              ["Số món", waybillItems(detail).length],
+            ]} />
+            <DeliveryEvidence proof={detail.proof} />
           </div>
         </Modal>
       ) : null}

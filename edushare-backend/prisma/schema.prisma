@@ -83,29 +83,31 @@ enum CampaignStatus {
 }
 
 model User {
-  id               String               @id @default(uuid())
-  email            String               @unique
-  passwordHash     String
-  fullName         String
-  phone            String?
-  role             Role                 @default(DONOR)
-  status           String               @default("ACTIVE")
-  refreshTokenHash String?
-  profile          UserProfile?
-  passwordResetCodes  PasswordResetCode[]
-  pledges             DonationPledge[]
-  requisitions        SupportRequisition[]
-  shifts              VolunteerShift[]
-  waybillAssignments  WaybillVolunteer[]
-  transferAssignments StockTransferVolunteer[]
-  incidentReports     IncidentReport[]
+  id                   String                   @id @default(uuid())
+  email                String                   @unique
+  passwordHash         String
+  fullName             String
+  phone                String?
+  role                 Role                     @default(DONOR)
+  status               String                   @default("ACTIVE")
+  refreshTokenHash     String?
+  profile              UserProfile?
+  passwordResetCodes   PasswordResetCode[]
+  pledges              DonationPledge[]
+  requisitions         SupportRequisition[]
+  shifts               VolunteerShift[]
+  waybillAssignments   WaybillVolunteer[]
+  transferAssignments  StockTransferVolunteer[]
+  incidentReports      IncidentReport[]
   schoolTransfers      StockTransferOrder[]     @relation("TransferTargetSchool")
-  confirmedPlans      AllocationPlan[]         @relation("AllocationAdminConfirmedBy")
-  volunteerProofs     DeliveryProof[]          @relation("VolunteerProofReporter")
-  inspections         InspectionReport[]
-  auditLogs           AuditLog[]
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  beneficiaryCampaigns Campaign[]               @relation("CampaignBeneficiary")
+  approvedTransfers    StockTransferOrder[]     @relation("TransferAdminApprovedBy")
+  confirmedPlans       AllocationPlan[]         @relation("AllocationAdminConfirmedBy")
+  volunteerProofs      DeliveryProof[]          @relation("VolunteerProofReporter")
+  inspections          InspectionReport[]
+  auditLogs            AuditLog[]
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
 
   @@map("users")
 }
@@ -192,11 +194,11 @@ model PledgeProposal {
   status           String         @default("PENDING") // PENDING, ACCEPTED, WITHDRAWN, CANCELLED, EXPIRED
   reason           String
   note             String?
-  lines            Json           // Đối soát từng dòng: nhu cầu còn lại của chiến dịch lúc kho xem phiếu
-  options          Json           // [{type: "REDIRECT", campaignId, campaignTitle}, {type: "SPLIT", ...}, {type: "STOCK"}]
-  chosenType       String?        // REDIRECT | SPLIT | STOCK
+  lines            Json // Đối soát từng dòng: nhu cầu còn lại của chiến dịch lúc kho xem phiếu
+  options          Json // [{type: "REDIRECT", campaignId, campaignTitle}, {type: "SPLIT", ...}, {type: "STOCK"}]
+  chosenType       String? // REDIRECT | SPLIT | STOCK
   chosenCampaignId String?
-  resultPledgeId   String?        // Phiếu mới tạo cho phần dư khi nhà hảo tâm chọn SPLIT
+  resultPledgeId   String? // Phiếu mới tạo cho phần dư khi nhà hảo tâm chọn SPLIT
   respondedAt      DateTime?
   createdAt        DateTime       @default(now())
 
@@ -249,8 +251,8 @@ model ResourceItem {
   name           String
   grade          ItemConditionGrade?
   status         ItemStatus          @default(PENDING_INTAKE)
-  specifications Json?               // Lưu RAM, CPU, Battery, Size, Khối lớp...
-  binLocation    String?             // Vị trí kệ: KỆ-A1-TẦNG-2
+  specifications Json? // Lưu RAM, CPU, Battery, Size, Khối lớp...
+  binLocation    String? // Vị trí kệ: KỆ-A1-TẦNG-2
   receivedAt     DateTime?
   inspections    InspectionReport[]
   allocationItem AllocationItem?
@@ -265,35 +267,40 @@ model ResourceItem {
 }
 
 model InspectionReport {
-  id                String             @id @default(uuid())
+  id                String       @id @default(uuid())
   resourceItemId    String
-  resourceItem      ResourceItem       @relation(fields: [resourceItemId], references: [id], onDelete: Cascade)
+  resourceItem      ResourceItem @relation(fields: [resourceItemId], references: [id], onDelete: Cascade)
   inspectorId       String
-  inspector         User               @relation(fields: [inspectorId], references: [id])
-  isFunctional      Boolean            @default(true)
+  inspector         User         @relation(fields: [inspectorId], references: [id])
+  isFunctional      Boolean      @default(true)
   physicalDefects   String?
   recommendedAction String?
   notes             String?
-  inspectedAt       DateTime           @default(now())
+  inspectedAt       DateTime     @default(now())
 
   @@map("inspection_reports")
 }
 
 model StockTransferOrder {
-  id                String    @id @default(uuid())
-  code              String    @unique // TR-YYYYMMDD-XXXX
+  id                String                   @id @default(uuid())
+  code              String                   @unique // TR-YYYYMMDD-XXXX
   sourceWarehouseId String
-  sourceWarehouse   Warehouse @relation("SourceWarehouse", fields: [sourceWarehouseId], references: [id])
+  sourceWarehouse   Warehouse                @relation("SourceWarehouse", fields: [sourceWarehouseId], references: [id])
   targetWarehouseId String?
-  targetWarehouse   Warehouse? @relation("TargetWarehouse", fields: [targetWarehouseId], references: [id])
+  targetWarehouse   Warehouse?               @relation("TargetWarehouse", fields: [targetWarehouseId], references: [id])
   targetSchoolId    String?
-  targetSchool      User?              @relation("TransferTargetSchool", fields: [targetSchoolId], references: [id])
+  targetSchool      User?                    @relation("TransferTargetSchool", fields: [targetSchoolId], references: [id])
   requisitionId     String?
-  requisition       SupportRequisition? @relation(fields: [requisitionId], references: [id])
+  requisition       SupportRequisition?      @relation(fields: [requisitionId], references: [id])
+  campaignId        String?
+  campaign          Campaign?                @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   deliveryAddress   String?
   createdById       String
-  status            String    @default("PENDING") // PENDING, IN_TRANSIT, RECEIVED, CANCELLED
-  itemsCount        Int       @default(0)
+  status            String                   @default("PENDING") // PENDING_APPROVAL, PENDING, IN_TRANSIT, RECEIVED, CANCELLED
+  adminApprovedAt   DateTime?
+  adminApprovedById String?
+  adminApprovedBy   User?                    @relation("TransferAdminApprovedBy", fields: [adminApprovedById], references: [id])
+  itemsCount        Int                      @default(0)
   recipientName     String?
   recipientPhone    String?
   recipientNote     String?
@@ -301,31 +308,31 @@ model StockTransferOrder {
   receivedAt        DateTime?
   volunteers        StockTransferVolunteer[]
   items             StockTransferItem[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
 
   @@map("stock_transfer_orders")
 }
 
 model SupportRequisition {
-  id                 String             @id @default(uuid())
-  code               String             @unique // REQ-YYYYMMDD-XXXX
-  schoolId           String
-  school             User               @relation(fields: [schoolId], references: [id])
-  title              String
-  urgencyLevel       UrgencyLevel       @default(MEDIUM)
-  priorityScore            Float              @default(0.0) // Điểm nội bộ, không trả cho trường
+  id                       String               @id @default(uuid())
+  code                     String               @unique // REQ-YYYYMMDD-XXXX
+  schoolId                 String
+  school                   User                 @relation(fields: [schoolId], references: [id])
+  title                    String
+  urgencyLevel             UrgencyLevel         @default(MEDIUM)
+  priorityScore            Float                @default(0.0) // Điểm nội bộ, không trả cho trường
   verificationDocUrl       String?
   schoolConfirmationUrl    String?
   committeeConfirmationUrl String?
   description              String?
   studentInfo              Json?
-  status                   RequisitionStatus  @default(PENDING)
-  items              RequisitionItem[]
-  allocationPlans    AllocationPlan[]
-  transfers          StockTransferOrder[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  status                   RequisitionStatus    @default(PENDING)
+  items                    RequisitionItem[]
+  allocationPlans          AllocationPlan[]
+  transfers                StockTransferOrder[]
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
 
   @@index([priorityScore(sort: Desc)])
   @@map("support_requisitions")
@@ -346,19 +353,19 @@ model RequisitionItem {
 }
 
 model AllocationPlan {
-  id            String             @id @default(uuid())
-  requisitionId String
-  requisition   SupportRequisition @relation(fields: [requisitionId], references: [id])
+  id                 String             @id @default(uuid())
+  requisitionId      String
+  requisition        SupportRequisition @relation(fields: [requisitionId], references: [id])
   approvedById       String
   adminConfirmedAt   DateTime?
   adminConfirmedById String?
   adminConfirmedBy   User?              @relation("AllocationAdminConfirmedBy", fields: [adminConfirmedById], references: [id])
   status             String             @default("PROPOSED") // PROPOSED, CONFIRMED, DISPATCHED
   totalItems         Int                @default(0)
-  items         AllocationItem[]
-  waybill       Waybill?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  items              AllocationItem[]
+  waybill            Waybill?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   @@index([requisitionId])
   @@map("allocation_plans")
@@ -376,38 +383,38 @@ model AllocationItem {
 }
 
 model Waybill {
-  id                  String         @id @default(uuid())
-  code                String         @unique // WB-YYYYMMDD-XXXX
-  allocationPlanId String         @unique
-  allocationPlan   AllocationPlan @relation(fields: [allocationPlanId], references: [id])
+  id               String             @id @default(uuid())
+  code             String             @unique // WB-YYYYMMDD-XXXX
+  allocationPlanId String             @unique
+  allocationPlan   AllocationPlan     @relation(fields: [allocationPlanId], references: [id])
   volunteers       WaybillVolunteer[]
   incidents        IncidentReport[]
-  status           WaybillStatus  @default(PENDING_PICKUP)
+  status           WaybillStatus      @default(PENDING_PICKUP)
   dispatchedAt     DateTime?
   deliveredAt      DateTime?
   proof            DeliveryProof?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@map("waybills")
 }
 
 model DeliveryProof {
-  id                    String   @id @default(uuid())
-  waybillId             String   @unique
-  waybill               Waybill  @relation(fields: [waybillId], references: [id], onDelete: Cascade)
-  recipientSignatureUrl String   // Chữ ký điện tử
+  id                    String    @id @default(uuid())
+  waybillId             String    @unique
+  waybill               Waybill   @relation(fields: [waybillId], references: [id], onDelete: Cascade)
+  recipientSignatureUrl String // Chữ ký điện tử
   proofPhotoUrls        String[] // Ảnh minh chứng bàn giao tại trường
   recipientName         String
   recipientTitle        String
   gpsLatitude           Float?
   gpsLongitude          Float?
-  signedAt              DateTime @default(now())
+  signedAt              DateTime  @default(now())
   volunteerReportNote   String?
-  volunteerPhotoUrls    String[] @default([])
+  volunteerPhotoUrls    String[]  @default([])
   volunteerReportedAt   DateTime?
   volunteerReporterId   String?
-  volunteerReporter     User?    @relation("VolunteerProofReporter", fields: [volunteerReporterId], references: [id])
+  volunteerReporter     User?     @relation("VolunteerProofReporter", fields: [volunteerReporterId], references: [id])
 
   @@map("delivery_proofs")
 }
@@ -475,7 +482,7 @@ model VolunteerShift {
   warehouseId      String
   warehouse        Warehouse @relation(fields: [warehouseId], references: [id])
   shiftDate        DateTime
-  shiftType        String    // SORTING, PACKING, DELIVERY
+  shiftType        String // SORTING, PACKING, DELIVERY
   checkInAt        DateTime?
   checkOutAt       DateTime?
   hoursContributed Float     @default(0.0)
@@ -485,19 +492,23 @@ model VolunteerShift {
 }
 
 model Campaign {
-  id          String           @id @default(uuid())
-  slug        String           @unique
-  title       String
-  description String
-  bannerUrl   String?
-  startDate   DateTime
-  endDate     DateTime
-  status      CampaignStatus   @default(ACTIVE)
-  targets     CampaignTarget[]
-  pledges     DonationPledge[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id                  String               @id @default(uuid())
+  slug                String               @unique
+  title               String
+  description         String
+  bannerUrl           String?
+  beneficiarySchoolId String?
+  beneficiarySchool   User?                @relation("CampaignBeneficiary", fields: [beneficiarySchoolId], references: [id])
+  startDate           DateTime
+  endDate             DateTime
+  status              CampaignStatus       @default(ACTIVE)
+  targets             CampaignTarget[]
+  pledges             DonationPledge[]
+  transfers           StockTransferOrder[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
+  @@index([beneficiarySchoolId])
   @@map("campaigns")
 }
 

@@ -44,6 +44,7 @@ const ACTION_LABEL = {
   WAREHOUSE_CREATED: "Tạo kho",
   WAREHOUSE_UPDATED: "Sửa thông tin kho",
   STOCK_TRANSFER_MANIFEST: "Lập danh sách hiện vật chuyển",
+  CAMPAIGN_TRANSFER_APPROVED: "Admin duyệt lệnh phân phối chiến dịch",
   STOCK_TRANSFER_DISPATCHED: "Xuất kho điều chuyển",
   STOCK_TRANSFER_COMPLETED: "Trường nhận hàng điều chuyển",
   STOCK_TRANSFER_CANCELLED: "Hủy lệnh điều chuyển",
@@ -188,9 +189,11 @@ function describe(row) {
       break;
     case "STOCK_TRANSFER_MANIFEST":
       lines.push(`Lệnh: ${who("transferId") || "không rõ"}${who("requisitionId") ? ` · giao cho yêu cầu ${who("requisitionId")}` : ""}`);
+      if (who("campaignId")) lines.push(`Phân phối chiến dịch: ${who("campaignId")}`);
       lines.push(`Số hiện vật: ${Array.isArray(details.itemIds) ? details.itemIds.length : "?"}`);
       break;
     case "STOCK_TRANSFER_DISPATCHED":
+    case "CAMPAIGN_TRANSFER_APPROVED":
     case "STOCK_TRANSFER_COMPLETED":
     case "STOCK_TRANSFER_CANCELLED":
       lines.push(`Lệnh điều chuyển: ${who("transferId") || details.code || "không rõ"}`);

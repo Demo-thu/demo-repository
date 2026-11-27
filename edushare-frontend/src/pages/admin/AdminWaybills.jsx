@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
-import api from "../../lib/api";
+import { useNavigate } from "react-router-dom";
+import api, { apiError } from "../../lib/api";
+import DeliveryEvidence from "../portals/DeliveryEvidence";
 import {
   CATEGORY_LABEL, Card, Chips, DataTable, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, SearchBox, Stat, StatusBadge, fmtDateTime, orgName,
   totalOf, useWaybills, waybillItems,
@@ -9,6 +11,7 @@ import {
 const WAYBILL_STATUSES = ["PENDING_PICKUP", "IN_TRANSIT", "DELIVERED", "FAILED"];
 
 export default function AdminWaybills() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [term, setTerm] = useState("");
@@ -16,6 +19,8 @@ export default function AdminWaybills() {
   const [counts, setCounts] = useState({ all: 0, PENDING_PICKUP: 0, IN_TRANSIT: 0, DELIVERED: 0, FAILED: 0 });
   const [waitingPlans, setWaitingPlans] = useState(0);
   const [detail, setDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
   const { waybills, meta, error } = useWaybills(filter === "all" ? undefined : filter, { page, limit: 20, search: term });
 
   useEffect(() => {
@@ -39,10 +44,24 @@ export default function AdminWaybills() {
   const count = (status) => counts[status] ?? 0;
   const visible = waybills;
 
+  async function openDetail(row) {
+    setDetail(row);
+    setDetailLoading(true);
+    setDetailError("");
+    try {
+      const response = await api.get(`/waybills/${row.id}`);
+      setDetail(response.data);
+    } catch (failure) {
+      setDetailError(apiError(failure, "Không tải được biên bản bàn giao mới nhất."));
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
   const table = visible.map((row) => ({
     key: row.id,
     cells: [
-      <button type="button" onClick={() => setDetail(row)} className="font-semibold text-blue-700 hover:underline">{row.code}</button>,
+      <button type="button" disabled={detailLoading} onClick={() => openDetail(row)} className="font-semibold text-blue-700 hover:underline disabled:opacity-50">{row.code}</button>,
       orgName(row.allocationPlan?.requisition?.school),
       `${waybillItems(row).length} món`,
       (row.volunteers || []).map((person) => person.fullName).join(", ") || "Chưa phân công",
@@ -55,7 +74,7 @@ export default function AdminWaybills() {
   return (
     <div className="mx-auto max-w-[1400px] p-4 md:p-6">
       <PageHead eyebrow="Vận chuyển · Admin" title="Vận đơn" subtitle="Theo dõi vận đơn. Vận đơn do cổng Kho lập, và chỉ được lập sau khi admin đã xác nhận phương án phân bổ." />
-      <Notice notice={error ? { tone: "error", text: error } : null} />
+      <Notice notice={detailError ? { tone: "error", text: detailError } : error ? { tone: "error", text: error } : null} />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="Chờ kho lập vận đơn" value={waitingPlans} hint="Phương án đã xác nhận" tone="violet" />
         <Stat label="Chờ lấy hàng" value={count("PENDING_PICKUP")} tone="amber" />
@@ -74,8 +93,9 @@ export default function AdminWaybills() {
       </Card>
 
       {detail ? (
-        <Modal wide title={`Vận đơn ${detail.code}`} subtitle={orgName(detail.allocationPlan?.requisition?.school)} onClose={() => setDetail(null)} footer={<GhostButton onClick={() => setDetail(null)}>Đóng</GhostButton>}>
+        <Modal wide title={`Vận đơn ${detail.code}`} subtitle={orgName(detail.allocationPlan?.requisition?.school)} onClose={() => setDetail(null)} footer={<><GhostButton onClick={() => navigate(`/tracking?q=${encodeURIComponent(detail.code)}`)}>Mở hành trình chi tiết</GhostButton><GhostButton onClick={() => setDetail(null)}>Đóng</GhostButton></>}>
           <div className="space-y-4">
+            {detailLoading ? <p className="rounded-lg bg-blue-50 p-2 text-xs text-blue-700">Đang tải biên bản bàn giao mới nhất...</p> : null}
             <KeyValue rows={[
               ["Trạng thái", <StatusBadge kind="waybill" value={detail.status} />],
               ["Admin xác nhận phương án", fmtDateTime(detail.allocationPlan?.adminConfirmedAt)],
@@ -90,6 +110,7 @@ export default function AdminWaybills() {
                 <div key={category} className="rounded-lg bg-slate-50 p-3"><p className="flex justify-between text-sm font-semibold"><span>{CATEGORY_LABEL[category]}</span><span>{rows.length}</span></p><p className="mt-1 font-mono text-[11px] text-slate-500">{rows.map((row) => row.qrCode).join(", ")}</p></div>
               ))}
             </div>
+            <DeliveryEvidence proof={detail.proof} />
           </div>
         </Modal>
       ) : null}

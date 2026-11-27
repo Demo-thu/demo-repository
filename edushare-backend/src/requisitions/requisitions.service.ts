@@ -85,7 +85,7 @@ export class RequisitionsService {
   async urgent() {
     const data = await this.prisma.supportRequisition.findMany({
       where: {
-        status: { in: ['PENDING', 'APPROVED'] },
+        status: 'PENDING',
         urgencyLevel: { in: ['HIGH', 'CRITICAL'] },
       },
       include: requisitionInclude,

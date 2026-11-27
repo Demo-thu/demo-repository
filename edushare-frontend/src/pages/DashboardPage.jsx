@@ -114,7 +114,7 @@ export default function DashboardPage() {
         </div>
         <div className="relative z-10 flex flex-wrap gap-2 shrink-0">
           <button type="button" onClick={loadDashboard} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><CalendarDays size={15} /> Tải lại số liệu</button>
-          <button type="button" onClick={() => downloadCsv("bao-cao-edushare.csv", ["Chỉ số", "Giá trị"], [["Tiếp nhận", kpis?.itemsReceived ?? 0], ["Đã kiểm định", kpis?.itemsInspectedOrBeyond ?? 0], ["Đã giao", kpis?.itemsDelivered ?? 0], ["Chiến dịch", `${kpis?.activeCampaigns ?? 0}/${kpis?.totalCampaigns ?? 0}`], ...visibleShipments.map((row) => [row.id, `${row.school} · ${row.status}`])])} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"><Download size={15} /> Xuất Báo Cáo Quốc Gia</button>
+          <button type="button" onClick={() => downloadCsv("bao-cao-edushare.csv", ["Chỉ số", "Giá trị"], [["Tiếp nhận", kpis?.itemsReceived ?? 0], ["Đã kiểm định", kpis?.itemsInspectedOrBeyond ?? 0], ["Đã giao", kpis?.itemsDelivered ?? 0], ["Chiến dịch", `${kpis?.activeCampaigns ?? 0}/${kpis?.totalCampaigns ?? 0}`], ...visibleShipments.map((row) => [row.id, `${row.school} · ${row.status}`])])} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"><Download size={15} /> Xuất Báo Cáo</button>
         </div>
         <div className="absolute -right-12 -top-12 size-60 rounded-full bg-blue-100/50 blur-3xl" />
       </section>

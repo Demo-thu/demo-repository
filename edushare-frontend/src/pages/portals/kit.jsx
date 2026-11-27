@@ -82,6 +82,7 @@ const STATUS_META = {
     REJECTED: ["Từ chối", "rose"],
   },
   transfer: {
+    PENDING_APPROVAL: ["Chờ Admin duyệt", "violet"],
     PENDING: ["Chờ xuất", "amber"],
     IN_TRANSIT: ["Đang vận chuyển", "blue"],
     RECEIVED: ["Đã hoàn tất", "emerald"],

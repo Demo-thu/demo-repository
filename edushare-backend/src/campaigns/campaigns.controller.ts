@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CurrentUser, Roles } from '../common/decorators';
 import { AuthenticatedUser, HttpRequestContext } from '../common/types';
@@ -63,5 +63,26 @@ export class CampaignsController {
     @Req() req: HttpRequestContext,
   ) {
     return this.campaigns.addTarget(actor, id, dto, readClientIp(req.headers, req.ip));
+  }
+
+  @Delete(':id/targets/:targetId')
+  @Roles(Role.ADMIN)
+  deleteTarget(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('targetId', ParseUUIDPipe) targetId: string,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.campaigns.deleteTarget(actor, id, targetId, readClientIp(req.headers, req.ip));
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  delete(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.campaigns.delete(actor, id, readClientIp(req.headers, req.ip));
   }
 }

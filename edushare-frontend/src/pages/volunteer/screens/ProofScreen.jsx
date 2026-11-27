@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Hourglass } from "lucide-react";
 import api, { apiError } from "@/lib/api";
+import DeliveryEvidence from "@/pages/portals/DeliveryEvidence";
 import {
   CATEGORY_LABEL, Card, Empty, Field, KeyValue, Notice, PageHead, PhotoPicker, PrimaryButton, StatusBadge, SubmitBar, fmtDateTime,
   inputClass, orgName, useNotice, useWaybills, waybillItems,
@@ -59,10 +60,7 @@ export default function ProofScreen({ params, openTab }) {
 
             <Card title="Bước 1 · Chữ ký của nhà trường" actions={proof ? <CheckCircle2 className="text-emerald-600" size={18} /> : <Hourglass className="text-amber-500" size={18} />}>
               {proof ? (
-                <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-                  <KeyValue rows={[["Người ký", `${proof.recipientName} (${proof.recipientTitle})`], ["Thời điểm", fmtDateTime(proof.signedAt)]]} />
-                  <img src={proof.recipientSignatureUrl} alt="Chữ ký nhà trường" className="h-24 rounded border border-slate-200 bg-white object-contain p-1" />
-                </div>
+                <DeliveryEvidence proof={proof} showVolunteer={false} />
               ) : <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Nhà trường chưa ký biên bản. Hãy mời đại diện trường đăng nhập cổng trường học để ký, sau đó bạn mới nộp được báo cáo.</p>}
             </Card>
 

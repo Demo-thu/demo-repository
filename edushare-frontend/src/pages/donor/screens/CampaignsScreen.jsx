@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Gift, Megaphone, Package, TriangleAlert } from "lucide-react";
 import api, { apiError } from "@/lib/api";
-import { CATEGORY_LABEL, Card, Chips, Empty, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat, fmtDate, percent, rowsOf, useNotice, usePortalRefresh } from "@/pages/portals/kit";
+import { CATEGORY_LABEL, Card, Chips, Empty, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat, fmtDate, orgName, percent, rowsOf, useNotice, usePortalRefresh } from "@/pages/portals/kit";
 
 export default function CampaignsScreen({ openTab }) {
   const [campaigns, setCampaigns] = useState([]);
@@ -81,6 +81,7 @@ export default function CampaignsScreen({ openTab }) {
       <div className="grid gap-4 lg:grid-cols-2">
         {visible.map((campaign) => (
           <Card key={campaign.id}>
+            {campaign.bannerUrl ? <img src={campaign.bannerUrl} alt={`Ảnh chiến dịch ${campaign.title}`} className="mb-3 h-44 w-full rounded-lg object-cover" /> : null}
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700">{campaign.slug}</p>
@@ -89,6 +90,7 @@ export default function CampaignsScreen({ openTab }) {
               <span className="whitespace-nowrap rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">{campaign.summary?.receivedRate ?? 0}% mục tiêu</span>
             </div>
             <p className="mt-2 line-clamp-3 text-sm text-slate-600">{campaign.description}</p>
+            <p className="mt-1 text-xs font-medium text-blue-700">Trường thụ hưởng: {orgName(campaign.beneficiarySchool)}</p>
             <p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><CalendarDays size={13} />{fmtDate(campaign.startDate)} - {fmtDate(campaign.endDate)} · {campaign._count?.pledges ?? 0} phiếu trao tặng</p>
             <div className="mt-4 space-y-3">
               {campaign.targets.map((target) => {

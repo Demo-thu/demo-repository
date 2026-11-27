@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Clock3, Truck, XCircle } from "lucide-react";
 import api, { apiError } from "@/lib/api";
+import DeliveryEvidence from "@/pages/portals/DeliveryEvidence";
 import {
   Card, Chips, DataTable, Empty, GhostButton, KeyValue, Modal, Notice, PageHead, Pager, PrimaryButton, RequisitionJourney, SearchBox, Stat, StatusBadge, Timeline,
   downloadCsv, exportDonorWorkbook, fmtDateTime, orgName, rowsOf, totalOf, useNotice, useWaybills, waybillItems,
@@ -21,13 +22,23 @@ export default function StatusScreen() {
   const [wbPage, setWbPage] = useState(1);
   const [wbCounts, setWbCounts] = useState({ all: 0, PENDING_PICKUP: 0, IN_TRANSIT: 0, DELIVERED: 0, FAILED: 0 });
   const [wbDetail, setWbDetail] = useState(null);
+  const [wbDetailLoading, setWbDetailLoading] = useState(false);
   const { waybills, meta: wbMeta, error: wbError } = useWaybills(wbFilter === "all" ? undefined : wbFilter, { page: wbPage, limit: 20, search: wbTerm });
   const { notice, ok, fail } = useNotice();
 
   const load = useCallback(async () => {
     try {
-      const response = await api.get("/transfers", { params: { limit: 100 } });
-      const rows = rowsOf(response.data);
+      const rows = [];
+      let page = 1;
+      let total = 0;
+      do {
+        const response = await api.get("/transfers", { params: { limit: 100, page } });
+        const pageRows = rowsOf(response.data);
+        rows.push(...pageRows);
+        total = totalOf(response.data);
+        page += 1;
+        if (!pageRows.length) break;
+      } while (rows.length < total);
       setTransfers(rows);
       setSelectedId((current) => (rows.some((row) => row.id === current) ? current : rows[0]?.id || ""));
       setReloadKey((value) => value + 1);
@@ -38,8 +49,17 @@ export default function StatusScreen() {
 
   useEffect(() => {
     load();
+    const refresh = () => {
+      if (document.visibilityState === "visible") load();
+    };
     window.addEventListener("portal:refresh", load);
-    return () => window.removeEventListener("portal:refresh", load);
+    window.addEventListener("focus", load);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("portal:refresh", load);
+      window.removeEventListener("focus", load);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, [load]);
 
   useEffect(() => {
@@ -79,6 +99,19 @@ export default function StatusScreen() {
       fail(apiError(error, "Không cập nhật được lệnh."));
     } finally {
       setPending(false);
+    }
+  }
+
+  async function openWaybill(row) {
+    setWbDetail(row);
+    setWbDetailLoading(true);
+    try {
+      const response = await api.get(`/waybills/${row.id}`);
+      setWbDetail(response.data);
+    } catch (error) {
+      fail(apiError(error, "Không tải được biên bản bàn giao mới nhất."));
+    } finally {
+      setWbDetailLoading(false);
     }
   }
 
@@ -131,7 +164,7 @@ export default function StatusScreen() {
           rows={waybills.map((row) => ({
             key: row.id,
             cells: [
-              <button type="button" className="text-left font-semibold text-blue-700 hover:underline" onClick={() => setWbDetail(row)}>{row.code}<span className="block text-[11px] font-normal text-slate-500">{row.allocationPlan?.requisition?.code}</span></button>,
+              <button type="button" disabled={wbDetailLoading} className="text-left font-semibold text-blue-700 hover:underline disabled:opacity-50" onClick={() => openWaybill(row)}>{row.code}<span className="block text-[11px] font-normal text-slate-500">{row.allocationPlan?.requisition?.code}</span></button>,
               orgName(row.allocationPlan?.requisition?.school),
               `${waybillItems(row).length} món`,
               (row.volunteers || []).map((person) => person.fullName).join(", ") || "Chưa phân công",
@@ -148,9 +181,10 @@ export default function StatusScreen() {
         <h2 className="font-display text-lg font-semibold text-slate-900">Lệnh điều chuyển nội bộ</h2>
         <p className="mt-1 mb-4 text-sm text-slate-500">Hàng chuyển giữa kho và trường bằng lệnh điều chuyển. Đơn tình nguyện viên đã lấy hàng nằm ở danh sách phía trên.</p>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", transfers.length], ["PENDING", "Chờ xuất", count("PENDING")], ["IN_TRANSIT", "Đang điều chuyển", count("IN_TRANSIT")], ["RECEIVED", "Hoàn tất", count("RECEIVED")], ["CANCELLED", "Đã hủy", count("CANCELLED")]]} />
+          <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", transfers.length], ["PENDING_APPROVAL", "Chờ Admin duyệt", count("PENDING_APPROVAL")], ["PENDING", "Chờ xuất", count("PENDING")], ["IN_TRANSIT", "Đang điều chuyển", count("IN_TRANSIT")], ["RECEIVED", "Hoàn tất", count("RECEIVED")], ["CANCELLED", "Đã hủy", count("CANCELLED")]]} />
           <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã lệnh, trường, người nhận..." />
         </div>
+        <p className="mb-3 text-xs text-slate-500">Sau khi Admin duyệt, lệnh sẽ chuyển từ “Chờ Admin duyệt” sang “Chờ xuất”. Chọn lệnh ở trạng thái “Chờ xuất” rồi bấm “Xuất kho”.</p>
       <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
         <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
           <DataTable columns={["Mã lệnh", "Trường nhận / người nhận", "Số món", "Tình nguyện viên", "Tạo lúc", "Trạng thái"]} rows={rows} empty="Chưa có lệnh điều chuyển nào." />
@@ -162,12 +196,14 @@ export default function StatusScreen() {
                 ["Trạng thái", <StatusBadge kind="transfer" value={selected.status} />],
                 ["Kho xuất", selected.sourceWarehouse?.name],
                 ["Trường nhận", selected.targetSchool ? orgName(selected.targetSchool) : "—"],
+                ["Chiến dịch", selected.campaign?.title || "—"],
                 ["Địa chỉ giao", selected.deliveryAddress],
                 ["Yêu cầu của trường", selected.requisition ? `${selected.requisition.code} · ${selected.requisition.title}` : "—"],
                 ["Người nhận", selected.recipientName],
                 ["Điện thoại", selected.recipientPhone],
                 ["Ghi chú", selected.recipientNote],
                 ["Xuất lúc", fmtDateTime(selected.dispatchedAt)],
+                ["Admin duyệt lúc", fmtDateTime(selected.adminApprovedAt)],
                 ["Hoàn tất lúc", fmtDateTime(selected.receivedAt)],
               ]} />
               <p className="mb-1 mt-4 text-xs font-semibold text-slate-600">Hiện vật ({selected.items?.length || 0})</p>
@@ -176,8 +212,10 @@ export default function StatusScreen() {
               </ul>
               <div className="mt-3 flex flex-wrap gap-2">
                 <GhostButton onClick={() => exportDonors(selected)} disabled={!selected.items?.length}>Xuất Excel theo nhà hảo tâm</GhostButton>
+                {selected.status === "PENDING" && (!selected.campaignId || selected.adminApprovedAt) ? <PrimaryButton pending={pending} onClick={() => act(selected, "dispatch", `Lệnh ${selected.code} đã xuất kho và đang vận chuyển.`)}>Xuất kho</PrimaryButton> : null}
+                {selected.status === "PENDING_APPROVAL" ? <span className="text-xs font-medium text-violet-700">Đang chờ Admin duyệt trước khi xuất.</span> : null}
                 {selected.status === "IN_TRANSIT" ? <PrimaryButton pending={pending} onClick={() => act(selected, "receive", `Lệnh ${selected.code} đã giao tới trường và hoàn tất.`)}>Xác nhận đã giao tới trường</PrimaryButton> : null}
-                {selected.status === "PENDING" ? <GhostButton tone="danger" onClick={() => act(selected, "cancel", `Đã hủy lệnh ${selected.code}.`)}>Hủy lệnh</GhostButton> : null}
+                {["PENDING_APPROVAL", "PENDING"].includes(selected.status) ? <GhostButton tone="danger" onClick={() => act(selected, "cancel", `Đã hủy lệnh ${selected.code}; hiện vật đã sẵn sàng phân bổ trở lại.`)}>Hủy lệnh</GhostButton> : null}
               </div>
               {selected.requisition?.id ? (
                 <div className="mt-5 border-t border-slate-100 pt-4">
@@ -194,6 +232,7 @@ export default function StatusScreen() {
       {wbDetail ? (
         <Modal wide title={`Vận đơn ${wbDetail.code}`} subtitle={`${wbDetail.allocationPlan?.requisition?.code || ""} · ${orgName(wbDetail.allocationPlan?.requisition?.school)}`} onClose={() => setWbDetail(null)} footer={<GhostButton onClick={() => setWbDetail(null)}>Đóng</GhostButton>}>
           <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+            {wbDetailLoading ? <p className="rounded-lg bg-blue-50 p-2 text-xs text-blue-700 lg:col-span-2">Đang tải biên bản bàn giao mới nhất...</p> : null}
             <Timeline steps={[
               { title: "Kho lập vận đơn", detail: fmtDateTime(wbDetail.createdAt), done: true },
               { title: "Tình nguyện viên xác nhận lấy hàng", detail: wbDetail.dispatchedAt ? fmtDateTime(wbDetail.dispatchedAt) : "Chưa lấy hàng", done: Boolean(wbDetail.dispatchedAt) },
@@ -206,6 +245,9 @@ export default function StatusScreen() {
                 ["Hiện vật", `${waybillItems(wbDetail).length} món`],
                 ["Đội tình nguyện", (wbDetail.volunteers || []).map((person) => person.fullName).join(", ") || "—"],
               ]} />
+            </div>
+            <div className="lg:col-span-2">
+              <DeliveryEvidence proof={wbDetail.proof} />
             </div>
           </div>
         </Modal>

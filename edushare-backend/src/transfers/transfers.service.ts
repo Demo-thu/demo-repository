@@ -14,6 +14,15 @@ const transferInclude = {
   targetWarehouse: true,
   targetSchool: { select: publicUserSelect },
   requisition: { select: { id: true, code: true, title: true, status: true } },
+  campaign: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      beneficiarySchoolId: true,
+    },
+  },
+  adminApprovedBy: { select: publicUserSelect },
   volunteers: { include: { volunteer: { select: publicUserSelect } } },
   items: {
     include: {
@@ -53,6 +62,9 @@ export class TransfersService {
   async create(actor: AuthenticatedUser, dto: CreateTransferDto, ipAddress: string | null) {
     const uniqueIds = [...new Set(dto.resourceItemIds)];
     const volunteerIds = [...new Set(dto.volunteerIds)];
+    if (Boolean(dto.requisitionId) === Boolean(dto.campaignId)) {
+      throw new BadRequestException('Chọn đúng một nguồn điều chuyển: yêu cầu trường hoặc chiến dịch.');
+    }
     await this.assertVolunteers(volunteerIds);
     const transfer = await withUniqueRetry(() =>
       this.prisma.$transaction(async (tx) => {
@@ -60,20 +72,44 @@ export class TransfersService {
         if (!source) {
           throw new NotFoundException('Không tìm thấy kho xuất');
         }
-        const requisition = await tx.supportRequisition.findUnique({
-          where: { id: dto.requisitionId },
-          include: { school: { select: publicUserSelect } },
-        });
-        if (!requisition) {
+        const requisition = dto.requisitionId
+          ? await tx.supportRequisition.findUnique({
+              where: { id: dto.requisitionId },
+              include: { school: { select: publicUserSelect } },
+            })
+          : null;
+        const campaign = dto.campaignId
+          ? await tx.campaign.findUnique({
+              where: { id: dto.campaignId },
+              include: { targets: true, beneficiarySchool: { select: publicUserSelect } },
+            })
+          : null;
+        if (dto.requisitionId && !requisition) {
           throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ của trường');
         }
-        if (!['APPROVED', 'ALLOCATING'].includes(requisition.status)) {
+        if (requisition && !['APPROVED', 'ALLOCATING'].includes(requisition.status)) {
           throw new BadRequestException('Chỉ điều chuyển cho yêu cầu của trường đã được admin duyệt');
         }
-        const items = await tx.resourceItem.findMany({ where: { id: { in: uniqueIds } } });
+        if (dto.campaignId && !campaign) {
+          throw new NotFoundException('Không tìm thấy chiến dịch');
+        }
+        if (campaign && !campaign.beneficiarySchool) {
+          throw new BadRequestException('Chiến dịch chưa được gán trường thụ hưởng.');
+        }
+        if (campaign && campaign.beneficiarySchool && (campaign.beneficiarySchool.role !== Role.SCHOOL_REP || campaign.beneficiarySchool.status !== 'ACTIVE')) {
+          throw new BadRequestException('Trường thụ hưởng của chiến dịch hiện không hoạt động.');
+        }
+        if (campaign && (!campaign.targets.length || campaign.targets.some((target) => target.currentReceivedQuantity < target.targetQuantity))) {
+          throw new BadRequestException('Chỉ tạo lệnh phân phối khi chiến dịch đã tiếp nhận đủ các mục tiêu.');
+        }
+        const items = await tx.resourceItem.findMany({
+          where: { id: { in: uniqueIds } },
+          include: { pledgeItem: { select: { pledge: { select: { campaignId: true } } } }, allocationItem: { select: { id: true } } },
+        });
         if (items.length !== uniqueIds.length) {
           throw new BadRequestException('Có tài nguyên không tồn tại');
         }
+        const selectedByCategory = new Map<ItemCategory, number>();
         for (const item of items) {
           if (item.warehouseId !== source.id) {
             throw new BadRequestException(`Tài nguyên ${item.qrCode} không nằm ở kho xuất`);
@@ -84,24 +120,88 @@ export class TransfersService {
           if (item.status !== 'READY_FOR_ALLOCATION') {
             throw new BadRequestException(`Tài nguyên ${item.qrCode} chưa sẵn sàng điều chuyển (cần đã kiểm định đạt và sẵn sàng phân bổ)`);
           }
+          if (item.allocationItem) {
+            throw new BadRequestException(`Tài nguyên ${item.qrCode} đã được giữ cho một phương án phân bổ khác.`);
+          }
+          if (campaign && item.pledgeItem?.pledge.campaignId !== campaign.id) {
+            throw new BadRequestException(`Tài nguyên ${item.qrCode} không thuộc chiến dịch "${campaign.title}".`);
+          }
+          selectedByCategory.set(item.category, (selectedByCategory.get(item.category) ?? 0) + 1);
         }
-        // Khoa cho: hang dang san sang phan bo duoc giu lai cho lenh dieu chuyen nay, ghep phan bo se khong lay trung.
-        await tx.resourceItem.updateMany({
+        if (campaign) {
+          const targetsByCategory = new Map<ItemCategory, { target: number; distributed: number }>();
+          for (const target of campaign.targets) {
+            const current = targetsByCategory.get(target.category) ?? { target: 0, distributed: 0 };
+            current.target += target.targetQuantity;
+            current.distributed += target.currentDistributedQuantity;
+            targetsByCategory.set(target.category, current);
+          }
+          const committed = await tx.stockTransferItem.findMany({
+            where: {
+              transfer: {
+                campaignId: campaign.id,
+                status: { in: ['PENDING_APPROVAL', 'PENDING', 'IN_TRANSIT'] },
+              },
+            },
+            select: { resourceItem: { select: { category: true } } },
+          });
+          const reservedByCategory = new Map<ItemCategory, number>();
+          for (const line of committed) {
+            const category = line.resourceItem.category;
+            reservedByCategory.set(category, (reservedByCategory.get(category) ?? 0) + 1);
+          }
+          const allocated = await tx.allocationItem.findMany({
+            where: {
+              resourceItem: { pledgeItem: { pledge: { campaignId: campaign.id } } },
+              allocationPlan: { status: { in: ['PROPOSED', 'CONFIRMED', 'DISPATCHED'] } },
+            },
+            select: {
+              resourceItem: { select: { category: true } },
+              allocationPlan: { select: { waybill: { select: { status: true } } } },
+            },
+          });
+          for (const line of allocated) {
+            if (line.allocationPlan.waybill?.status === 'DELIVERED') {
+              continue;
+            }
+            const category = line.resourceItem.category;
+            reservedByCategory.set(category, (reservedByCategory.get(category) ?? 0) + 1);
+          }
+          for (const [category, quantity] of selectedByCategory) {
+            const target = targetsByCategory.get(category);
+            if (!target) {
+              throw new BadRequestException(`Chiến dịch không có mục tiêu cho hạng mục ${category}.`);
+            }
+            const remaining = target.target - target.distributed - (reservedByCategory.get(category) ?? 0);
+            if (quantity > remaining) {
+              throw new BadRequestException(`Số lượng ${category} vượt quá phần chiến dịch còn có thể phân phối (${Math.max(0, remaining)}).`);
+            }
+          }
+        }
+        const locked = await tx.resourceItem.updateMany({
           where: { id: { in: uniqueIds }, status: 'READY_FOR_ALLOCATION', allocationItem: { is: null } },
           data: { status: 'ALLOCATED' },
         });
-        const profile = requisition.school.profile;
+        if (locked.count !== uniqueIds.length) {
+          throw new BadRequestException('Một số hiện vật vừa được giữ hoặc không còn sẵn sàng; hãy tải lại danh sách và thử lại.');
+        }
+        const targetSchool = campaign?.beneficiarySchool ?? requisition?.school;
+        if (!targetSchool) {
+          throw new BadRequestException('Không xác định được trường nhận hàng.');
+        }
+        const profile = targetSchool.profile;
         const composedAddress = [profile?.address, profile?.district, profile?.city].filter(Boolean).join(', ');
         const code = await this.nextCode(tx);
         const created = await tx.stockTransferOrder.create({
           data: {
             code,
             sourceWarehouseId: source.id,
-            targetSchoolId: requisition.schoolId,
-            requisitionId: requisition.id,
+            targetSchoolId: targetSchool.id,
+            requisitionId: requisition?.id,
+            campaignId: campaign?.id,
             deliveryAddress: dto.deliveryAddress?.trim() || composedAddress || null,
             createdById: actor.id,
-            status: 'PENDING',
+            status: campaign ? 'PENDING_APPROVAL' : 'PENDING',
             itemsCount: items.length,
             recipientName: dto.recipientName.trim(),
             recipientPhone: dto.recipientPhone.trim(),
@@ -116,13 +216,39 @@ export class TransfersService {
             userId: actor.id,
             action: MANIFEST_ACTION,
             resource: 'StockTransferOrder',
-            details: { transferId: created.id, itemIds: uniqueIds, requisitionId: requisition.id },
+            details: { transferId: created.id, itemIds: uniqueIds, requisitionId: requisition?.id, campaignId: campaign?.id },
             ipAddress,
           },
         });
         return created;
-      }),
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 20_000 }),
     );
+    return this.present(transfer);
+  }
+
+  async approveCampaignTransfer(actor: AuthenticatedUser, id: string, ipAddress: string | null) {
+    const transfer = await this.prisma.$transaction(async (tx) => {
+      const current = await tx.stockTransferOrder.findUnique({ where: { id } });
+      if (!current) {
+        throw new NotFoundException('Không tìm thấy lệnh điều chuyển');
+      }
+      if (!current.campaignId || current.status !== 'PENDING_APPROVAL') {
+        throw new BadRequestException('Chỉ duyệt được lệnh phân phối chiến dịch đang chờ Admin.');
+      }
+      assertTransition(current.status, 'PENDING', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
+      return tx.stockTransferOrder.update({
+        where: { id },
+        data: { status: 'PENDING', adminApprovedAt: new Date(), adminApprovedById: actor.id },
+        include: transferInclude,
+      });
+    });
+    await this.audit.log({
+      userId: actor.id,
+      action: 'CAMPAIGN_TRANSFER_APPROVED',
+      resource: 'StockTransferOrder',
+      details: { transferId: id, code: transfer.code, campaignId: transfer.campaignId },
+      ipAddress,
+    });
     return this.present(transfer);
   }
 
@@ -131,6 +257,7 @@ export class TransfersService {
     const where: Prisma.StockTransferOrderWhereInput = {
       ...(query.status ? { status: query.status } : {}),
       ...(query.requisitionId ? { requisitionId: query.requisitionId } : {}),
+      ...(query.campaignOnly ? { campaignId: { not: null } } : {}),
       ...(query.code ? { code: { contains: query.code, mode: 'insensitive' } } : {}),
       ...(query.warehouseId ? { sourceWarehouseId: query.warehouseId } : {}),
       ...(query.search ? { code: { contains: query.search, mode: 'insensitive' } } : {}),
@@ -165,6 +292,9 @@ export class TransfersService {
       const transfer = await tx.stockTransferOrder.findUnique({ where: { id } });
       if (!transfer) {
         throw new NotFoundException('Không tìm thấy lệnh điều chuyển');
+      }
+      if (transfer.campaignId && !transfer.adminApprovedAt) {
+        throw new BadRequestException('Lệnh phân phối chiến dịch cần Admin duyệt trước khi kho xuất hàng.');
       }
       assertTransition(transfer.status, 'IN_TRANSIT', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
       const itemIds = await this.itemIds(id, tx);
@@ -212,6 +342,9 @@ export class TransfersService {
       if (transfer.requisitionId) {
         await this.applyFulfillment(tx, transfer.requisitionId, itemIds);
       }
+      if (transfer.campaignId) {
+        await this.applyCampaignDistribution(tx, transfer.campaignId, itemIds);
+      }
       return tx.stockTransferOrder.update({
         where: { id },
         data: { status: 'RECEIVED', receivedAt: new Date() },
@@ -230,7 +363,7 @@ export class TransfersService {
 
   async cancel(actor: AuthenticatedUser, id: string, ipAddress: string | null) {
     const transfer = await this.require(id);
-    assertTransition(transfer.status as 'PENDING', 'CANCELLED', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
+    assertTransition(transfer.status, 'CANCELLED', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
     const updated = await this.prisma.$transaction(async (tx) => {
       const itemIds = await this.itemIds(id, tx);
       // Tra lai cho da khoa de co the phan bo tiep.
@@ -254,21 +387,12 @@ export class TransfersService {
     return this.present(updated);
   }
 
-  /** Cong so hang da giao vao yeu cau cua truong va chi tieu "da phan phoi" cua chien dich, giong luc van don duoc ky nhan. */
+  /** Cộng số hàng đã giao vào yêu cầu của trường. */
   private async applyFulfillment(tx: Prisma.TransactionClient, requisitionId: string, itemIds: string[]): Promise<void> {
-    const delivered = await tx.resourceItem.findMany({
-      where: { id: { in: itemIds } },
-      select: { category: true, pledgeItem: { select: { pledge: { select: { campaignId: true } } } } },
-    });
+    const delivered = await tx.resourceItem.findMany({ where: { id: { in: itemIds } }, select: { category: true } });
     const counts = new Map<string, number>();
-    const campaignCounts = new Map<string, number>();
     for (const row of delivered) {
       counts.set(row.category, (counts.get(row.category) ?? 0) + 1);
-      const campaignId = row.pledgeItem?.pledge.campaignId;
-      if (campaignId) {
-        const key = `${campaignId}:${row.category}`;
-        campaignCounts.set(key, (campaignCounts.get(key) ?? 0) + 1);
-      }
     }
     const lines = await tx.requisitionItem.findMany({ where: { requisitionId } });
     for (const [category, count] of counts) {
@@ -282,18 +406,28 @@ export class TransfersService {
         }
       }
     }
-    for (const [key, count] of campaignCounts) {
-      const splitAt = key.indexOf(':');
-      await tx.campaignTarget.updateMany({
-        where: { campaignId: key.slice(0, splitAt), category: key.slice(splitAt + 1) as ItemCategory },
-        data: { currentDistributedQuantity: { increment: count } },
-      });
-    }
     const completed = lines.every((item) => item.quantityFulfilled >= item.quantityNeeded);
     await tx.supportRequisition.updateMany({
       where: { id: requisitionId, status: { in: ['APPROVED', 'ALLOCATING'] } },
       data: { status: completed ? 'COMPLETED' : 'ALLOCATING' },
     });
+  }
+
+  private async applyCampaignDistribution(tx: Prisma.TransactionClient, campaignId: string, itemIds: string[]): Promise<void> {
+    const delivered = await tx.resourceItem.findMany({
+      where: { id: { in: itemIds } },
+      select: { category: true },
+    });
+    const counts = new Map<ItemCategory, number>();
+    for (const row of delivered) {
+      counts.set(row.category, (counts.get(row.category) ?? 0) + 1);
+    }
+    for (const [category, count] of counts) {
+      await tx.campaignTarget.updateMany({
+        where: { campaignId, category },
+        data: { currentDistributedQuantity: { increment: count } },
+      });
+    }
   }
 
   private async require(id: string) {

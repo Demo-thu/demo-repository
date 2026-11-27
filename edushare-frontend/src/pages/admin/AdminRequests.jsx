@@ -57,9 +57,16 @@ export default function AdminRequests() {
   async function approve(row) {
     setPending("approve");
     try {
-      await api.patch(`/requisitions/${row.id}/approve`);
-      ok(`Đã duyệt yêu cầu ${row.code}. Chuyển sang "Ghép tồn kho" để lập phương án phân bổ.`);
-      setDetail(null);
+      const response = await api.patch(`/requisitions/${row.id}/approve`);
+      const approved = { ...row, ...response.data, status: "APPROVED", reviewStatus: "APPROVED" };
+      setDetail(approved);
+      setRows((current) => current.map((item) => item.id === row.id ? { ...item, ...approved } : item));
+      setCounts((current) => ({
+        ...current,
+        PENDING: Math.max(0, current.PENDING - 1),
+        APPROVED: current.APPROVED + 1,
+      }));
+      ok(`Đã duyệt yêu cầu ${row.code}. Kho có thể chọn yêu cầu này để tạo lệnh điều chuyển; nếu dùng luồng phân bổ, tiếp tục tại "Ghép tồn kho". Hiện vật cần được kiểm định trước khi xuất.`);
       await load();
     } catch (error) {
       fail(apiError(error, "Không duyệt được yêu cầu."));

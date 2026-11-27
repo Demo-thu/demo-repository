@@ -8,6 +8,8 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUrl,
+  IsUUID,
   MaxLength,
   Min,
   MinLength,
@@ -41,7 +43,7 @@ export class CreateCampaignDto {
   description!: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(400)
   bannerUrl?: string;
 
@@ -50,6 +52,9 @@ export class CreateCampaignDto {
 
   @IsDateString()
   endDate!: string;
+
+  @IsUUID()
+  beneficiarySchoolId!: string;
 
   @IsOptional()
   @IsEnum(CampaignStatus)
@@ -76,9 +81,9 @@ export class UpdateCampaignDto {
   description?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(400)
-  bannerUrl?: string;
+  bannerUrl?: string | null;
 
   @IsOptional()
   @IsDateString()
@@ -87,6 +92,10 @@ export class UpdateCampaignDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @IsOptional()
+  @IsUUID()
+  beneficiarySchoolId?: string;
 }
 
 export class UpdateCampaignStatusDto {

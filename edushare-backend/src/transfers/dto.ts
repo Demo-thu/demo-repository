@@ -1,7 +1,8 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
+  IsBoolean,
   IsArray,
   IsIn,
   IsOptional,
@@ -17,9 +18,14 @@ export class CreateTransferDto {
   @IsUUID()
   sourceWarehouseId!: string;
 
-  /** Yêu cầu hỗ trợ (đã duyệt) của trường: xác định trường nhận và địa chỉ giao. */
+  /** Yêu cầu hỗ trợ đã duyệt, hoặc chiến dịch có trường thụ hưởng đã định danh. */
+  @IsOptional()
   @IsUUID()
-  requisitionId!: string;
+  requisitionId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  campaignId?: string;
 
   @IsOptional()
   @IsString()
@@ -55,8 +61,8 @@ export class CreateTransferDto {
 
 export class QueryTransferDto extends PaginationQueryDto {
   @IsOptional()
-  @IsIn(['PENDING', 'IN_TRANSIT', 'RECEIVED', 'CANCELLED'])
-  status?: 'PENDING' | 'IN_TRANSIT' | 'RECEIVED' | 'CANCELLED';
+  @IsIn(['PENDING_APPROVAL', 'PENDING', 'IN_TRANSIT', 'RECEIVED', 'CANCELLED'])
+  status?: 'PENDING_APPROVAL' | 'PENDING' | 'IN_TRANSIT' | 'RECEIVED' | 'CANCELLED';
 
   @IsOptional()
   @IsUUID()
@@ -65,6 +71,11 @@ export class QueryTransferDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   requisitionId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  campaignOnly?: boolean;
 
   @IsOptional()
   @IsString()
