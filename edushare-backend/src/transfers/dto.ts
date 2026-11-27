@@ -5,10 +5,13 @@ import {
   IsBoolean,
   IsArray,
   IsIn,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 import { PaginationQueryDto } from '../common/dto';
@@ -81,6 +84,44 @@ export class QueryTransferDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(40)
   code?: string;
+}
+
+export class CreateTransferReceiptDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  recipientName!: string;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  recipientTitle!: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(400000)
+  recipientSignatureUrl!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(4)
+  @IsString({ each: true })
+  @MaxLength(1500000, { each: true })
+  proofPhotoUrls!: string[];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  gpsLatitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  gpsLongitude?: number;
 }
 
 export class TransferIdParam {

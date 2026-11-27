@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Building2, Plus, Truck, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Building2, Plus, Sparkles, Truck, Trash2 } from "lucide-react";
 import api, { apiError, currentUser } from "@/lib/api";
 import {
   CATEGORIES, CATEGORY_LABEL, CATEGORY_UNIT, Card, Field, GhostButton, Notice, PageHead, PhotoPicker, PrimaryButton, SubmitBar,
   inputClass, rowsOf, useNotice, usePortalRefresh,
 } from "@/pages/portals/kit";
-
-const CONDITIONS = ["Mới 100%", "Đã dùng - hoạt động tốt", "Cần sửa chữa nhẹ"];
+import { donorAiDraftKey } from "./donorAiDraft";
+import { DONATION_CONDITIONS, hasProhibitedDonation } from "./donorItemPolicy";
 
 function emptyLine() {
-  return { category: "IT_DEVICES", name: "", quantity: 1, condition: CONDITIONS[1], photos: [] };
+  return { category: "IT_DEVICES", name: "", quantity: 1, condition: DONATION_CONDITIONS[1], photos: [] };
 }
 
 export default function PledgeFormScreen({ params, openTab }) {
@@ -27,7 +27,10 @@ export default function PledgeFormScreen({ params, openTab }) {
   });
   const [pending, setPending] = useState(false);
   const [savedAt, setSavedAt] = useState("");
+  const [aiFilledCount, setAiFilledCount] = useState(0);
+  const [aiFillError, setAiFillError] = useState("");
   const { notice, ok, fail } = useNotice();
+  const processedAiDraftRef = useRef(false);
 
   const loadCampaigns = useCallback(() => api.get("/campaigns/active").then((response) => setCampaigns(rowsOf(response.data))).catch(() => setCampaigns([])), []);
   useEffect(() => { loadCampaigns(); }, [loadCampaigns]);
@@ -35,14 +38,68 @@ export default function PledgeFormScreen({ params, openTab }) {
 
   useEffect(() => {
     const campaign = params.get("campaign");
+    if (params.get("aiDraft") === "1") {
+      if (processedAiDraftRef.current) return;
+      processedAiDraftRef.current = true;
+
+      const key = donorAiDraftKey(user?.id);
+      let restored = false;
+      try {
+        const draft = JSON.parse(sessionStorage.getItem(key) || "null");
+        if (!draft || !Array.isArray(draft.lines) || !draft.lines.length) {
+          throw new Error("Missing recommendation draft");
+        }
+        const validCategories = new Set(CATEGORIES.map(([category]) => category));
+        const lines = draft.lines.map((line) => {
+          if (!validCategories.has(line.category) || String(line.name || "").trim().length < 2) {
+            throw new Error("Invalid recommendation item");
+          }
+          const quantity = Number(line.quantity);
+          if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5000) {
+            throw new Error("Invalid recommendation quantity");
+          }
+          return {
+            ...emptyLine(),
+            category: line.category,
+            name: String(line.name).trim(),
+            quantity,
+            condition: DONATION_CONDITIONS.includes(line.condition) ? line.condition : DONATION_CONDITIONS[1],
+            photos: [],
+          };
+        });
+        setForm((current) => ({
+          ...current,
+          campaignId: campaign || draft.campaignId || current.campaignId,
+          lines,
+          consent: false,
+        }));
+        setAiFilledCount(lines.length);
+        setAiFillError("");
+        restored = true;
+      } catch {
+        setAiFillError("Không khôi phục được vật tư từ gợi ý. Vui lòng kiểm tra và nhập lại danh sách.");
+      }
+
+      if (restored) {
+        try {
+          sessionStorage.removeItem(key);
+        } catch {
+          setAiFillError("Đã khôi phục vật tư nhưng không thể xóa bản nháp tạm thời khỏi trình duyệt.");
+        }
+      }
+      openTab("pledge", campaign ? { campaign } : {}, { replace: true });
+      return;
+    }
+    processedAiDraftRef.current = false;
     if (campaign) setForm((current) => ({ ...current, campaignId: campaign }));
-  }, [params]);
+  }, [params, user?.id, openTab]);
 
   const set = (patch) => setForm((current) => ({ ...current, ...patch }));
   const setLine = (index, patch) => setForm((current) => ({ ...current, lines: current.lines.map((line, position) => (position === index ? { ...line, ...patch } : line)) }));
 
   const totalQuantity = useMemo(() => form.lines.reduce((sum, line) => sum + (Number(line.quantity) || 0), 0), [form.lines]);
   const campaign = campaigns.find((row) => row.id === form.campaignId);
+  const hasRejectedDonation = form.lines.some((line) => hasProhibitedDonation(line.name));
 
   function saveDraft() {
     localStorage.setItem(draftKey, JSON.stringify({ ...form, consent: false }));
@@ -52,6 +109,10 @@ export default function PledgeFormScreen({ params, openTab }) {
 
   async function submit(event) {
     event.preventDefault();
+    if (hasRejectedDonation) {
+      fail("Từ chối gửi phiếu: danh sách có hiện vật thuộc danh mục hàng hóa bị cấm.");
+      return;
+    }
     if (!form.consent) {
       fail("Vui lòng xác nhận cam kết về nguồn gốc và tình trạng hiện vật.");
       return;
@@ -93,6 +154,18 @@ export default function PledgeFormScreen({ params, openTab }) {
     <form onSubmit={submit}>
       <PageHead eyebrow="Phiếu trao tặng" title="Đăng ký trao tặng mới" subtitle="Khai báo hiện vật, cách bàn giao và thông tin liên hệ. Sau khi gửi, phiếu không sửa được; bạn có thể hủy trong 72 giờ khi phiếu còn chờ tiếp nhận." />
       <Notice notice={notice} />
+      {hasRejectedDonation ? (
+        <p role="alert" className="mb-4 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          Từ chối tiếp nhận: danh sách có hiện vật thuộc danh mục hàng hóa bị cấm. Hãy xóa hiện vật này để tiếp tục.
+        </p>
+      ) : null}
+      {aiFillError ? <p role="alert" className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{aiFillError}</p> : null}
+      {aiFilledCount ? (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          <Sparkles size={16} className="mt-0.5 shrink-0 text-blue-700" />
+          <p><b>Đã điền sẵn từ gợi ý:</b> chiến dịch và {aiFilledCount} dòng hiện vật. Vui lòng kiểm tra, bổ sung ảnh và thông tin bàn giao trước khi gửi phiếu.</p>
+        </div>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
         <div className="space-y-5">
@@ -141,7 +214,7 @@ export default function PledgeFormScreen({ params, openTab }) {
                     <Field label={`SL (${CATEGORY_UNIT[line.category]})`}><input type="number" min="1" max="5000" className={inputClass} value={line.quantity} onChange={(event) => setLine(index, { quantity: event.target.value })} /></Field>
                     <Field label="Tình trạng khai báo">
                       <select className={inputClass} value={line.condition} onChange={(event) => setLine(index, { condition: event.target.value })}>
-                        {CONDITIONS.map((item) => <option key={item}>{item}</option>)}
+                        {DONATION_CONDITIONS.map((item) => <option key={item}>{item}</option>)}
                       </select>
                     </Field>
                   </div>
@@ -185,7 +258,7 @@ export default function PledgeFormScreen({ params, openTab }) {
         <div className="flex gap-2">
           <GhostButton onClick={() => openTab("campaigns")}>Hủy</GhostButton>
           <GhostButton onClick={saveDraft}>Lưu bản nháp</GhostButton>
-          <PrimaryButton type="submit" pending={pending}>Xác nhận & gửi phiếu</PrimaryButton>
+          <PrimaryButton type="submit" pending={pending} disabled={hasRejectedDonation}>Xác nhận & gửi phiếu</PrimaryButton>
         </div>
       </SubmitBar>
     </form>

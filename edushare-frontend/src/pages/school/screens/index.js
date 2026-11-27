@@ -4,6 +4,7 @@ import QueueScreen from "./QueueScreen";
 import RequestScreen from "./RequestScreen";
 import SignScreen from "./SignScreen";
 import TraceScreen from "./TraceScreen";
+import TransferReceiptScreen from "./TransferReceiptScreen";
 import WaybillScreen from "./WaybillScreen";
 
 export const schoolScreens = {
@@ -13,5 +14,6 @@ export const schoolScreens = {
   trace: TraceScreen,
   waybill: WaybillScreen,
   sign: SignScreen,
+  "transfer-sign": TransferReceiptScreen,
   history: HistoryScreen,
 };

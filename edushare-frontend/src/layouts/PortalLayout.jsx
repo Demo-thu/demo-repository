@@ -14,6 +14,7 @@ const NAV = {
   donor: [
     ["CỔNG NHÀ HẢO TÂM", [
       ["Khám phá chiến dịch", "campaigns", Sparkles],
+      ["Gợi ý chiến dịch AI", "recommend", Sparkles],
       ["Tạo phiếu trao tặng", "pledge", Gift],
       ["Phiếu đã gửi", "mine", ClipboardList],
       ["Biên nhận điện tử", "receipt", FileText],
@@ -33,6 +34,7 @@ const NAV = {
     ["3. VẬN CHUYỂN & KÝ NHẬN", [
       ["Theo dõi vận đơn", "waybill", Truck],
       ["Ký biên bản PoD", "sign", PenLine],
+      ["Ký nhận điều chuyển", "transfer-sign", PenLine],
     ]],
     ["4. LỊCH SỬ & LƯU TRỮ", [
       ["Lịch sử giao hàng", "history", History],

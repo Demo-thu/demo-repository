@@ -306,12 +306,28 @@ model StockTransferOrder {
   recipientNote     String?
   dispatchedAt      DateTime?
   receivedAt        DateTime?
+  proof             StockTransferProof?
   volunteers        StockTransferVolunteer[]
   items             StockTransferItem[]
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
 
   @@map("stock_transfer_orders")
+}
+
+model StockTransferProof {
+  id                    String             @id @default(uuid())
+  transferId            String             @unique
+  transfer              StockTransferOrder @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  recipientSignatureUrl String
+  proofPhotoUrls        String[]
+  recipientName         String
+  recipientTitle        String
+  gpsLatitude           Float?
+  gpsLongitude          Float?
+  signedAt              DateTime           @default(now())
+
+  @@map("stock_transfer_proofs")
 }
 
 model SupportRequisition {

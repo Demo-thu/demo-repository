@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ItemCategory, Prisma, Role } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { TRANSFER_TRANSITIONS, assertTransition } from '../common/domain';
 import { AuthenticatedUser } from '../common/types';
 import { nextSerial, pageArgs, paginate, publicUserSelect, shortCode, withUniqueRetry } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTransferDto, QueryTransferDto } from './dto';
+import { CreateTransferDto, CreateTransferReceiptDto, QueryTransferDto } from './dto';
 
 const MANIFEST_ACTION = 'STOCK_TRANSFER_MANIFEST';
 
@@ -278,12 +278,55 @@ export class TransfersService {
   async get(id: string) {
     const transfer = await this.prisma.stockTransferOrder.findUnique({
       where: { id },
-      include: transferInclude,
+      include: {
+        ...transferInclude,
+        proof: {
+          select: {
+            recipientSignatureUrl: true,
+            proofPhotoUrls: true,
+            recipientName: true,
+            recipientTitle: true,
+            signedAt: true,
+            gpsLatitude: true,
+            gpsLongitude: true,
+          },
+        },
+      },
     });
     if (!transfer) {
       throw new NotFoundException('Không tìm thấy lệnh điều chuyển');
     }
     return this.present(transfer);
+  }
+
+  async schoolPendingProofs(actor: AuthenticatedUser) {
+    return this.prisma.stockTransferOrder.findMany({
+      where: {
+        targetSchoolId: actor.id,
+        status: { in: ['IN_TRANSIT', 'RECEIVED'] },
+        proof: { is: null },
+      },
+      select: {
+        id: true,
+        code: true,
+        status: true,
+        deliveryAddress: true,
+        recipientName: true,
+        dispatchedAt: true,
+        receivedAt: true,
+        createdAt: true,
+        targetSchool: { select: { fullName: true } },
+        requisition: { select: { code: true, title: true } },
+        campaign: { select: { title: true } },
+        items: {
+          select: {
+            id: true,
+            resourceItem: { select: { qrCode: true, name: true, category: true, grade: true, status: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
   }
 
   /** Xuất kho: hàng rời kho và lệnh chuyển sang "Đang vận chuyển". */
@@ -326,36 +369,74 @@ export class TransfersService {
     return this.present(updated);
   }
 
-  /** Kho xác nhận hàng đã tới trường: lệnh hoàn tất và hiện vật chuyển sang "Đã giao". */
-  async receive(actor: AuthenticatedUser, id: string, ipAddress: string | null) {
+  /** Trường ký nhận; các lệnh cũ đã hoàn tất có thể bổ sung biên bản mà không cộng tiến độ lần nữa. */
+  async receive(actor: AuthenticatedUser, id: string, dto: CreateTransferReceiptDto, ipAddress: string | null) {
     const updated = await this.prisma.$transaction(async (tx) => {
-      const transfer = await tx.stockTransferOrder.findUnique({ where: { id } });
+      const transfer = await tx.stockTransferOrder.findUnique({
+        where: { id },
+        include: {
+          items: { select: { resourceItemId: true } },
+          proof: { select: { id: true } },
+        },
+      });
       if (!transfer) {
         throw new NotFoundException('Không tìm thấy lệnh điều chuyển');
       }
-      assertTransition(transfer.status, 'RECEIVED', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
-      const itemIds = await this.itemIds(id, tx);
-      await tx.resourceItem.updateMany({
-        where: { id: { in: itemIds }, status: 'IN_TRANSIT' },
-        data: { status: 'DELIVERED' },
-      });
-      if (transfer.requisitionId) {
-        await this.applyFulfillment(tx, transfer.requisitionId, itemIds);
+      if (transfer.targetSchoolId !== actor.id) {
+        throw new ForbiddenException('Chỉ trường nhận của lệnh mới được ký xác nhận bàn giao.');
       }
-      if (transfer.campaignId) {
-        await this.applyCampaignDistribution(tx, transfer.campaignId, itemIds);
+      if (transfer.proof) {
+        throw new ConflictException('Lệnh này đã có biên bản ký nhận.');
       }
-      return tx.stockTransferOrder.update({
-        where: { id },
-        data: { status: 'RECEIVED', receivedAt: new Date() },
-        include: transferInclude,
+      const itemIds = transfer.items.map((item) => item.resourceItemId);
+      if (!itemIds.length) {
+        throw new BadRequestException('Lệnh điều chuyển không có hiện vật để ký nhận.');
+      }
+
+      let orderUpdate: Prisma.StockTransferOrderUpdateInput = {};
+      if (transfer.status === 'IN_TRANSIT') {
+        assertTransition(transfer.status, 'RECEIVED', TRANSFER_TRANSITIONS, 'Lệnh điều chuyển');
+        const delivered = await tx.resourceItem.updateMany({
+          where: { id: { in: itemIds }, status: 'IN_TRANSIT' },
+          data: { status: 'DELIVERED' },
+        });
+        if (delivered.count !== itemIds.length) {
+          throw new BadRequestException('Không thể hoàn tất vì trạng thái một số hiện vật không còn là đang vận chuyển.');
+        }
+        if (transfer.requisitionId) {
+          await this.applyFulfillment(tx, transfer.requisitionId, itemIds);
+        }
+        if (transfer.campaignId) {
+          await this.applyCampaignDistribution(tx, transfer.campaignId, itemIds);
+        }
+        orderUpdate = { status: 'RECEIVED', receivedAt: new Date() };
+      } else if (transfer.status === 'RECEIVED') {
+        const delivered = await tx.resourceItem.count({ where: { id: { in: itemIds }, status: 'DELIVERED' } });
+        if (delivered !== itemIds.length) {
+          throw new BadRequestException('Không thể bổ sung biên bản vì hiện vật của lệnh chưa ở trạng thái đã giao.');
+        }
+      } else {
+        throw new BadRequestException('Chỉ ký nhận lệnh đang vận chuyển hoặc lệnh cũ đã hoàn tất.');
+      }
+
+      await tx.stockTransferProof.create({
+        data: {
+          transferId: id,
+          recipientName: dto.recipientName.trim(),
+          recipientTitle: dto.recipientTitle.trim(),
+          recipientSignatureUrl: dto.recipientSignatureUrl,
+          proofPhotoUrls: dto.proofPhotoUrls,
+          gpsLatitude: dto.gpsLatitude,
+          gpsLongitude: dto.gpsLongitude,
+        },
       });
+      return tx.stockTransferOrder.update({ where: { id }, data: orderUpdate, include: transferInclude });
     });
     await this.audit.log({
       userId: actor.id,
-      action: 'STOCK_TRANSFER_COMPLETED',
+      action: 'STOCK_TRANSFER_RECEIVED_WITH_PROOF',
       resource: 'StockTransferOrder',
-      details: { transferId: id, code: updated.code, status: 'RECEIVED' },
+      details: { transferId: id, code: updated.code, status: updated.status },
       ipAddress,
     });
     return this.present(updated);

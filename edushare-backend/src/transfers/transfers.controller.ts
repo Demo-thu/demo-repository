@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 import { CurrentUser, Roles } from '../common/decorators';
 import { AuthenticatedUser, HttpRequestContext } from '../common/types';
 import { readClientIp } from '../common/utils';
-import { CreateTransferDto, QueryTransferDto } from './dto';
+import { CreateTransferDto, CreateTransferReceiptDto, QueryTransferDto } from './dto';
 import { TransfersService } from './transfers.service';
 
 /** Admin và kho cùng xem được lệnh điều chuyển (kể cả "Đang vận chuyển"); chỉ kho tạo và xử lý lệnh. */
@@ -21,6 +21,12 @@ export class TransfersController {
   @Get()
   list(@Query() query: QueryTransferDto) {
     return this.transfers.list(query);
+  }
+
+  @Get('school/pending-proof')
+  @Roles(Role.SCHOOL_REP)
+  schoolPendingProofs(@CurrentUser() actor: AuthenticatedUser) {
+    return this.transfers.schoolPendingProofs(actor);
   }
 
   @Get(':id')
@@ -41,9 +47,14 @@ export class TransfersController {
   }
 
   @Patch(':id/receive')
-  @Roles(Role.WAREHOUSE_STAFF)
-  receive(@CurrentUser() actor: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string, @Req() req: HttpRequestContext) {
-    return this.transfers.receive(actor, id, readClientIp(req.headers, req.ip));
+  @Roles(Role.SCHOOL_REP)
+  receive(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateTransferReceiptDto,
+    @Req() req: HttpRequestContext,
+  ) {
+    return this.transfers.receive(actor, id, dto, readClientIp(req.headers, req.ip));
   }
 
   @Patch(':id/cancel')

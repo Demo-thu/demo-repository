@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import api, { apiError } from "../../lib/api";
+import DeliveryEvidence from "../portals/DeliveryEvidence";
 import {
   CATEGORIES, CATEGORY_LABEL, Card, Chips, Empty, Field, GhostButton, Modal, Notice, PageHead, PrimaryButton, Progress, SearchBox, Stat,
-  StatusBadge, fmtDate, inputClass, orgName, rowsOf, useNotice, usePortalRefresh,
+  StatusBadge, fmtDate, fmtDateTime, inputClass, orgName, rowsOf, totalOf, useNotice, usePortalRefresh,
 } from "../portals/kit";
 
 const STATUSES = [["ACTIVE", "Đang diễn ra"], ["UPCOMING", "Sắp mở"], ["PAUSED", "Tạm dừng"], ["COMPLETED", "Đã hoàn thành"]];
@@ -18,6 +19,9 @@ export default function AdminCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
   const [schools, setSchools] = useState([]);
   const [pendingTransfers, setPendingTransfers] = useState([]);
+  const [campaignTransfers, setCampaignTransfers] = useState([]);
+  const [transferEvidence, setTransferEvidence] = useState(null);
+  const [transferEvidenceLoading, setTransferEvidenceLoading] = useState("");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
@@ -30,14 +34,25 @@ export default function AdminCampaigns() {
 
   const load = useCallback(async () => {
     try {
-      const [response, schoolResponse, transferResponse] = await Promise.all([
+      const [response, schoolResponse] = await Promise.all([
         api.get("/campaigns", { params: { limit: 100 } }),
         api.get("/users", { params: { role: "SCHOOL_REP", limit: 100 } }),
-        api.get("/transfers", { params: { status: "PENDING_APPROVAL", campaignOnly: true, limit: 100 } }),
       ]);
+      const transfers = [];
+      let page = 1;
+      let total = 0;
+      do {
+        const transferResponse = await api.get("/transfers", { params: { campaignOnly: true, limit: 100, page } });
+        const pageRows = rowsOf(transferResponse.data);
+        transfers.push(...pageRows);
+        total = totalOf(transferResponse.data);
+        page += 1;
+        if (!pageRows.length) break;
+      } while (transfers.length < total);
       setCampaigns(rowsOf(response.data));
       setSchools(rowsOf(schoolResponse.data).filter((school) => school.status === "ACTIVE"));
-      setPendingTransfers(rowsOf(transferResponse.data));
+      setCampaignTransfers(transfers);
+      setPendingTransfers(transfers.filter((transfer) => transfer.status === "PENDING_APPROVAL"));
     } catch (error) {
       fail(apiError(error, "Không tải được chiến dịch, trường thụ hưởng hoặc lệnh chờ duyệt."));
     }
@@ -174,6 +189,18 @@ export default function AdminCampaigns() {
     }
   }
 
+  async function viewTransferEvidence(transfer) {
+    setTransferEvidenceLoading(transfer.id);
+    try {
+      const response = await api.get(`/transfers/${transfer.id}`);
+      setTransferEvidence(response.data);
+    } catch (error) {
+      fail(apiError(error, "Không tải được chữ ký và ảnh bàn giao."));
+    } finally {
+      setTransferEvidenceLoading("");
+    }
+  }
+
   async function addTarget() {
     setPending("target");
     try {
@@ -215,6 +242,27 @@ export default function AdminCampaigns() {
           </div>
         </Card>
       ) : null}
+      <Card title="Tra cứu lệnh phân phối chiến dịch" hint="Mở biên nhận để xem chữ ký và ảnh sau khi trường hoàn tất ký nhận.">
+        {campaignTransfers.length ? (
+          <div className="max-h-80 space-y-2 overflow-y-auto">
+            {campaignTransfers.map((transfer) => (
+              <div key={transfer.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3">
+                <div className="text-sm">
+                  <p className="font-semibold">{transfer.code} · {transfer.campaign?.title}</p>
+                  <p className="text-xs text-slate-600">{orgName(transfer.targetSchool)} · {transfer.itemsCount} hiện vật · {fmtDateTime(transfer.receivedAt || transfer.dispatchedAt || transfer.createdAt)}</p>
+                  <StatusBadge kind="transfer" value={transfer.status} />
+                </div>
+                <GhostButton
+                  disabled={transferEvidenceLoading === transfer.id}
+                  onClick={() => viewTransferEvidence(transfer)}
+                >
+                  {transferEvidenceLoading === transfer.id ? "Đang tải..." : "Xem chữ ký và ảnh"}
+                </GhostButton>
+              </div>
+            ))}
+          </div>
+        ) : <Empty>Chưa có lệnh phân phối chiến dịch nào.</Empty>}
+      </Card>
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Tổng chiến dịch" value={campaigns.length} />
         <Stat label="Đang diễn ra" value={campaigns.filter((row) => row.status === "ACTIVE").length} tone="emerald" />
@@ -303,6 +351,24 @@ export default function AdminCampaigns() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Hạng mục"><select className={inputClass} value={extra.category} onChange={(event) => setExtra({ ...extra, category: event.target.value })}>{CATEGORIES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></Field>
             <Field label="Số lượng mục tiêu"><input type="number" min="1" className={inputClass} value={extra.targetQuantity} onChange={(event) => setExtra({ ...extra, targetQuantity: event.target.value })} /></Field>
+          </div>
+        </Modal>
+      ) : null}
+
+      {transferEvidence ? (
+        <Modal
+          wide
+          title={`Biên nhận điều chuyển · ${transferEvidence.code}`}
+          subtitle={`${transferEvidence.campaign?.title || ""} · ${orgName(transferEvidence.targetSchool)}`}
+          onClose={() => setTransferEvidence(null)}
+          footer={<GhostButton onClick={() => setTransferEvidence(null)}>Đóng</GhostButton>}
+        >
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <p className="text-sm"><span className="text-slate-500">Trạng thái:</span> <StatusBadge kind="transfer" value={transferEvidence.status} /></p>
+              <p className="text-sm"><span className="text-slate-500">Hoàn tất lúc:</span> {fmtDateTime(transferEvidence.receivedAt)}</p>
+            </div>
+            <DeliveryEvidence proof={transferEvidence.proof} showVolunteer={false} />
           </div>
         </Modal>
       ) : null}

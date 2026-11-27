@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TrackingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async item(qrCode: string) {
+  async item(qrCode: string, includePrivateProof = false) {
     const item = await this.prisma.resourceItem.findUnique({
       where: { qrCode },
       include: {
@@ -52,6 +52,7 @@ export class TrackingService {
                     deliveredAt: true,
                     proof: {
                       select: {
+                        ...(includePrivateProof ? { recipientSignatureUrl: true } : {}),
                         recipientName: true,
                         recipientTitle: true,
                         signedAt: true,
@@ -66,12 +67,51 @@ export class TrackingService {
             },
           },
         },
+        transferItems: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            transfer: {
+              select: {
+                code: true,
+                status: true,
+                deliveryAddress: true,
+                recipientName: true,
+                dispatchedAt: true,
+                receivedAt: true,
+                targetSchool: {
+                  select: {
+                    fullName: true,
+                    profile: { select: { address: true, city: true, district: true } },
+                  },
+                },
+                requisition: { select: { code: true, title: true } },
+                campaign: { select: { title: true } },
+                proof: {
+                  select: includePrivateProof
+                    ? {
+                          recipientSignatureUrl: true,
+                          recipientName: true,
+                          recipientTitle: true,
+                          signedAt: true,
+                          gpsLatitude: true,
+                          gpsLongitude: true,
+                          proofPhotoUrls: true,
+                      }
+                    : { id: true },
+                },
+              },
+            },
+          },
+        },
       },
     });
     if (!item) {
       throw new NotFoundException('Không tìm thấy mã truy vết');
     }
     const plan = item.allocationItem?.allocationPlan;
+    const transfer = item.transferItems
+      .map(({ transfer: order }) => order)
+      .find((order) => order.status !== 'CANCELLED');
     return {
       qrCode: item.qrCode,
       name: item.name,
@@ -110,7 +150,39 @@ export class TrackingService {
             proof: plan.waybill.proof,
           }
         : null,
+      transfer: transfer
+        ? {
+            code: transfer.code,
+            status: transfer.status,
+            deliveryAddress: transfer.deliveryAddress,
+            recipientName: transfer.recipientName,
+            dispatchedAt: transfer.dispatchedAt,
+            receivedAt: transfer.receivedAt,
+            schoolName: transfer.targetSchool?.fullName ?? null,
+            schoolAddress: transfer.targetSchool?.profile?.address ?? null,
+            city: transfer.targetSchool?.profile?.city ?? null,
+            district: transfer.targetSchool?.profile?.district ?? null,
+            requisition: transfer.requisition,
+            campaignTitle: transfer.campaign?.title ?? null,
+            proofAvailable: Boolean(transfer.proof),
+            proof: includePrivateProof ? transfer.proof ?? null : null,
+          }
+        : null,
     };
+  }
+
+  async donorItem(donorId: string, qrCode: string) {
+    const ownedItem = await this.prisma.resourceItem.findFirst({
+      where: {
+        qrCode,
+        pledgeItem: { pledge: { donorId } },
+      },
+      select: { id: true },
+    });
+    if (!ownedItem) {
+      throw new NotFoundException('Không tìm thấy mã truy vết');
+    }
+    return this.item(qrCode, true);
   }
 
   async waybill(code: string) {

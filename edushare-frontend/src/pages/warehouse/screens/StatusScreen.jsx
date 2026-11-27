@@ -16,6 +16,8 @@ export default function StatusScreen() {
   const [selectedId, setSelectedId] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [pending, setPending] = useState(false);
+  const [transferProof, setTransferProof] = useState(null);
+  const [transferProofLoading, setTransferProofLoading] = useState(false);
   const [wbFilter, setWbFilter] = useState("all");
   const [wbSearch, setWbSearch] = useState("");
   const [wbTerm, setWbTerm] = useState("");
@@ -115,6 +117,19 @@ export default function StatusScreen() {
     }
   }
 
+  async function openTransferProof(transfer) {
+    setTransferProofLoading(true);
+    setTransferProof(null);
+    try {
+      const response = await api.get(`/transfers/${transfer.id}`);
+      setTransferProof(response.data);
+    } catch (error) {
+      fail(apiError(error, "Không tải được biên nhận của lệnh điều chuyển."));
+    } finally {
+      setTransferProofLoading(false);
+    }
+  }
+
   async function exportDonors(transfer) {
     try {
       await exportDonorWorkbook(transfer.items || [], `${transfer.code}-theo-nha-hao-tam.xlsx`, {
@@ -179,7 +194,7 @@ export default function StatusScreen() {
 
       <div className="mt-8">
         <h2 className="font-display text-lg font-semibold text-slate-900">Lệnh điều chuyển nội bộ</h2>
-        <p className="mt-1 mb-4 text-sm text-slate-500">Hàng chuyển giữa kho và trường bằng lệnh điều chuyển. Đơn tình nguyện viên đã lấy hàng nằm ở danh sách phía trên.</p>
+        <p className="mt-1 mb-4 text-sm text-slate-500">Hàng chuyển giữa kho và trường bằng lệnh điều chuyển. Lệnh chỉ hoàn tất sau khi đại diện trường ký nhận và tải ảnh minh chứng trong cổng School. Đơn tình nguyện viên đã lấy hàng nằm ở danh sách phía trên.</p>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Chips value={filter} onChange={setFilter} items={[["all", "Tất cả", transfers.length], ["PENDING_APPROVAL", "Chờ Admin duyệt", count("PENDING_APPROVAL")], ["PENDING", "Chờ xuất", count("PENDING")], ["IN_TRANSIT", "Đang điều chuyển", count("IN_TRANSIT")], ["RECEIVED", "Hoàn tất", count("RECEIVED")], ["CANCELLED", "Đã hủy", count("CANCELLED")]]} />
           <SearchBox value={search} onChange={setSearch} placeholder="Tìm mã lệnh, trường, người nhận..." />
@@ -214,7 +229,8 @@ export default function StatusScreen() {
                 <GhostButton onClick={() => exportDonors(selected)} disabled={!selected.items?.length}>Xuất Excel theo nhà hảo tâm</GhostButton>
                 {selected.status === "PENDING" && (!selected.campaignId || selected.adminApprovedAt) ? <PrimaryButton pending={pending} onClick={() => act(selected, "dispatch", `Lệnh ${selected.code} đã xuất kho và đang vận chuyển.`)}>Xuất kho</PrimaryButton> : null}
                 {selected.status === "PENDING_APPROVAL" ? <span className="text-xs font-medium text-violet-700">Đang chờ Admin duyệt trước khi xuất.</span> : null}
-                {selected.status === "IN_TRANSIT" ? <PrimaryButton pending={pending} onClick={() => act(selected, "receive", `Lệnh ${selected.code} đã giao tới trường và hoàn tất.`)}>Xác nhận đã giao tới trường</PrimaryButton> : null}
+                {selected.status === "IN_TRANSIT" ? <span className="text-xs font-medium text-blue-700">Đang chờ đại diện trường xác nhận đã nhận hàng và ký biên bản trong cổng School.</span> : null}
+                {selected.status === "RECEIVED" ? <GhostButton disabled={transferProofLoading} onClick={() => openTransferProof(selected)}>Xem chữ ký và ảnh bàn giao</GhostButton> : null}
                 {["PENDING_APPROVAL", "PENDING"].includes(selected.status) ? <GhostButton tone="danger" onClick={() => act(selected, "cancel", `Đã hủy lệnh ${selected.code}; hiện vật đã sẵn sàng phân bổ trở lại.`)}>Hủy lệnh</GhostButton> : null}
               </div>
               {selected.requisition?.id ? (
@@ -249,6 +265,24 @@ export default function StatusScreen() {
             <div className="lg:col-span-2">
               <DeliveryEvidence proof={wbDetail.proof} />
             </div>
+          </div>
+        </Modal>
+      ) : null}
+
+      {transferProof ? (
+        <Modal
+          wide
+          title={`Biên nhận điều chuyển · ${transferProof.code}`}
+          subtitle={`${transferProof.campaign?.title || transferProof.requisition?.title || ""} · ${orgName(transferProof.targetSchool)}`}
+          onClose={() => setTransferProof(null)}
+          footer={<GhostButton onClick={() => setTransferProof(null)}>Đóng</GhostButton>}
+        >
+          <div className="space-y-4">
+            <KeyValue rows={[
+              ["Trạng thái", <StatusBadge kind="transfer" value={transferProof.status} />],
+              ["Hoàn tất lúc", fmtDateTime(transferProof.receivedAt)],
+            ]} />
+            <DeliveryEvidence proof={transferProof.proof} showVolunteer={false} />
           </div>
         </Modal>
       ) : null}

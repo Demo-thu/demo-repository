@@ -247,16 +247,16 @@ export function usePortalTab() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab");
   const openTab = useCallback(
-    (next, extra = {}) => {
+    (next, extra = {}, options = {}) => {
       setParams((current) => {
         const following = new URLSearchParams(current);
         following.set("tab", next);
-        ["q", "scan", "pledge", "item", "campaign", "requisition", "waybill", "edit"].forEach((key) => following.delete(key));
+        ["q", "scan", "pledge", "item", "campaign", "requisition", "waybill", "edit", "aiDraft"].forEach((key) => following.delete(key));
         Object.entries(extra).forEach(([key, value]) => {
           if (value) following.set(key, value);
         });
         return following;
-      });
+      }, options);
     },
     [setParams],
   );
@@ -727,7 +727,7 @@ export function QrImage({ value, size = 96, className = "" }) {
 }
 
 /** Dòng thời gian vòng đời một mã QR, lấy từ /tracking/items/:qr. */
-export function ItemJourney({ qr }) {
+export function ItemJourney({ qr, donorOnly = false }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -735,22 +735,69 @@ export function ItemJourney({ qr }) {
     let alive = true;
     setData(null);
     setError("");
-    api.get(`/tracking/items/${encodeURIComponent(qr)}`)
+    const endpoint = donorOnly ? "/tracking/donor/items" : "/tracking/items";
+    api.get(`${endpoint}/${encodeURIComponent(qr)}`)
       .then((response) => { if (alive) setData(response.data); })
       .catch((failure) => { if (alive) setError(apiError(failure, "Không tìm thấy hành trình của mã này.")); });
     return () => { alive = false; };
-  }, [qr]);
+  }, [qr, donorOnly]);
   if (error) return <Empty>{error}</Empty>;
   if (!data) return <Empty>Đang tải hành trình...</Empty>;
   const lastInspection = data.inspections[data.inspections.length - 1];
+  const transfer = data.transfer;
+  const proof = data.waybill?.proof || transfer?.proof;
+  const transferStatus = {
+    PENDING_APPROVAL: "Chờ Admin duyệt",
+    PENDING: "Chờ xuất kho",
+    IN_TRANSIT: "Đang vận chuyển",
+    RECEIVED: "Đã xác nhận nhận hàng",
+    CANCELLED: "Đã hủy",
+  }[transfer?.status] || transfer?.status;
+  const deliveredWithoutRoute = data.status === "DELIVERED" && !data.allocation && !data.waybill && !transfer;
+  const transferPurpose = transfer?.requisition?.code
+    ? `yêu cầu ${transfer.requisition.code}`
+    : transfer?.campaignTitle
+      ? `chiến dịch ${transfer.campaignTitle}`
+      : `lệnh ${transfer?.code}`;
   const steps = [
     { title: "Nhà hảo tâm trao tặng", detail: `${data.pledge?.organizationName || data.pledge?.donorName || "—"} · phiếu ${data.pledge?.code || "—"}`, done: Boolean(data.pledge) },
     { title: "Nhập kho & cấp mã QR", detail: data.receivedAt ? `${fmtDateTime(data.receivedAt)} · ${data.warehouse?.name || "Kho"}${data.binLocation ? ` · ${data.binLocation}` : ""}` : "Chưa nhập kho", done: Boolean(data.receivedAt) },
     { title: "Kiểm định chất lượng", detail: lastInspection ? `${fmtDateTime(lastInspection.inspectedAt)} · ${GRADE_LABEL[data.grade] || "—"}${lastInspection.physicalDefects ? ` · ${lastInspection.physicalDefects}` : ""}` : "Chưa kiểm định", done: Boolean(lastInspection) },
-    { title: "Phân bổ cho trường học", detail: data.allocation ? `${data.allocation.schoolName} · yêu cầu ${data.allocation.requisitionCode}` : "Chưa phân bổ", done: Boolean(data.allocation) },
-    { title: "Vận chuyển", detail: data.waybill ? `Vận đơn ${data.waybill.code} · ${data.waybill.dispatchedAt ? fmtDateTime(data.waybill.dispatchedAt) : "chờ lấy hàng"}` : "Chưa lập vận đơn", done: Boolean(data.waybill?.dispatchedAt) },
-    { title: "Giao & ký nhận", detail: data.waybill?.proof ? `${data.waybill.proof.recipientName} (${data.waybill.proof.recipientTitle}) · ${fmtDateTime(data.waybill.proof.signedAt)}` : "Chưa bàn giao", done: Boolean(data.waybill?.proof) },
+    {
+      title: "Phân bổ cho trường học",
+      detail: data.allocation
+        ? `${data.allocation.schoolName} · yêu cầu ${data.allocation.requisitionCode}`
+        : transfer
+          ? `${transfer.schoolName || "Chưa ghi nhận trường nhận"} · ${transferPurpose}`
+          : deliveredWithoutRoute
+            ? "Đã ghi trạng thái Đã giao nhưng chưa có lệnh phân bổ/điều chuyển liên kết; cần Kho kiểm tra."
+            : "Chưa phân bổ",
+      done: Boolean(data.allocation || transfer),
+    },
+    {
+      title: "Vận chuyển",
+      detail: data.waybill
+        ? `Vận đơn ${data.waybill.code} · ${data.waybill.dispatchedAt ? fmtDateTime(data.waybill.dispatchedAt) : "chờ lấy hàng"}`
+        : transfer
+          ? `Lệnh ${transfer.code} · ${transferStatus} · ${transfer.dispatchedAt ? fmtDateTime(transfer.dispatchedAt) : "chưa xuất kho"}${transfer.deliveryAddress ? ` · ${transfer.deliveryAddress}` : ""}`
+          : deliveredWithoutRoute
+            ? "Chưa có thông tin vận chuyển được liên kết với mã hiện vật này."
+            : "Chưa lập vận đơn",
+      done: Boolean(data.waybill?.dispatchedAt || transfer?.dispatchedAt || transfer?.status === "IN_TRANSIT" || transfer?.status === "RECEIVED"),
+    },
+    {
+      title: "Giao & ký nhận",
+      detail: proof
+        ? `${proof.recipientName} (${proof.recipientTitle}) · ${fmtDateTime(proof.signedAt)}`
+        : transfer?.receivedAt
+          ? `Kho đã ghi nhận hoàn tất lệnh ${transfer.code} · người nhận ghi trên lệnh: ${transfer.recipientName || "chưa có"} · ${fmtDateTime(transfer.receivedAt)}`
+          : deliveredWithoutRoute
+            ? "Chưa có biên bản giao nhận liên kết với mã hiện vật này."
+            : "Chưa bàn giao",
+      done: Boolean(proof || transfer?.receivedAt || transfer?.status === "RECEIVED"),
+    },
   ];
+  const proofPhotos = Array.isArray(proof?.proofPhotoUrls) ? proof.proofPhotoUrls : [];
   return (
     <div>
       <div className="mb-4 flex items-center gap-3">
@@ -762,6 +809,42 @@ export function ItemJourney({ qr }) {
         </div>
       </div>
       <Timeline steps={steps} />
+      {proof ? (
+        <section className="mt-4 rounded-lg border border-slate-200 p-3">
+          <h3 className="text-sm font-semibold text-slate-800">Minh chứng bàn giao tại trường</h3>
+          <p className="mt-1 text-xs text-slate-600">
+            {proof.recipientName} · {proof.recipientTitle} · {fmtDateTime(proof.signedAt)}
+          </p>
+          {proof.recipientSignatureUrl ? (
+            <a href={proof.recipientSignatureUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block rounded border border-slate-200 bg-white p-2">
+              <img src={proof.recipientSignatureUrl} alt="Chữ ký người nhận" className="h-24 max-w-full object-contain" />
+              <span className="mt-1 block text-[11px] text-blue-700">Mở ảnh chữ ký</span>
+            </a>
+          ) : <p className="mt-2 text-xs text-slate-500">Chưa có ảnh chữ ký được lưu.</p>}
+          {proofPhotos.length ? (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {proofPhotos.map((url, index) => (
+                <a key={`${index}-${url.slice(0, 40)}`} href={url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                  <img src={url} alt={`Ảnh bàn giao ${index + 1}`} loading="lazy" className="aspect-video w-full object-cover" />
+                </a>
+              ))}
+            </div>
+          ) : <p className="mt-2 text-xs text-slate-500">Chưa có ảnh bàn giao được lưu.</p>}
+          {proof.gpsLatitude != null && proof.gpsLongitude != null ? (
+            <p className="mt-2 text-xs text-slate-500">Vị trí ký nhận: {proof.gpsLatitude}, {proof.gpsLongitude}</p>
+          ) : null}
+        </section>
+      ) : null}
+      {transfer?.status === "RECEIVED" && !proof && !transfer.proofAvailable ? (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          Lệnh điều chuyển đã được Kho xác nhận hoàn tất, nhưng quy trình điều chuyển trực tiếp hiện chưa lưu chữ ký hoặc ảnh bàn giao để hiển thị.
+        </p>
+      ) : null}
+      {transfer?.proofAvailable && !proof ? (
+        <p className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900">
+          Biên bản ký nhận đã được lưu. Đăng nhập bằng tài khoản Donor sở hữu hiện vật để xem chữ ký và ảnh minh chứng.
+        </p>
+      ) : null}
     </div>
   );
 }

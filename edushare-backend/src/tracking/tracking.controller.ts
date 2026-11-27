@@ -1,6 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { IsString, MaxLength, MinLength } from 'class-validator';
-import { Public } from '../common/decorators';
+import { Role } from '@prisma/client';
+import { CurrentUser, Public, Roles } from '../common/decorators';
+import { AuthenticatedUser } from '../common/types';
 import { TrackingService } from './tracking.service';
 
 class SearchQueryDto {
@@ -18,6 +20,12 @@ export class TrackingController {
   @Get('items/:qrCode')
   item(@Param('qrCode') qrCode: string) {
     return this.tracking.item(qrCode);
+  }
+
+  @Get('donor/items/:qrCode')
+  @Roles(Role.DONOR)
+  donorItem(@CurrentUser() actor: AuthenticatedUser, @Param('qrCode') qrCode: string) {
+    return this.tracking.donorItem(actor.id, qrCode);
   }
 
   @Public()

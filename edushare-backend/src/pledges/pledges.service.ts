@@ -614,6 +614,18 @@ export class PledgesService implements OnModuleInit, OnModuleDestroy {
               },
             },
           },
+          transferItems: {
+            orderBy: { createdAt: 'desc' },
+            select: {
+              transfer: {
+                select: {
+                  code: true,
+                  status: true,
+                  targetSchool: { select: { fullName: true } },
+                },
+              },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,

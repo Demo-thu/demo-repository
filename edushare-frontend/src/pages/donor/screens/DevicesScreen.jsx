@@ -6,6 +6,12 @@ import {
   SearchBox, StatusBadge, downloadCsv, rowsOf, totalOf, useNotice,
 } from "@/pages/portals/kit";
 
+function recipientSchool(item) {
+  const allocationSchool = item.allocationItem?.allocationPlan?.requisition?.school?.fullName;
+  if (allocationSchool) return allocationSchool;
+  return item.transferItems?.find((entry) => entry.transfer?.status !== "CANCELLED")?.transfer?.targetSchool?.fullName || "";
+}
+
 export default function DevicesScreen({ params }) {
   const [devices, setDevices] = useState([]);
   const [total, setTotal] = useState(0);
@@ -45,7 +51,7 @@ export default function DevicesScreen({ params }) {
   function exportCsv() {
     downloadCsv("ma-qr-thiet-bi.csv", ["Mã QR", "Tên", "Nhóm", "Phân loại", "Trạng thái", "Phiếu", "Trường nhận"], devices.map((item) => [
       item.qrCode, item.name, CATEGORY_LABEL[item.category], GRADE_LABEL[item.grade] || "", item.status, item.pledgeItem?.pledge?.code || "",
-      item.allocationItem?.allocationPlan?.requisition?.school?.fullName || "",
+      recipientSchool(item),
     ]));
   }
 
@@ -58,7 +64,7 @@ export default function DevicesScreen({ params }) {
       GRADE_LABEL[item.grade] || "—",
       item.pledgeItem?.pledge?.code || "—",
       <StatusBadge kind="item" value={item.status} />,
-      item.allocationItem?.allocationPlan?.requisition?.school?.fullName || "—",
+      recipientSchool(item) || "—",
     ],
   }));
 
@@ -80,7 +86,7 @@ export default function DevicesScreen({ params }) {
           <DataTable columns={["Mã QR", "Thiết bị", "Nhóm", "Phân loại", "Phiếu", "Trạng thái", "Trường nhận"]} rows={rows} empty="Chưa có thiết bị nào được cấp mã QR. Mã sẽ xuất hiện sau khi kho nhập phiếu của bạn." />
         </div>
         <Card title="Hành trình mã QR" hint="Chọn một mã trong bảng để xem hành trình từ kho tới học sinh.">
-          {selected ? <ItemJourney qr={selected} /> : <Empty>Chưa chọn mã QR nào.</Empty>}
+          {selected ? <ItemJourney qr={selected} donorOnly /> : <Empty>Chưa chọn mã QR nào.</Empty>}
         </Card>
       </div>
     </div>
